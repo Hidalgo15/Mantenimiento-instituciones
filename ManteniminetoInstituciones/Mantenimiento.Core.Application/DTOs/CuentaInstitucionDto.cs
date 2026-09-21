@@ -2,7 +2,7 @@
 {
     public record CuentaInstitucionDto
     {
-        public int Id { get; set; }
+        public int? Id { get; set; }
         public string InsCodigo { get; set; }
         public string Institucion { get; set; }
         public string CtaCtaBanco { get; set; }

@@ -18,7 +18,7 @@ namespace Mantenimiento.Core.Application.Services
         {
             var lista = await _repo.ObtenerInstitucionesAsync();
             return lista
-                .Where(x => x.Estatus == 1)
+                .Where(x => x.Estatus == true)
                 .Select(x => new InstitucionSeleccionDto
                 {
                     Estructura = x.Estructura,

@@ -44,7 +44,7 @@ namespace MantenimientoPresentation
 
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}");
+                pattern: "{controller=CuentaInstitucion}/{action=Index}/{id?}");
 
             app.Run();
         }
