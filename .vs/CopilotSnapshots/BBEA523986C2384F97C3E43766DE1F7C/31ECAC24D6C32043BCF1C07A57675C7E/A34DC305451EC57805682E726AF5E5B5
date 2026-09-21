@@ -43,7 +43,7 @@ namespace Mantenimiento.Core.Application.Services
         }
 
         // Crear nueva cuenta
-        public async Task<CuentaInstitucion> CrearCuentaAsync(CrearCuentaInstitucionDto dto)
+        public async Task<int> CrearCuentaAsync(CrearCuentaInstitucionDto dto)
         {
             var entidad = new CuentaInstitucion
             {
@@ -53,13 +53,13 @@ namespace Mantenimiento.Core.Application.Services
                 CtaDescripcion = dto.CtaDescripcion
             };
 
-            return await _repo.AddAsync(entidad);
+            return await _repo.InsertarAsync(entidad);
         }
 
         // Eliminar cuenta
         public async Task EliminarCuentaAsync(int id)
         {
-            await _repo.DeleteAsync(id);
+            await _repo.EliminarAsync(id);
         }
     }
 }
