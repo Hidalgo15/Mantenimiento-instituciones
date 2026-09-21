@@ -13,7 +13,6 @@
 
   <ItemGroup>
     <Folder Include="DbContext\" />
-    <Folder Include="RepositoryServices\" />
     <Folder Include="ServiceExtensions\" />
   </ItemGroup>
 
