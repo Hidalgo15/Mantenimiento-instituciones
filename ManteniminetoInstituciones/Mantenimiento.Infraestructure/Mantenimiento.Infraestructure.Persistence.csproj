@@ -11,4 +11,10 @@
     <ProjectReference Include="..\Mantenimiento.Core\Mantenimiento.Core.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="DbContext\" />
+    <Folder Include="RepositoryServices\" />
+    <Folder Include="ServiceExtensions\" />
+  </ItemGroup>
+
 </Project>
