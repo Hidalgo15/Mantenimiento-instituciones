@@ -17,10 +17,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infraestructure", "Infraest
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Presentation", "Presentation", "{A0979F82-A6BA-40E5-8D71-0CA61F914989}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "API", "API", "{B7BEDDD7-85F1-4BF7-AF9F-D764A32FF8CB}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManteniminetoInstituciones.API", "Mantenimiento.API\ManteniminetoInstituciones.API.csproj", "{DD53827C-8411-4B79-ABC8-80779919EF21}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -43,10 +39,6 @@ Global
 		{6934C300-FAAB-455B-A87C-682A0C43D04F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6934C300-FAAB-455B-A87C-682A0C43D04F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6934C300-FAAB-455B-A87C-682A0C43D04F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{DD53827C-8411-4B79-ABC8-80779919EF21}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{DD53827C-8411-4B79-ABC8-80779919EF21}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{DD53827C-8411-4B79-ABC8-80779919EF21}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{DD53827C-8411-4B79-ABC8-80779919EF21}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -56,7 +48,6 @@ Global
 		{C8BB3734-6C55-4AEA-8E04-FD2E89466B56} = {3555E738-A015-4186-A015-A13022B477A1}
 		{0F078C9C-E3AA-488C-B93B-B437E6308126} = {A0979F82-A6BA-40E5-8D71-0CA61F914989}
 		{6934C300-FAAB-455B-A87C-682A0C43D04F} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
-		{DD53827C-8411-4B79-ABC8-80779919EF21} = {B7BEDDD7-85F1-4BF7-AF9F-D764A32FF8CB}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FCD89C8C-87EE-4792-8E98-63C6EE8AD2FA}
