@@ -1,0 +1,65 @@
+﻿using Mantenimiento.Core.Application.DTOs;
+using Mantenimiento.Core.Domain.Entities;
+using Mantenimiento.Core.Domain.RepositoryInterfaces;
+
+namespace Mantenimiento.Core.Application.Services
+{
+    public class CuentaInstitucionService
+    {
+        private readonly ICuentaInstitucionRepository _repo;
+
+        public CuentaInstitucionService(ICuentaInstitucionRepository repo)
+        {
+            _repo = repo;
+        }
+
+        // Obtener el listado para el Selector/Autocompletado
+        public async Task<List<InstitucionSeleccionDto>> ObtenerInstitucionesSelectorAsync()
+        {
+            var lista = await _repo.ObtenerInstitucionesAsync();
+            return lista
+                .Where(x => x.Estatus == 1)
+                .Select(x => new InstitucionSeleccionDto
+                {
+                    Estructura = x.Estructura,
+                    UnidadEjecutora = x.UnidadEjecutora
+                })
+                .DistinctBy(x => x.Estructura)
+                .ToList();
+        }
+
+        // Obtener las cuentas del Grid al seleccionar una institución
+        public async Task<List<CuentaInstitucionDto>> ObtenerCuentasPorEstructuraAsync(string insCodigo)
+        {
+            var cuentas = await _repo.ObtenerCuentasPorEstructuraAsync(insCodigo);
+            return cuentas.Select(c => new CuentaInstitucionDto
+            {
+                Id = c.Id,
+                InsCodigo = c.InsCodigo,
+                Institucion = c.Institucion,
+                CtaCtaBanco = c.CtaCtaBanco,
+                CtaDescripcion = c.CtaDescripcion
+            }).ToList();
+        }
+
+        // Crear nueva cuenta
+        public async Task<int> CrearCuentaAsync(CrearCuentaInstitucionDto dto)
+        {
+            var entidad = new CuentaInstitucion
+            {
+                InsCodigo = dto.InsCodigo,
+                Institucion = dto.Institucion,
+                CtaCtaBanco = dto.CtaCtaBanco,
+                CtaDescripcion = dto.CtaDescripcion
+            };
+
+            return await _repo.InsertarAsync(entidad);
+        }
+
+        // Eliminar cuenta
+        public async Task EliminarCuentaAsync(int id)
+        {
+            await _repo.EliminarAsync(id);
+        }
+    }
+}
