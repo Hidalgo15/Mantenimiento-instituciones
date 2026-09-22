@@ -3,44 +3,47 @@
 
 @if (Model != null && Model.Any())
 {
-    <div class="table-responsive bg-white rounded shadow-sm">
-        <table class="table table-hover align-middle mb-0">
-            <thead class="table-light">
-                <tr>
-                    <th>ID</th>
-                    <th>Estructura / Cód</th>
-                    <th>Institución</th>
-                    <th>Cuenta Banco</th>
-                    <th>Descripción</th>
-                    <th class="text-center">Acciones</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model)
-                {
+    <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light text-dark border-bottom">
                     <tr>
-                        <td>@item.Id</td>
-                        <td>@item.InsCodigo</td>
-                        <td>@item.Institucion</td>
-                        <td>@item.CtaCtaBanco</td>
-                        <td>@item.CtaDescripcion</td>
-                        <td class="text-center">
-                            <button class="btn btn-sm btn-outline-primary me-1" onclick="abrirModalEditar(@item.Id)">
-                                <i class="bi bi-pencil"></i> Editar
-                            </button>
-                            <button class="btn btn-sm btn-outline-danger" onclick="eliminarCuenta(@item.Id)">
-                                <i class="bi bi-trash"></i> Eliminar
-                            </button>
-                        </td>
+                        <th class="py-3 px-3">ID</th>
+                        <th class="py-3 px-3">Estructura / Cód</th>
+                        <th class="py-3 px-3">Institución</th>
+                        <th class="py-3 px-3">Cuenta Banco</th>
+                        <th class="py-3 px-3">Descripción</th>
+                        <th class="py-3 px-3 text-center">Acciones</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="px-3 fw-bold text-secondary">@item.Id</td>
+                            <td class="px-3"><span class="badge bg-light text-dark border">@item.InsCodigo</span></td>
+                            <td class="px-3 small text-uppercase">@item.Institucion</td>
+                            <td class="px-3 fw-bold text-dark">@item.CtaCtaBanco</td>
+                            <td class="px-3">@item.CtaDescripcion</td>
+                            <td class="px-3 text-center">
+                                <button class="btn btn-sm btn-outline-primary rounded-2 me-1" onclick="abrirModalEditar(@item.Id)">
+                                    <i class="bi bi-pencil-square"></i> Editar
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger rounded-2" onclick="eliminarCuenta(@item.Id)">
+                                    <i class="bi bi-trash"></i> Eliminar
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
 }
 else
 {
-    <div class="alert alert-warning text-center mb-0">
-        No se encontraron cuentas registradas para esta institución.
+    <div class="alert alert-warning border-0 shadow-sm text-center py-4 rounded-3 mb-0">
+        <i class="bi bi-exclamation-triangle fs-3 text-warning d-block mb-2"></i>
+        <span class="fw-semibold">No se encontraron cuentas registradas para esta institución.</span>
     </div>
 }
