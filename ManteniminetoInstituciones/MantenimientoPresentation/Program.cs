@@ -1,3 +1,10 @@
+using Mantenimiento.Core.Application.InterfaceServices;
+using Mantenimiento.Core.Application.Services;
+using Mantenimiento.Core.Domain.RepositoryInterfaces;
+using Mantenimiento.Infraestructure.Persistence;
+using Mantenimiento.Infraestructure.Persistence.Repositories;
+using Microsoft.EntityFrameworkCore;
+
 namespace MantenimientoPresentation
 {
     public class Program
@@ -9,13 +16,20 @@ namespace MantenimientoPresentation
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
+            // DbContext Corregido
+            builder.Services.AddDbContext<ApplicationDbContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("ConexionSIGOB")));
+
+            // Repositorios y Servicios
+            builder.Services.AddScoped<ICuentaInstitucionRepository, CuentaInstitucionRepository>();
+            builder.Services.AddScoped<ICuentaInstitucionService, CuentaInstitucionService>();
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
-                // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
@@ -28,7 +42,7 @@ namespace MantenimientoPresentation
 
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}");
+                pattern: "{controller=CuentaInstitucion}/{action=Index}/{id?}");
 
             app.Run();
         }

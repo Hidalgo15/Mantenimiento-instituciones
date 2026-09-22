@@ -7,14 +7,20 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="ServiceExtensions\**" />
+    <EmbeddedResource Remove="ServiceExtensions\**" />
+    <None Remove="ServiceExtensions\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Mantenimiento.Core.Application\Mantenimiento.Core.Application.csproj" />
     <ProjectReference Include="..\Mantenimiento.Core\Mantenimiento.Core.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="DbContext\" />
-    <Folder Include="RepositoryServices\" />
-    <Folder Include="ServiceExtensions\" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.1.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.0" />
   </ItemGroup>
 
 </Project>

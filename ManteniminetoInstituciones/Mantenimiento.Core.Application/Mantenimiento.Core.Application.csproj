@@ -7,13 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Mantenimiento.Core\Mantenimiento.Core.Domain.csproj" />
+    <Compile Remove="ServiceExtencions\**" />
+    <EmbeddedResource Remove="ServiceExtencions\**" />
+    <None Remove="ServiceExtencions\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="InterfaceServices\" />
-    <Folder Include="ServiceExtencions\" />
-    <Folder Include="Services\" />
+    <ProjectReference Include="..\Mantenimiento.Core\Mantenimiento.Core.Domain.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,180 @@
+﻿@using Mantenimiento.Core.Application.DTOs
+@{
+    ViewData["Title"] = "Gestión de Cuentas Contraloría";
+    var instituciones = ViewBag.Instituciones as List<InstitucionSeleccionDto> ?? new List<InstitucionSeleccionDto>();
+}
+
+<div class="container py-4">
+    <h3 class="fw-bold mb-4">Gestión de Cuentas por Institución</h3>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row align-items-end">
+                <div class="col-md-8">
+                    <label for="selectInstitucion" class="form-label fw-bold">Seleccionar Institución</label>
+                    <select id="selectInstitucion" class="form-select" onchange="cargarGridCuentas()">
+                        <option value="">-- Seleccione una institución --</option>
+                        @foreach (var inst in instituciones)
+                        {
+                            <option value="@inst.Estructura">@inst.UnidadEjecutora</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4 text-end">
+                    <button type="button" class="btn btn-primary" onclick="abrirModalCrear()" id="btnNuevaCuenta" disabled>
+                        <i class="bi bi-plus-lg me-1"></i> Nueva Cuenta
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="contenedorGrid">
+        <div class="alert alert-info text-center">
+            Selecciona una institución para cargar sus cuentas asociadas.
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CREAR / EDITAR CUENTA -->
+<div class="modal fade" id="modalCuenta" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="modalCuentaTitle">Agregar Cuenta Institucional</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formCuenta">
+                    <input type="hidden" id="txtId" value="0" />
+                    <input type="hidden" id="txtInsCodigo" />
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Institución</label>
+                        <input type="text" id="txtInstitucion" class="form-control" readonly />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Cuenta Banco</label>
+                        <input type="text" id="txtCtaCtaBanco" class="form-control" required maxlength="50" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Descripción de Cuenta</label>
+                        <input type="text" id="txtCtaDescripcion" class="form-control" required maxlength="255" />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" onclick="guardarCuenta()">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let modalCuentaBs;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            modalCuentaBs = new bootstrap.Modal(document.getElementById('modalCuenta'));
+        });
+
+        function cargarGridCuentas() {
+            const insCodigo = document.getElementById('selectInstitucion').value;
+            const btnNueva = document.getElementById('btnNuevaCuenta');
+            const contenedor = document.getElementById('contenedorGrid');
+
+            if (!insCodigo) {
+                btnNueva.disabled = true;
+                contenedor.innerHTML = '<div class="alert alert-info text-center">Selecciona una institución para cargar sus cuentas asociadas.</div>';
+                return;
+            }
+
+            btnNueva.disabled = false;
+            contenedor.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary"></div></div>';
+
+            fetch(`/CuentaInstitucion/ObtenerCuentasGrid?insCodigo=${encodeURIComponent(insCodigo)}`)
+                .then(res => res.text())
+                .then(html => {
+                    contenedor.innerHTML = html;
+                });
+        }
+
+        function abrirModalCrear() {
+            const select = document.getElementById('selectInstitucion');
+
+            document.getElementById('modalCuentaTitle').innerText = 'Agregar Cuenta Institucional';
+            document.getElementById('txtId').value = '0';
+            document.getElementById('txtInsCodigo').value = select.value;
+            document.getElementById('txtInstitucion').value = select.options[select.selectedIndex].text;
+            document.getElementById('txtCtaCtaBanco').value = '';
+            document.getElementById('txtCtaDescripcion').value = '';
+
+            modalCuentaBs.show();
+        }
+
+        function abrirModalEditar(id) {
+            fetch(`/CuentaInstitucion/ObtenerPorId?id=${id}`)
+                .then(res => res.json())
+                .then(res => {
+                    if (res.success) {
+                        const cuenta = res.data;
+                        document.getElementById('modalCuentaTitle').innerText = 'Editar Cuenta Institucional';
+                        document.getElementById('txtId').value = cuenta.id;
+                        document.getElementById('txtInsCodigo').value = cuenta.insCodigo;
+                        document.getElementById('txtInstitucion').value = cuenta.institucion;
+                        document.getElementById('txtCtaCtaBanco').value = cuenta.ctaCtaBanco;
+                        document.getElementById('txtCtaDescripcion').value = cuenta.ctaDescripcion;
+
+                        modalCuentaBs.show();
+                    } else {
+                        alert('Error: ' + res.message);
+                    }
+                });
+        }
+
+        function guardarCuenta() {
+            const id = parseInt(document.getElementById('txtId').value);
+            const esEdicion = id > 0;
+
+            const dto = {
+                id: id,
+                insCodigo: document.getElementById('txtInsCodigo').value,
+                institucion: document.getElementById('txtInstitucion').value,
+                ctaCtaBanco: document.getElementById('txtCtaCtaBanco').value,
+                ctaDescripcion: document.getElementById('txtCtaDescripcion').value
+            };
+
+            const endpoint = esEdicion ? '/CuentaInstitucion/Actualizar' : '/CuentaInstitucion/Crear';
+
+            fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dto)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    modalCuentaBs.hide();
+                    cargarGridCuentas();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            });
+        }
+
+        function eliminarCuenta(id) {
+            if (!confirm('¿Desea eliminar este registro?')) return;
+
+            fetch(`/CuentaInstitucion/Eliminar?id=${id}`, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        cargarGridCuentas();
+                    } else {
+                        alert('Error al eliminar: ' + data.message);
+                    }
+                });
+        }
+    </script>
+}

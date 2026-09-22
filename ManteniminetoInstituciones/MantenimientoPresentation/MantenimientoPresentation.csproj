@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Mantenimiento.Core.Application\Mantenimiento.Core.Application.csproj" />
-    <ProjectReference Include="..\Mantenimiento.Core\Mantenimiento.Core.Domain.csproj" />
     <ProjectReference Include="..\Mantenimiento.Infraestructure\Mantenimiento.Infraestructure.Persistence.csproj" />
   </ItemGroup>
 
