@@ -1,8 +1,8 @@
-﻿namespace Mantenimiento.Core.Domain.Entities
+﻿namespace Mantenimiento.Core.Application.DTOs
 {
-    public class CuentaInstitucion
+    public record ActualizarCuentaInstitucionDto
     {
-        public int? Id { get; set; }
+        public int Id { get; set; }
         public string InsCodigo { get; set; }
         public string Institucion { get; set; }
         public string CtaCtaBanco { get; set; }

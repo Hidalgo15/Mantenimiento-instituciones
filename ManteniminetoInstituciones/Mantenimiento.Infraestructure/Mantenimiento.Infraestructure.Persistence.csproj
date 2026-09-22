@@ -7,12 +7,14 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Mantenimiento.Core.Application\Mantenimiento.Core.Application.csproj" />
-    <ProjectReference Include="..\Mantenimiento.Core\Mantenimiento.Core.Domain.csproj" />
+    <Compile Remove="ServiceExtensions\**" />
+    <EmbeddedResource Remove="ServiceExtensions\**" />
+    <None Remove="ServiceExtensions\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="ServiceExtensions\" />
+    <ProjectReference Include="..\Mantenimiento.Core.Application\Mantenimiento.Core.Application.csproj" />
+    <ProjectReference Include="..\Mantenimiento.Core\Mantenimiento.Core.Domain.csproj" />
   </ItemGroup>
 
   <ItemGroup>

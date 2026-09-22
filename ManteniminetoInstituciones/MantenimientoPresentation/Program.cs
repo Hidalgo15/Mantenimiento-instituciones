@@ -1,3 +1,4 @@
+using Mantenimiento.Core.Application.InterfaceServices;
 using Mantenimiento.Core.Application.Services;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 using Mantenimiento.Infraestructure.Persistence;
@@ -19,12 +20,9 @@ namespace MantenimientoPresentation
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("ConexionSIGOB")));
 
-            // Registro de AutoMapper
-            //builder.Services.AddAutoMapper(typeof(MappingProfile));
-
             // Repositorios y Servicios
             builder.Services.AddScoped<ICuentaInstitucionRepository, CuentaInstitucionRepository>();
-            builder.Services.AddScoped<CuentaInstitucionService>();
+            builder.Services.AddScoped<ICuentaInstitucionService, CuentaInstitucionService>();
 
             var app = builder.Build();
 
@@ -44,7 +42,7 @@ namespace MantenimientoPresentation
 
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}");
+                pattern: "{controller=CuentaInstitucion}/{action=Index}/{id?}");
 
             app.Run();
         }
