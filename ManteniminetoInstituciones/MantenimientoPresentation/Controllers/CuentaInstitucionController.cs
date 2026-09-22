@@ -1,29 +1,25 @@
 ﻿using Mantenimiento.Core.Application.DTOs;
-using Mantenimiento.Core.Application.Services;
+using Mantenimiento.Core.Application.InterfaceServices;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MantenimientoPresentation.Controllers
 {
     public class CuentaInstitucionController : Controller
     {
-        private readonly CuentaInstitucionService _service;
+        private readonly ICuentaInstitucionService _service;
 
-        public CuentaInstitucionController(CuentaInstitucionService service)
+        public CuentaInstitucionController(ICuentaInstitucionService service)
         {
             _service = service;
         }
 
-        // GET: /CuentaInstitucion
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            // Carga la lista inicial para el combo/selector
-            var instituciones = await _service.ObtenerInstitucionesSelectorAsync();
-            ViewBag.Instituciones = instituciones;
+            ViewBag.Instituciones = await _service.ObtenerInstitucionesSelectorAsync();
             return View();
         }
 
-        // GET: /CuentaInstitucion/ObtenerCuentasGrid?insCodigo=XXX
         [HttpGet]
         public async Task<IActionResult> ObtenerCuentasGrid(string insCodigo)
         {
@@ -34,17 +30,13 @@ namespace MantenimientoPresentation.Controllers
             return PartialView("_CuentasGridPartial", cuentas);
         }
 
-        // POST: /CuentaInstitucion/Crear
-        [HttpPost]
-        public async Task<IActionResult> Crear([FromBody] CrearCuentaInstitucionDto dto)
+        [HttpGet]
+        public async Task<IActionResult> ObtenerPorId(int id)
         {
-            if (!ModelState.IsValid)
-                return BadRequest(new { success = false, message = "Datos inválidos." });
-
             try
             {
-                var nuevaCuenta = await _service.CrearCuentaAsync(dto);
-                return Json(new { success = true, data = nuevaCuenta });
+                var cuenta = await _service.ObtenerPorIdAsync(id);
+                return Json(new { success = true, data = cuenta });
             }
             catch (Exception ex)
             {
@@ -52,7 +44,40 @@ namespace MantenimientoPresentation.Controllers
             }
         }
 
-        // POST: /CuentaInstitucion/Eliminar/5
+        [HttpPost]
+        public async Task<IActionResult> Crear([FromBody] CrearCuentaInstitucionDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(new { success = false, message = "Datos del formulario inválidos." });
+
+            try
+            {
+                await _service.CrearCuentaAsync(dto);
+                return Json(new { success = true, message = "Cuenta registrada exitosamente." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> Actualizar([FromBody] ActualizarCuentaInstitucionDto dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(new { success = false, message = "Datos inválidos." });
+
+            try
+            {
+                await _service.ActualizarCuentaAsync(dto);
+                return Json(new { success = true, message = "Cuenta actualizada exitosamente." });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
         [HttpPost]
         public async Task<IActionResult> Eliminar(int id)
         {

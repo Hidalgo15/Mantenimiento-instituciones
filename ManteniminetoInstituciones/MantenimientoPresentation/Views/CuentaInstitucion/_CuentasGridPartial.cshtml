@@ -25,6 +25,9 @@
                         <td>@item.CtaCtaBanco</td>
                         <td>@item.CtaDescripcion</td>
                         <td class="text-center">
+                            <button class="btn btn-sm btn-outline-primary me-1" onclick="abrirModalEditar(@item.Id)">
+                                <i class="bi bi-pencil"></i> Editar
+                            </button>
                             <button class="btn btn-sm btn-outline-danger" onclick="eliminarCuenta(@item.Id)">
                                 <i class="bi bi-trash"></i> Eliminar
                             </button>
