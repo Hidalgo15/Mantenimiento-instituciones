@@ -2,8 +2,8 @@
 {
     public class Institucion
     {
-        public int? Id { get; set; }
-        public int? IdInstitucion { get; set; }
+        public int Id { get; set; }
+        public int IdInstitucion { get; set; }
         public bool Estatus { get; set; }
         public string Estructura { get; set; }
         public string Capitulo { get; set; }

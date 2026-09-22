@@ -1,6 +1,6 @@
 ﻿namespace Mantenimiento.Core.Application.DTOs
 {
-    public record CuentaInstitucionDto
+    public record ActualizarCuentaInstitucionDto
     {
         public int Id { get; set; }
         public string InsCodigo { get; set; }
