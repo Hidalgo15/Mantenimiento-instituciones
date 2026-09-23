@@ -1,46 +1,54 @@
 ﻿<!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - MantenimientoPresentation</title>
+    <title>@ViewData["Title"] - Mantenimiento Cuentas</title>
+
+    <!-- Bootstrap 5 CSS -->
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <!-- Estilos Personalizados -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/MantenimientoPresentation.styles.css" asp-append-version="true" />
 </head>
-<body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">MantenimientoPresentation</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                </div>
+<body class="bg-light">
+
+    <!-- NAVBAR INSTITUCIONAL -->
+    <header class="shadow-sm mb-4">
+        <nav class="navbar navbar-expand-lg navbar-dark style-cgr-navbar py-3">
+            <div class="container-fluid px-4">
+                <a class="navbar-brand d-flex align-items-center" asp-area="" asp-controller="Home" asp-action="Index">
+                  
+                    <!-- Logo transparente sin fondo ni bordes -->
+                    <img src="~/images/logo_contraloria_blanco.png"
+                         alt="Logo CGR"
+                         height="48px"
+                         class="me-3" />
+
+                    <div class="d-flex flex-column text-white">
+                        <span class="fw-bold fs-5 lh-1">Mantenimiento de Cuentas Institucionales</span>
+                        <small class="text-white-50 mt-1" style="font-size: 0.85rem;">Contraloría General de la República Dominicana.</small>
+                    </div>
+                </a>
             </div>
         </nav>
     </header>
-    <div class="container">
-        <main role="main" class="pb-3">
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div class="container-fluid px-4">
+        <main role="main" class="pb-4">
             @RenderBody()
         </main>
     </div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2026 - MantenimientoPresentation - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+    <!-- FOOTER -->
+    <footer class="bg-white border-top footer text-muted py-3 mt-auto">
+        <div class="container-fluid text-center px-4">
+            <span class="small">&copy; @DateTime.Now.Year - Contraloría General de la República Dominicana. Todos los derechos reservados.</span>
         </div>
     </footer>
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
