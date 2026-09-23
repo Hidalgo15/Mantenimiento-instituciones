@@ -23,6 +23,8 @@ namespace MantenimientoPresentation
             // Repositorios y Servicios
             builder.Services.AddScoped<ICuentaInstitucionRepository, CuentaInstitucionRepository>();
             builder.Services.AddScoped<ICuentaInstitucionService, CuentaInstitucionService>();
+            builder.Services.AddScoped<ICapituloRepository, CapituloRepository>();
+            builder.Services.AddScoped<ICapituloService, CapituloService>();
 
             var app = builder.Build();
 
