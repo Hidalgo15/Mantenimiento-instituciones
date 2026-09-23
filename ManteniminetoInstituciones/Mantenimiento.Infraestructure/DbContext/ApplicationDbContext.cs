@@ -11,10 +11,21 @@ namespace Mantenimiento.Infraestructure.Persistence
 
         public DbSet<Institucion> Instituciones { get; set; }
         public DbSet<CuentaInstitucion> CuentasInstitucion { get; set; }
+        public DbSet<Capitulo> Capitulos { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            // Mapeo Tabla capitulo
+            modelBuilder.Entity<Capitulo>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.ToTable("capitulo", "dbo");
+                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.CodigoCapitulo).HasColumnName("codigo_capitulo");
+                entity.Property(e => e.NombreCapitulo).HasColumnName("capitulo");
+            });
 
             // Mapeo Vista v_institucion
             modelBuilder.Entity<Institucion>(entity =>
