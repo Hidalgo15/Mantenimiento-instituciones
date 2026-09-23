@@ -1,6 +1,7 @@
-﻿namespace Mantenimiento.Core.Domain.Entities
+﻿
+namespace Mantenimiento.Core.Application.DTOs.SubCapitulo
 {
-    public class SubCapitulo
+    public class SubCapituloDto
     {
         public int Id { get; set; }
         public int IdCapitulo { get; set; }

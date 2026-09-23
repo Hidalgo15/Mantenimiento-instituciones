@@ -1,18 +1,29 @@
 ﻿@using Mantenimiento.Core.Application.DTOs.CuentaInstitucion
 @{
-    ViewData["Title"] = "Gestión de Cuentas Contraloría";
+    ViewData["Title"] = "Gestión de Cuentas";
     var instituciones = ViewBag.Instituciones as List<InstitucionSeleccionDto> ?? new List<InstitucionSeleccionDto>();
 }
 
-<div class="container py-4">
-    <h3 class="fw-bold mb-4">Gestión de Cuentas por Institución</h3>
+<div class="container-fluid py-2">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h4 class="fw-bold mb-0 text-dark">Gestión de Cuentas por Institución</h4>
+            <small class="text-muted">Administre y consulte las cuentas bancarias institucionales</small>
+        </div>
+        <span class="badge text-white py-2 px-3 fs-6" style="background-color: #0d5493;">
+            <i class="bi bi-building me-1"></i> Institucional
+        </span>
+    </div>
 
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-            <div class="row align-items-end">
+    <!-- TARJETA DE FILTRO -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-body p-4">
+            <div class="row align-items-end g-3">
                 <div class="col-md-8">
-                    <label for="selectInstitucion" class="form-label fw-bold">Seleccionar Institución</label>
-                    <select id="selectInstitucion" class="form-select" onchange="cargarGridCuentas()">
+                    <label for="selectInstitucion" class="form-label fw-bold text-dark mb-2">
+                        <i class="bi bi-search me-1 text-primary"></i> Seleccionar Institución
+                    </label>
+                    <select id="selectInstitucion" class="form-select form-select-lg rounded-3 fs-6 border-secondary-subtle" onchange="cargarGridCuentas()">
                         <option value="">-- Seleccione una institución --</option>
                         @foreach (var inst in instituciones)
                         {
@@ -21,51 +32,62 @@
                     </select>
                 </div>
                 <div class="col-md-4 text-end">
-                    <button type="button" class="btn btn-primary" onclick="abrirModalCrear()" id="btnNuevaCuenta" disabled>
-                        <i class="bi bi-plus-lg me-1"></i> Nueva Cuenta
+                    <!-- Oculto inicialmente con d-none -->
+                    <button type="button" class="btn btn-cgr-primary btn-lg w-100 rounded-3 d-none" onclick="abrirModalCrear()" id="btnNuevaCuenta">
+                        <i class="bi bi-plus-circle me-2"></i> Nueva Cuenta
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- CONTENEDOR DEL GRID -->
     <div id="contenedorGrid">
-        <div class="alert alert-info text-center">
-            Selecciona una institución para cargar sus cuentas asociadas.
+        <div class="alert alert-light border shadow-sm text-center py-5 rounded-3">
+            <i class="bi bi-info-circle text-primary fs-1 d-block mb-2"></i>
+            <h6 class="fw-bold text-dark">Ninguna institución seleccionada</h6>
+            <p class="text-muted small mb-0">Seleccione una institución del menú desplegable para cargar sus cuentas asociadas.</p>
         </div>
     </div>
 </div>
 
 <!-- MODAL CREAR / EDITAR CUENTA -->
 <div class="modal fade" id="modalCuenta" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title fw-bold" id="modalCuentaTitle">Agregar Cuenta Institucional</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-3">
+            <div class="modal-header text-white" style="background-color: #0d5493;">
+                <h5 class="modal-title fw-bold" id="modalCuentaTitle">
+                    <i class="bi bi-bank me-2"></i> Agregar Cuenta Institucional
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body p-4">
                 <form id="formCuenta">
                     <input type="hidden" id="txtId" value="0" />
                     <input type="hidden" id="txtInsCodigo" />
 
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Institución</label>
-                        <input type="text" id="txtInstitucion" class="form-control" readonly />
+                        <label class="form-label fw-bold text-dark">Institución</label>
+                        <input type="text" id="txtInstitucion" class="form-control bg-light" readonly />
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Cuenta Banco</label>
-                        <input type="text" id="txtCtaCtaBanco" class="form-control" required maxlength="50" />
+                        <label class="form-label fw-bold text-dark">Cuenta Banco</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-credit-card-2-front"></i></span>
+                            <input type="text" id="txtCtaCtaBanco" class="form-control" required maxlength="50" placeholder="Ej: 010-249669-2" />
+                        </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Descripción de Cuenta</label>
-                        <input type="text" id="txtCtaDescripcion" class="form-control" required maxlength="255" />
+                        <label class="form-label fw-bold text-dark">Descripción de Cuenta</label>
+                        <input type="text" id="txtCtaDescripcion" class="form-control" required maxlength="255" placeholder="Ej: Erogaciones Inmediatas" />
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-success" onclick="guardarCuenta()">Guardar</button>
+            <div class="modal-footer bg-light border-top-0 rounded-bottom-3">
+                <button type="button" class="btn btn-outline-secondary px-4 rounded-3" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-cgr-primary px-4 rounded-3" onclick="guardarCuenta()">
+                    <i class="bi bi-check-circle me-1"></i> Guardar
+                </button>
             </div>
         </div>
     </div>
@@ -84,14 +106,28 @@
             const btnNueva = document.getElementById('btnNuevaCuenta');
             const contenedor = document.getElementById('contenedorGrid');
 
+            // Si no hay opción seleccionada, ocultar el botón Nueva Cuenta
             if (!insCodigo) {
-                btnNueva.disabled = true;
-                contenedor.innerHTML = '<div class="alert alert-info text-center">Selecciona una institución para cargar sus cuentas asociadas.</div>';
+                btnNueva.classList.add('d-none');
+                btnNueva.classList.remove('d-inline-block');
+                contenedor.innerHTML = `
+                            <div class="alert alert-light border shadow-sm text-center py-5 rounded-3">
+                                <i class="bi bi-info-circle text-primary fs-1 d-block mb-2"></i>
+                                <h6 class="fw-bold text-dark">Ninguna institución seleccionada</h6>
+                                <p class="text-muted small mb-0">Seleccione una institución del menú desplegable para cargar sus cuentas asociadas.</p>
+                            </div>`;
                 return;
             }
 
-            btnNueva.disabled = false;
-            contenedor.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary"></div></div>';
+            // Si se selecciona una opción válida, mostrar el botón Nueva Cuenta
+            btnNueva.classList.remove('d-none');
+            btnNueva.classList.add('d-inline-block');
+
+            contenedor.innerHTML = `
+                        <div class="text-center py-5 bg-white rounded-3 border shadow-sm">
+                            <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+                            <p class="text-muted mb-0 fw-semibold">Cargando registros...</p>
+                        </div>`;
 
             fetch(`/CuentaInstitucion/ObtenerCuentasGrid?insCodigo=${encodeURIComponent(insCodigo)}`)
                 .then(res => res.text())
@@ -103,7 +139,7 @@
         function abrirModalCrear() {
             const select = document.getElementById('selectInstitucion');
 
-            document.getElementById('modalCuentaTitle').innerText = 'Agregar Cuenta Institucional';
+            document.getElementById('modalCuentaTitle').innerHTML = '<i class="bi bi-plus-circle me-2"></i> Agregar Cuenta Institucional';
             document.getElementById('txtId').value = '0';
             document.getElementById('txtInsCodigo').value = select.value;
             document.getElementById('txtInstitucion').value = select.options[select.selectedIndex].text;
@@ -119,7 +155,7 @@
                 .then(res => {
                     if (res.success) {
                         const cuenta = res.data;
-                        document.getElementById('modalCuentaTitle').innerText = 'Editar Cuenta Institucional';
+                        document.getElementById('modalCuentaTitle').innerHTML = '<i class="bi bi-pencil-square me-2"></i> Editar Cuenta Institucional';
                         document.getElementById('txtId').value = cuenta.id;
                         document.getElementById('txtInsCodigo').value = cuenta.insCodigo;
                         document.getElementById('txtInstitucion').value = cuenta.institucion;
@@ -152,15 +188,15 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dto)
             })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    modalCuentaBs.hide();
-                    cargarGridCuentas();
-                } else {
-                    alert('Error: ' + data.message);
-                }
-            });
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        modalCuentaBs.hide();
+                        cargarGridCuentas();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                });
         }
 
         function eliminarCuenta(id) {
