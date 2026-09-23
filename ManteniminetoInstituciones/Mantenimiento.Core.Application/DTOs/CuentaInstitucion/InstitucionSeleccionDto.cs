@@ -1,4 +1,4 @@
-﻿namespace Mantenimiento.Core.Application.DTOs
+﻿namespace Mantenimiento.Core.Application.DTOs.CuentaInstitucion
 {
     public record InstitucionSeleccionDto
     {
