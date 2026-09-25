@@ -98,44 +98,41 @@
         });
 
         function cargarGridCapitulos() {
-            const buscar = document.getElementById('selectCapitulo').value;
-            const btnNuevo = document.getElementById('btnNuevoCapitulo');
-            const contenedor = document.getElementById('contenedorGrid');
+    // Tomamos el selector de capítulo
+    const select = document.getElementById('selectCapitulo');
+    const codigo = select ? select.value : '';
 
-            if (!buscar) {
-                btnNuevo.classList.add('d-none');
-                btnNuevo.classList.remove('d-inline-block');
-                contenedor.innerHTML = `
-                    <div class="alert alert-light border shadow-sm text-center py-5 rounded-3">
-                        <i class="bi bi-info-circle text-primary fs-1 d-block mb-2"></i>
-                        <h6 class="fw-bold text-dark">Ningún capítulo seleccionado</h6>
-                        <p class="text-muted small mb-0">Seleccione un capítulo del menú desplegable para visualizar su información.</p>
-                    </div>`;
-                return;
-            }
+    const btnNuevo = document.getElementById('btnNuevoCapitulo');
+    const contenedor = document.getElementById('contenedorGrid');
 
-            btnNuevo.classList.remove('d-none');
-            btnNuevo.classList.add('d-inline-block');
+    if (btnNuevo) {
+        btnNuevo.classList.remove('d-none');
+        btnNuevo.classList.add('d-inline-block');
+    }
 
+    contenedor.innerHTML = `
+        <div class="text-center py-5 bg-white rounded-3 border shadow-sm">
+            <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+            <p class="text-muted mb-0 fw-semibold">Cargando registros...</p>
+        </div>`;
+
+    fetch(`/Capitulo/ObtenerGrid?codigo=${encodeURIComponent(codigo)}`)
+        .then(res => {
+            if (!res.ok) throw new Error('Error en la respuesta del servidor');
+            return res.text();
+        })
+        .then(html => {
+            contenedor.innerHTML = html;
+        })
+        .catch(err => {
+            console.error(err);
             contenedor.innerHTML = `
-                <div class="text-center py-5 bg-white rounded-3 border shadow-sm">
-                    <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
-                    <p class="text-muted mb-0 fw-semibold">Cargando registros...</p>
+                <div class="alert alert-danger border shadow-sm text-center py-4 rounded-3 mb-0">
+                    <i class="bi bi-exclamation-octagon fs-3 d-block mb-2"></i>
+                    <span class="fw-semibold">Error al cargar los datos.</span>
                 </div>`;
-
-            fetch(`/Capitulo/ObtenerGrid?buscar=${encodeURIComponent(buscar)}`)
-                .then(res => res.text())
-                .then(html => {
-                    contenedor.innerHTML = html;
-                })
-                .catch(err => {
-                    contenedor.innerHTML = `
-                        <div class="alert alert-danger border shadow-sm text-center py-4 rounded-3 mb-0">
-                            <i class="bi bi-exclamation-octagon fs-3 d-block mb-2"></i>
-                            <span class="fw-semibold">Error al cargar los datos.</span>
-                        </div>`;
-                });
-        }
+        });
+}
 
         function abrirModalCrear() {
             document.getElementById('modalCapituloTitle').innerHTML = '<i class="bi bi-plus-circle me-2"></i> Agregar Capítulo';

@@ -14,9 +14,9 @@ namespace Mantenimiento.Core.Application.Services
             _repo = repo;
         }
 
-        public async Task<List<CapituloDto>> ObtenerCapitulosAsync(string? buscar = null)
+        public async Task<List<CapituloDto>> ObtenerCapitulosAsync(string? codigo = null)
         {
-            var lista = await _repo.ObtenerCapitulosAsync(buscar);
+            var lista = await _repo.ObtenerCapitulosAsync(codigo);
             return lista.Select(MapToDto).ToList();
         }
 
