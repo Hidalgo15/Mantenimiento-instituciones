@@ -1,13 +1,19 @@
-﻿@using Mantenimiento.Core.Application.DTOs.CuentaInstitucion
+﻿﻿@using Mantenimiento.Core.Application.DTOs.CuentaInstitucion
 @{
     ViewData["Title"] = "Gestión de Cuentas";
     var instituciones = ViewBag.Instituciones as List<InstitucionSeleccionDto> ?? new List<InstitucionSeleccionDto>();
 }
 
-<!-- Vista de programa-->
-
-<div class="container py-4">
-    <h3 class="fw-bold mb-4">Gestión de Cuentas por Institución</h3>
+<div class="container-fluid py-2">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h4 class="fw-bold mb-0 text-dark">Gestión de Cuentas por Institución</h4>
+            <small class="text-muted">Administre y consulte las cuentas bancarias institucionales</small>
+        </div>
+        <span class="badge text-white py-2 px-3 fs-6" style="background-color: #0d5493;">
+            <i class="bi bi-building me-1"></i> Institucional
+        </span>
+    </div>
 
     <!-- TARJETA DE FILTRO -->
     <div class="card border-0 shadow-sm rounded-3 mb-4">

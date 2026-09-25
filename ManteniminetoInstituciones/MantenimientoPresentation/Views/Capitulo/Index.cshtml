@@ -4,66 +4,86 @@
     var capitulos = ViewBag.Capitulos as List<CapituloDto> ?? new List<CapituloDto>();
 }
 
-<div class="container py-4">
-    <h3 class="fw-bold mb-4">Gestión de Capítulos</h3>
+<div class="container-fluid py-2">
+    <!-- CABECERA SUPERIOR ALINEADA A CUENTAS -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h4 class="fw-bold mb-0 text-dark">Gestión de Capítulos</h4>
+            <small class="text-muted">Administre y consulte los capítulos institucionales</small>
+        </div>
+        <span class="badge text-white py-2 px-3 fs-6" style="background-color: #0d5493;">
+            <i class="bi bi-bookmark-check me-1"></i> Institucional
+        </span>
+    </div>
 
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-            <div class="row align-items-end">
+    <!-- TARJETA DE FILTRO -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-body p-4">
+            <div class="row align-items-end g-3">
                 <div class="col-md-8">
-                    <label for="selectCapitulo" class="form-label fw-bold">Seleccionar Capítulo</label>
-                    <select id="selectCapitulo" class="form-select" onchange="cargarGridCapitulos()">
+                    <label for="selectCapitulo" class="form-label fw-bold text-dark mb-2">
+                        <i class="bi bi-search me-1 text-primary"></i> Seleccionar Capítulo
+                    </label>
+                    <select id="selectCapitulo" class="form-select form-select-lg rounded-3 fs-6 border-secondary-subtle" onchange="cargarGridCapitulos()">
                         <option value="">-- Seleccione un capítulo --</option>
                         @foreach (var cap in capitulos)
                         {
-                            <!-- Enviamos el código o la descripción exacta que espera el servicio -->
                             <option value="@cap.CodigoCapitulo">@cap.CodigoCapitulo - @cap.NombreCapitulo</option>
                         }
                     </select>
                 </div>
                 <div class="col-md-4 text-end">
-                    <!-- Botón deshabilitado por defecto hasta seleccionar un capítulo -->
-                    <button type="button" class="btn btn-primary" onclick="abrirModalCrear()" id="btnNuevoCapitulo" disabled>
-                        <i class="bi bi-plus-lg me-1"></i> Nuevo Capítulo
+                    <!-- Oculto inicialmente con d-none -->
+                    <button type="button" class="btn btn-cgr-primary btn-lg w-100 rounded-3 d-none" onclick="abrirModalCrear()" id="btnNuevoCapitulo">
+                        <i class="bi bi-plus-circle me-2"></i> Nuevo Capítulo
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Mensaje inicial por defecto -->
+    <!-- CONTENEDOR DEL GRID -->
     <div id="contenedorGrid">
-        <div class="alert alert-info text-center">
-            Selecciona un capítulo para visualizar su información.
+        <div class="alert alert-light border shadow-sm text-center py-5 rounded-3">
+            <i class="bi bi-info-circle text-primary fs-1 d-block mb-2"></i>
+            <h6 class="fw-bold text-dark">Ningún capítulo seleccionado</h6>
+            <p class="text-muted small mb-0">Seleccione un capítulo del menú desplegable para visualizar su información.</p>
         </div>
     </div>
 </div>
 
 <!-- MODAL CREAR / EDITAR CAPÍTULO -->
 <div class="modal fade" id="modalCapitulo" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title fw-bold" id="modalCapituloTitle">Agregar Capítulo</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-3">
+            <div class="modal-header text-white" style="background-color: #0d5493;">
+                <h5 class="modal-title fw-bold" id="modalCapituloTitle">
+                    <i class="bi bi-bookmark-plus me-2"></i> Agregar Capítulo
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body p-4">
                 <form id="formCapitulo">
                     <input type="hidden" id="txtId" value="0" />
 
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Código</label>
-                        <input type="text" id="txtCodigo" class="form-control" required maxlength="10" />
+                        <label class="form-label fw-bold text-dark">Código</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-hash"></i></span>
+                            <input type="text" id="txtCodigo" class="form-control" required maxlength="10" placeholder="Ej: 0101" />
+                        </div>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Descripción</label>
-                        <input type="text" id="txtDescripcion" class="form-control" required maxlength="255" />
+                        <label class="form-label fw-bold text-dark">Descripción</label>
+                        <input type="text" id="txtDescripcion" class="form-control" required maxlength="255" placeholder="Ej: Servicios Personales" />
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-success" onclick="guardarCapitulo()">Guardar</button>
+            <div class="modal-footer bg-light border-top-0 rounded-bottom-3">
+                <button type="button" class="btn btn-outline-secondary px-4 rounded-3" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-cgr-primary px-4 rounded-3" onclick="guardarCapitulo()">
+                    <i class="bi bi-check-circle me-1"></i> Guardar
+                </button>
             </div>
         </div>
     </div>
@@ -75,7 +95,6 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             modalCapituloBs = new bootstrap.Modal(document.getElementById('modalCapitulo'));
-            // NO llamamos a cargarGridCapitulos() aquí para que permanezca oculto/limpio al inicio
         });
 
         function cargarGridCapitulos() {
@@ -83,15 +102,26 @@
             const btnNuevo = document.getElementById('btnNuevoCapitulo');
             const contenedor = document.getElementById('contenedorGrid');
 
-            // Si el usuario selecciona la opción por defecto ("-- Seleccione un capítulo --")
             if (!buscar) {
-                btnNuevo.disabled = true;
-                contenedor.innerHTML = '<div class="alert alert-info text-center">Selecciona un capítulo para visualizar su información.</div>';
+                btnNuevo.classList.add('d-none');
+                btnNuevo.classList.remove('d-inline-block');
+                contenedor.innerHTML = `
+                    <div class="alert alert-light border shadow-sm text-center py-5 rounded-3">
+                        <i class="bi bi-info-circle text-primary fs-1 d-block mb-2"></i>
+                        <h6 class="fw-bold text-dark">Ningún capítulo seleccionado</h6>
+                        <p class="text-muted small mb-0">Seleccione un capítulo del menú desplegable para visualizar su información.</p>
+                    </div>`;
                 return;
             }
 
-            btnNuevo.disabled = false;
-            contenedor.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary"></div></div>';
+            btnNuevo.classList.remove('d-none');
+            btnNuevo.classList.add('d-inline-block');
+
+            contenedor.innerHTML = `
+                <div class="text-center py-5 bg-white rounded-3 border shadow-sm">
+                    <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+                    <p class="text-muted mb-0 fw-semibold">Cargando registros...</p>
+                </div>`;
 
             fetch(`/Capitulo/ObtenerGrid?buscar=${encodeURIComponent(buscar)}`)
                 .then(res => res.text())
@@ -99,12 +129,16 @@
                     contenedor.innerHTML = html;
                 })
                 .catch(err => {
-                    contenedor.innerHTML = '<div class="alert alert-danger text-center">Error al cargar los datos.</div>';
+                    contenedor.innerHTML = `
+                        <div class="alert alert-danger border shadow-sm text-center py-4 rounded-3 mb-0">
+                            <i class="bi bi-exclamation-octagon fs-3 d-block mb-2"></i>
+                            <span class="fw-semibold">Error al cargar los datos.</span>
+                        </div>`;
                 });
         }
 
         function abrirModalCrear() {
-            document.getElementById('modalCapituloTitle').innerText = 'Agregar Capítulo';
+            document.getElementById('modalCapituloTitle').innerHTML = '<i class="bi bi-plus-circle me-2"></i> Agregar Capítulo';
             document.getElementById('txtId').value = '0';
             document.getElementById('txtCodigo').value = '';
             document.getElementById('txtDescripcion').value = '';
@@ -118,7 +152,7 @@
                 .then(res => {
                     if (res.success) {
                         const capitulo = res.data;
-                        document.getElementById('modalCapituloTitle').innerText = 'Editar Capítulo';
+                        document.getElementById('modalCapituloTitle').innerHTML = '<i class="bi bi-pencil-square me-2"></i> Editar Capítulo';
                         document.getElementById('txtId').value = capitulo.id;
                         document.getElementById('txtCodigo').value = capitulo.codigo;
                         document.getElementById('txtDescripcion').value = capitulo.descripcion;
