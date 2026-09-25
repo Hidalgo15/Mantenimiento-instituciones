@@ -1,6 +1,6 @@
 ﻿namespace Mantenimiento.Core.Application.DTOs.Capitulo
 {
-    public class CapituloDto
+    public record CapituloDto
     {
         public int Id { get; set; }
         public string CodigoCapitulo { get; set; } = string.Empty;
