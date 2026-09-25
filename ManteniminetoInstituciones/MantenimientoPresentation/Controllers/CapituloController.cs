@@ -14,15 +14,17 @@ namespace MantenimientoPresentation.Controllers
         }
 
         [HttpGet]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
+            var capitulos = await _service.ObtenerCapitulosAsync(null);
+            ViewBag.Capitulos = capitulos;
             return View();
         }
 
         [HttpGet]
-        public async Task<IActionResult> ObtenerGrid(string? buscar)
+        public async Task<IActionResult> ObtenerGrid(string? codigo)
         {
-            var capitulos = await _service.ObtenerCapitulosAsync(buscar);
+            var capitulos = await _service.ObtenerCapitulosAsync(codigo);
             return PartialView("_CapitulosGridPartial", capitulos);
         }
 
