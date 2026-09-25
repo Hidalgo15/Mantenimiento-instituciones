@@ -1,0 +1,102 @@
+﻿@{
+    ViewData["Title"] = "Panel Principal";
+}
+
+<div class="container-fluid py-3">
+    <!-- CABECERA PRINCIPAL -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h3 class="fw-bold mb-1 text-dark">Módulo de Mantenimiento</h3>
+            <p class="text-muted mb-0 small">Seleccione una opción del catálogo para gestionar los registros del sistema.</p>
+        </div>
+        <span class="badge text-white py-2 px-3 fs-6" style="background-color: #0d5493;">
+            <i class="bi bi-shield-check me-1"></i> Sistema SIGOB
+        </span>
+    </div>
+
+    <!-- REJILLA DE TARJETAS DE NAVEGACIÓN -->
+    <div class="row g-4">
+
+        <!-- TARJETA 1: CUENTAS INSTITUCIONALES -->
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card h-100 border-0 shadow-sm rounded-3 hover-shadow transition">
+                <div class="card-body p-4 d-flex flex-column">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-3 p-3 text-white me-3" style="background-color: #0d5493;">
+                            <i class="bi bi-bank fs-3"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0 text-dark">Cuentas Institucionales</h5>
+                            <small class="text-muted">Gestión Bancaria</small>
+                        </div>
+                    </div>
+                    <p class="text-secondary small flex-grow-1">
+                        Consulte, agregue y administre las cuentas bancarias vinculadas a las diferentes instituciones del sistema.
+                    </p>
+                    <a asp-controller="CuentaInstitucion" asp-action="Index" class="btn btn-outline-primary w-100 rounded-3 fw-semibold mt-3">
+                        Acceder <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- TARJETA 2: CAPÍTULOS -->
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card h-100 border-0 shadow-sm rounded-3 hover-shadow transition">
+                <div class="card-body p-4 d-flex flex-column">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-3 p-3 text-white me-3" style="background-color: #0d5493;">
+                            <i class="bi bi-bookmark-check fs-3"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0 text-dark">Capítulos</h5>
+                            <small class="text-muted">Estructura Institucional</small>
+                        </div>
+                    </div>
+                    <p class="text-secondary small flex-grow-1">
+                        Administre la jerarquía y catálogo de capítulos institucionales definidos dentro del presupuesto.
+                    </p>
+                    <a asp-controller="Capitulo" asp-action="Index" class="btn btn-outline-primary w-100 rounded-3 fw-semibold mt-3">
+                        Acceder <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- TARJETA 3: SUB-CAPÍTULOS -->
+        <div class="col-12 col-md-6 col-lg-4">
+            <div class="card h-100 border-0 shadow-sm rounded-3 hover-shadow transition">
+                <div class="card-body p-4 d-flex flex-column">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="rounded-3 p-3 text-white me-3" style="background-color: #0d5493;">
+                            <i class="bi bi-diagram-3 fs-3"></i>
+                        </div>
+                        <div>
+                            <h5 class="fw-bold mb-0 text-dark">Sub-Capítulos</h5>
+                            <small class="text-muted">Desglose Presupuestario</small>
+                        </div>
+                    </div>
+                    <p class="text-secondary small flex-grow-1">
+                        Consulte y gestione la subdivisión de capítulos según los requerimientos y normas operativas.
+                    </p>
+                    <a asp-controller="SubCapitulo" asp-action="Index" class="btn btn-outline-primary w-100 rounded-3 fw-semibold mt-3">
+                        Acceder <i class="bi bi-arrow-right ms-1"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    /* Efecto hover suave para resaltar las tarjetas */
+    .hover-shadow {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+
+        .hover-shadow:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .12) !important;
+        }
+</style>
