@@ -1,0 +1,47 @@
+﻿@using Mantenimiento.Core.Application.DTOs.SubCapitulo
+@model List<SubCapituloDto>
+
+@if (Model != null && Model.Any())
+{
+    <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light text-dark border-bottom">
+                    <tr>
+                        <th class="py-3 px-3">ID</th>
+                        <th class="py-3 px-3">Código</th>
+                        <th class="py-3 px-3">Subcapítulo</th>
+                        <th class="py-3 px-3 text-center">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="px-3 fw-bold text-secondary">@item.Id</td>
+                            <td class="px-3">
+                                <span class="badge bg-light text-dark border">@item.CodigoSubCapitulo</span>
+                            </td>
+                            <td class="px-3 fw-bold text-dark">@item.subcapitulo</td>
+                            <td class="px-3 text-center">
+                                <button class="btn btn-sm btn-outline-primary rounded-2 me-1" onclick="abrirModalEditar(@item.Id, @item.IdCapitulo)">
+                                    <i class="bi bi-pencil-square"></i> Editar
+                                </button>
+                                <button class="btn btn-sm btn-outline-danger rounded-2" onclick="eliminarSubCapitulo(@item.Id)">
+                                    <i class="bi bi-trash"></i> Eliminar
+                                </button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-warning border-0 shadow-sm text-center py-4 rounded-3 mb-0">
+        <i class="bi bi-exclamation-triangle fs-3 text-warning d-block mb-2"></i>
+        <span class="fw-semibold">No se encontraron subcapítulos registrados.</span>
+    </div>
+}

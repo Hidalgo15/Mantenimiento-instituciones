@@ -71,11 +71,15 @@ namespace Mantenimiento.Infraestructure.Persistence
             {
                 entity.HasKey(e => e.Id);
                 entity.ToTable("sub_capitulo", "dbo");
+
                 entity.Property(e => e.Id).HasColumnName("id");
                 entity.Property(e => e.IdCapitulo).HasColumnName("id_capitulo");
-                entity.Property(e => e.CodigoSubcapitulo).HasColumnName("codigo_sub_capitulo");
+                entity.Property(e => e.CodigoSubCapitulo).HasColumnName("codigo_sub_capitulo");
                 entity.Property(e => e.subcapitulo).HasColumnName("sub_capitulo");
 
+                // FALTABAN ESTOS DOS MAPEOS PARA EL SP:
+                entity.Property(e => e.CodigoCapitulo).HasColumnName("codigo_capitulo");
+                entity.Property(e => e.Capitulo).HasColumnName("capitulo");
             });
 
 
