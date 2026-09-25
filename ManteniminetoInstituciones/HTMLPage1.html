@@ -1,0 +1,810 @@
+﻿
+@using Mantenimiento.Core.Application.DTOs.Capitulo
+
+@{
+    ViewData["Title"] = "Gestión de Capítulos";
+
+    var capitulos = ViewBag.Capitulos as List<CapituloDto>
+    ?? new List<CapituloDto>
+        ();
+        }
+
+        <!-- ============================================================
+             GESTIÓN DE CAPÍTULOS
+        ============================================================ -->
+
+        <div class="container py-4">
+
+            <!-- TÍTULO -->
+            <h3 class="fw-bold mb-4">
+                Gestión de Capítulos
+            </h3>
+
+
+            <!-- ========================================================
+                 CARD DE SELECCIÓN
+            ========================================================= -->
+
+            <div class="card shadow-sm mb-4">
+
+                <div class="card-body">
+
+                    <div class="row align-items-end">
+
+                        <!-- SELECT CAPÍTULO -->
+                        <div class="col-md-8">
+
+                            <label for="selectCapitulo"
+                                   class="form-label fw-bold">
+
+                                Seleccionar Capítulo
+
+                            </label>
+
+                            <select id="selectCapitulo"
+                                    class="form-select"
+                                    onchange="cargarCapitulo()">
+
+                                <option value="">
+                                    -- Seleccione un capítulo --
+                                </option>
+
+                                @foreach (var capitulo in capitulos)
+                                {
+                                <option value="@capitulo.Id">
+
+                                    @capitulo.NombreCapitulo
+
+                                </option>
+                                }
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- BOTÓN NUEVO -->
+                        <div class="col-md-4 text-end">
+
+                            <button type="button"
+                                    class="btn btn-primary"
+                                    onclick="abrirModalCrear()">
+
+                                <i class="bi bi-plus-lg me-1"></i>
+
+                                Nuevo Capítulo
+
+                            </button>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- ========================================================
+                 CONTENEDOR DE INFORMACIÓN
+            ========================================================= -->
+
+            <div id="contenedorCapitulo">
+
+                <div class="alert alert-info text-center">
+
+                    Selecciona un capítulo para visualizar
+                    su información.
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+        <!-- ============================================================
+             MODAL CREAR / EDITAR
+        ============================================================ -->
+
+        <div class="modal fade"
+             id="modalCapitulo"
+             tabindex="-1"
+             aria-hidden="true">
+
+            <div class="modal-dialog">
+
+                <div class="modal-content">
+
+
+                    <!-- HEADER -->
+                    <div class="modal-header">
+
+                        <h5 class="modal-title fw-bold"
+                            id="modalCapituloTitle">
+
+                            Agregar Capítulo
+
+                        </h5>
+
+                        <button type="button"
+                                class="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close">
+                        </button>
+
+                    </div>
+
+
+                    <!-- BODY -->
+                    <div class="modal-body">
+
+                        <form id="formCapitulo">
+
+                            <!-- ID -->
+                            <input type="hidden"
+                                   id="txtId"
+                                   value="0" />
+
+
+                            <!-- CÓDIGO -->
+                            <div class="mb-3">
+
+                                <label for="txtCodigoCapitulo"
+                                       class="form-label fw-bold">
+
+                                    Código del Capítulo
+
+                                </label>
+
+                                <input type="text"
+                                       id="txtCodigoCapitulo"
+                                       class="form-control"
+                                       required
+                                       maxlength="10"
+                                       placeholder="Ej. 01" />
+
+                            </div>
+
+
+                            <!-- NOMBRE -->
+                            <div class="mb-3">
+
+                                <label for="txtNombreCapitulo"
+                                       class="form-label fw-bold">
+
+                                    Nombre del Capítulo
+
+                                </label>
+
+                                <input type="text"
+                                       id="txtNombreCapitulo"
+                                       class="form-control"
+                                       required
+                                       maxlength="255"
+                                       placeholder="Ej. Servicios Personales" />
+
+                            </div>
+
+                        </form>
+
+                    </div>
+
+
+                    <!-- FOOTER -->
+                    <div class="modal-footer">
+
+                        <button type="button"
+                                class="btn btn-secondary"
+                                data-bs-dismiss="modal">
+
+                            Cancelar
+
+                        </button>
+
+                        <button type="button"
+                                class="btn btn-success"
+                                onclick="guardarCapitulo()">
+
+                            <i class="bi bi-check-lg me-1"></i>
+
+                            Guardar
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+        @section Scripts {
+
+        <script>
+
+                // ============================================================
+                // VARIABLES
+                // ============================================================
+
+                let modalCapituloBs;
+
+
+                // ============================================================
+                // INICIALIZACIÓN
+                // ============================================================
+
+                document.addEventListener('DOMContentLoaded', () => {
+
+                    modalCapituloBs =
+                        new bootstrap.Modal(
+                            document.getElementById('modalCapitulo')
+                        );
+
+                });
+
+
+
+                // ============================================================
+                // CARGAR CAPÍTULO
+                // ============================================================
+
+                function cargarCapitulo() {
+
+                    const select =
+                        document.getElementById('selectCapitulo');
+
+                    const id =
+                        select.value;
+
+                    const contenedor =
+                        document.getElementById('contenedorCapitulo');
+
+
+                    // No hay selección
+                    if (!id) {
+
+                        contenedor.innerHTML = `
+                            <div class="alert alert-info text-center">
+                                Selecciona un capítulo para visualizar
+                                su información.
+                            </div>
+                        `;
+
+                        return;
+                    }
+
+
+                    // Loading
+                    contenedor.innerHTML = `
+                        <div class="text-center py-4">
+
+                            <div class="spinner-border text-primary"
+                                 role="status">
+
+                                <span class="visually-hidden">
+                                    Cargando...
+                                </span>
+
+                            </div>
+
+                        </div>
+                    `;
+
+
+                    // Obtener capítulo
+                    fetch(`/Capitulo/ObtenerPorId?id=${id}`)
+
+                        .then(response => response.json())
+
+                        .then(data => {
+
+                            if (!data.success) {
+
+                                contenedor.innerHTML = `
+                                    <div class="alert alert-danger text-center">
+                                        ${data.message}
+                                    </div>
+                                `;
+
+                                return;
+                            }
+
+
+                            const capitulo = data.data;
+
+
+                            // ==================================================
+                            // MOSTRAR INFORMACIÓN
+                            // ==================================================
+
+                            contenedor.innerHTML = `
+
+                                <div class="card shadow-sm">
+
+                                    <!-- HEADER -->
+                                    <div class="card-header">
+
+                                        <div class="d-flex
+                                                    justify-content-between
+                                                    align-items-center">
+
+                                            <span class="fw-bold">
+
+                                                Información del Capítulo
+
+                                            </span>
+
+
+                                            <div>
+
+                                                <button type="button"
+                                                        class="btn btn-warning btn-sm me-1"
+                                                        onclick="abrirModalEditar(${capitulo.id})">
+
+                                                    <i class="bi bi-pencil me-1"></i>
+
+                                                    Editar
+
+                                                </button>
+
+
+                                                <button type="button"
+                                                        class="btn btn-danger btn-sm"
+                                                        onclick="eliminarCapitulo(${capitulo.id})">
+
+                                                    <i class="bi bi-trash me-1"></i>
+
+                                                    Eliminar
+
+                                                </button>
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+
+                                    <!-- BODY -->
+                                    <div class="card-body">
+
+                                        <div class="row">
+
+                                            <!-- CÓDIGO -->
+                                            <div class="col-md-4 mb-3">
+
+                                                <label class="form-label fw-bold">
+
+                                                    Código del Capítulo
+
+                                                </label>
+
+                                                <input type="text"
+                                                       class="form-control"
+                                                       value="${capitulo.codigoCapitulo ?? ''}"
+                                                       readonly />
+
+                                            </div>
+
+
+                                            <!-- NOMBRE -->
+                                            <div class="col-md-8 mb-3">
+
+                                                <label class="form-label fw-bold">
+
+                                                    Nombre del Capítulo
+
+                                                </label>
+
+                                                <input type="text"
+                                                       class="form-control"
+                                                       value="${capitulo.nombreCapitulo ?? ''}"
+                                                       readonly />
+
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                            `;
+
+                        })
+
+                        .catch(error => {
+
+                            console.error(error);
+
+                            contenedor.innerHTML = `
+                                <div class="alert alert-danger text-center">
+
+                                    Ocurrió un error al cargar
+                                    el capítulo.
+
+                                </div>
+                            `;
+
+                        });
+
+                }
+
+
+
+                // ============================================================
+                // NUEVO CAPÍTULO
+                // ============================================================
+
+                function abrirModalCrear() {
+
+                    document.getElementById(
+                        'modalCapituloTitle'
+                    ).innerText =
+                        'Agregar Capítulo';
+
+
+                    document.getElementById(
+                        'txtId'
+                    ).value = '0';
+
+
+                    document.getElementById(
+                        'txtCodigoCapitulo'
+                    ).value = '';
+
+
+                    document.getElementById(
+                        'txtNombreCapitulo'
+                    ).value = '';
+
+
+                    modalCapituloBs.show();
+
+                }
+
+
+
+                // ============================================================
+                // EDITAR CAPÍTULO
+                // ============================================================
+
+                function abrirModalEditar(id) {
+
+                    fetch(`/Capitulo/ObtenerPorId?id=${id}`)
+
+                        .then(response => response.json())
+
+                        .then(data => {
+
+                            if (!data.success) {
+
+                                alert(
+                                    'Error: ' + data.message
+                                );
+
+                                return;
+                            }
+
+
+                            const capitulo =
+                                data.data;
+
+
+                            document.getElementById(
+                                'modalCapituloTitle'
+                            ).innerText =
+                                'Editar Capítulo';
+
+
+                            document.getElementById(
+                                'txtId'
+                            ).value =
+                                capitulo.id;
+
+
+                            document.getElementById(
+                                'txtCodigoCapitulo'
+                            ).value =
+                                capitulo.codigoCapitulo;
+
+
+                            document.getElementById(
+                                'txtNombreCapitulo'
+                            ).value =
+                                capitulo.nombreCapitulo;
+
+
+                            modalCapituloBs.show();
+
+                        })
+
+                        .catch(error => {
+
+                            console.error(error);
+
+                            alert(
+                                'Ocurrió un error al obtener el capítulo.'
+                            );
+
+                        });
+
+                }
+
+
+
+                // ============================================================
+                // GUARDAR
+                // ============================================================
+
+                function guardarCapitulo() {
+
+                    const id =
+                        parseInt(
+                            document.getElementById(
+                                'txtId'
+                            ).value
+                        );
+
+
+                    const codigo =
+                        document.getElementById(
+                            'txtCodigoCapitulo'
+                        ).value.trim();
+
+
+                    const nombre =
+                        document.getElementById(
+                            'txtNombreCapitulo'
+                        ).value.trim();
+
+
+                    // Validaciones
+                    if (!codigo) {
+
+                        alert(
+                            'El código del capítulo es requerido.'
+                        );
+
+                        return;
+                    }
+
+
+                    if (codigo.length > 10) {
+
+                        alert(
+                            'El código del capítulo no puede exceder 10 caracteres.'
+                        );
+
+                        return;
+                    }
+
+
+                    if (!nombre) {
+
+                        alert(
+                            'El nombre del capítulo es requerido.'
+                        );
+
+                        return;
+                    }
+
+
+                    const esEdicion =
+                        id > 0;
+
+
+                    const dto = {
+
+                        id: id,
+
+                        codigoCapitulo: codigo,
+
+                        nombreCapitulo: nombre
+
+                    };
+
+
+                    const endpoint =
+                        esEdicion
+                            ? '/Capitulo/Actualizar'
+                            : '/Capitulo/Crear';
+
+
+                    fetch(endpoint, {
+
+                        method: 'POST',
+
+                        headers: {
+
+                            'Content-Type':
+                                'application/json'
+
+                        },
+
+                        body:
+                            JSON.stringify(dto)
+
+                    })
+
+                    .then(response => response.json())
+
+                    .then(data => {
+
+                        if (data.success) {
+
+                            modalCapituloBs.hide();
+
+                            cargarListaCapitulos();
+
+                        }
+                        else {
+
+                            alert(
+                                'Error: ' +
+                                data.message
+                            );
+
+                        }
+
+                    })
+
+                    .catch(error => {
+
+                        console.error(error);
+
+                        alert(
+                            'Ocurrió un error al guardar el capítulo.'
+                        );
+
+                    });
+
+                }
+
+
+
+                // ============================================================
+                // ELIMINAR
+                // ============================================================
+
+                function eliminarCapitulo(id) {
+
+                    if (!confirm(
+                        '¿Desea eliminar este capítulo?'
+                    )) {
+
+                        return;
+                    }
+
+
+                    fetch(
+                        `/Capitulo/Eliminar?id=${id}`,
+                        {
+                            method: 'POST'
+                        }
+                    )
+
+                    .then(response => response.json())
+
+                    .then(data => {
+
+                        if (data.success) {
+
+                            cargarListaCapitulos();
+
+                        }
+                        else {
+
+                            alert(
+                                'Error al eliminar: ' +
+                                data.message
+                            );
+
+                        }
+
+                    })
+
+                    .catch(error => {
+
+                        console.error(error);
+
+                        alert(
+                            'Ocurrió un error al eliminar el capítulo.'
+                        );
+
+                    });
+
+                }
+
+
+
+                // ============================================================
+                // RECARGAR LISTA
+                // ============================================================
+
+                function cargarListaCapitulos() {
+
+                    fetch('/Capitulo/ObtenerCapitulos')
+
+                        .then(response => response.json())
+
+                        .then(data => {
+
+                            if (!data.success) {
+
+                                location.reload();
+
+                                return;
+                            }
+
+
+                            const select =
+                                document.getElementById(
+                                    'selectCapitulo'
+                                );
+
+
+                            select.innerHTML = `
+                                <option value="">
+                                    -- Seleccione un capítulo --
+                                </option>
+                            `;
+
+
+                            data.data.forEach(capitulo => {
+
+                                const option =
+                                    document.createElement(
+                                        'option'
+                                    );
+
+
+                                option.value =
+                                    capitulo.id;
+
+
+                                option.text =
+                                    capitulo.nombreCapitulo;
+
+
+                                select.appendChild(
+                                    option
+                                );
+
+                            });
+
+
+                            document.getElementById(
+                                'contenedorCapitulo'
+                            ).innerHTML = `
+
+                                <div class="alert alert-info text-center">
+
+                                    Selecciona un capítulo para visualizar
+                                    su información.
+
+                                </div>
+
+                            `;
+
+                        })
+
+                        .catch(error => {
+
+                            console.error(error);
+
+                            location.reload();
+
+                        });
+
+                }
+
+        </script>
+
+        }
+

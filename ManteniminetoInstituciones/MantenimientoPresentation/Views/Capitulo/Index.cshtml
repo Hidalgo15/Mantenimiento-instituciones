@@ -1,6 +1,175 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@using Mantenimiento.Core.Application.DTOs.Capitulo
 @{
+    ViewData["Title"] = "Gestión de Capítulos";
+    var capitulos = ViewBag.Capitulos as List<CapituloDto> ?? new List<CapituloDto>();
 }
-<h1>Hello</h1>
+
+<div class="container py-4">
+    <h3 class="fw-bold mb-4">Gestión de Capítulos</h3>
+
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row align-items-end">
+                <div class="col-md-8">
+                    <label for="selectCapitulo" class="form-label fw-bold">Seleccionar Capítulo</label>
+                    <select id="selectCapitulo" class="form-select" onchange="cargarGridCapitulos()">
+                        <option value="">-- Seleccione un capítulo --</option>
+                        @foreach (var cap in capitulos)
+                        {
+                            <!-- Enviamos el código o la descripción exacta que espera el servicio -->
+                            <option value="@cap.CodigoCapitulo">@cap.CodigoCapitulo - @cap.NombreCapitulo</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4 text-end">
+                    <!-- Botón deshabilitado por defecto hasta seleccionar un capítulo -->
+                    <button type="button" class="btn btn-primary" onclick="abrirModalCrear()" id="btnNuevoCapitulo" disabled>
+                        <i class="bi bi-plus-lg me-1"></i> Nuevo Capítulo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Mensaje inicial por defecto -->
+    <div id="contenedorGrid">
+        <div class="alert alert-info text-center">
+            Selecciona un capítulo para visualizar su información.
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CREAR / EDITAR CAPÍTULO -->
+<div class="modal fade" id="modalCapitulo" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="modalCapituloTitle">Agregar Capítulo</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formCapitulo">
+                    <input type="hidden" id="txtId" value="0" />
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Código</label>
+                        <input type="text" id="txtCodigo" class="form-control" required maxlength="10" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Descripción</label>
+                        <input type="text" id="txtDescripcion" class="form-control" required maxlength="255" />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" onclick="guardarCapitulo()">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let modalCapituloBs;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            modalCapituloBs = new bootstrap.Modal(document.getElementById('modalCapitulo'));
+            // NO llamamos a cargarGridCapitulos() aquí para que permanezca oculto/limpio al inicio
+        });
+
+        function cargarGridCapitulos() {
+            const buscar = document.getElementById('selectCapitulo').value;
+            const btnNuevo = document.getElementById('btnNuevoCapitulo');
+            const contenedor = document.getElementById('contenedorGrid');
+
+            // Si el usuario selecciona la opción por defecto ("-- Seleccione un capítulo --")
+            if (!buscar) {
+                btnNuevo.disabled = true;
+                contenedor.innerHTML = '<div class="alert alert-info text-center">Selecciona un capítulo para visualizar su información.</div>';
+                return;
+            }
+
+            btnNuevo.disabled = false;
+            contenedor.innerHTML = '<div class="text-center py-4"><div class="spinner-border text-primary"></div></div>';
+
+            fetch(`/Capitulo/ObtenerGrid?buscar=${encodeURIComponent(buscar)}`)
+                .then(res => res.text())
+                .then(html => {
+                    contenedor.innerHTML = html;
+                })
+                .catch(err => {
+                    contenedor.innerHTML = '<div class="alert alert-danger text-center">Error al cargar los datos.</div>';
+                });
+        }
+
+        function abrirModalCrear() {
+            document.getElementById('modalCapituloTitle').innerText = 'Agregar Capítulo';
+            document.getElementById('txtId').value = '0';
+            document.getElementById('txtCodigo').value = '';
+            document.getElementById('txtDescripcion').value = '';
+
+            modalCapituloBs.show();
+        }
+
+        function abrirModalEditar(id) {
+            fetch(`/Capitulo/ObtenerPorId?id=${id}`)
+                .then(res => res.json())
+                .then(res => {
+                    if (res.success) {
+                        const capitulo = res.data;
+                        document.getElementById('modalCapituloTitle').innerText = 'Editar Capítulo';
+                        document.getElementById('txtId').value = capitulo.id;
+                        document.getElementById('txtCodigo').value = capitulo.codigo;
+                        document.getElementById('txtDescripcion').value = capitulo.descripcion;
+
+                        modalCapituloBs.show();
+                    } else {
+                        alert('Error: ' + res.message);
+                    }
+                });
+        }
+
+        function guardarCapitulo() {
+            const id = parseInt(document.getElementById('txtId').value);
+            const esEdicion = id > 0;
+
+            const dto = {
+                id: id,
+                codigo: document.getElementById('txtCodigo').value,
+                descripcion: document.getElementById('txtDescripcion').value
+            };
+
+            const endpoint = esEdicion ? '/Capitulo/Actualizar' : '/Capitulo/Crear';
+
+            fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dto)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    modalCapituloBs.hide();
+                    cargarGridCapitulos();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            });
+        }
+
+        function eliminarCapitulo(id) {
+            if (!confirm('¿Desea eliminar este registro?')) return;
+
+            fetch(`/Capitulo/Eliminar?id=${id}`, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        cargarGridCapitulos();
+                    } else {
+                        alert('Error al eliminar: ' + data.message);
+                    }
+                });
+        }
+    </script>
+}
