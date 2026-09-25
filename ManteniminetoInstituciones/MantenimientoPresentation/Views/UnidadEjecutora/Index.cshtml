@@ -1,0 +1,233 @@
+﻿@using Mantenimiento.Core.Application.DTOs.Daf
+@{
+    ViewData["Title"] = "Gestión de Unidades Ejecutoras";
+    var dafs = ViewBag.Dafs as IEnumerable<DafDto> ?? new List<DafDto>();
+}
+
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold mb-0">Gestión de Unidades Ejecutoras</h3>
+        <button type="button" id="btnNuevaUnidad" class="btn btn-primary" onclick="abrirModalCrear()">
+            <i class="bi bi-plus-lg me-1"></i> Nueva Unidad Ejecutora
+        </button>
+    </div>
+
+    <!-- Filtro por DAF -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-3 fw-bold">Filtrar por DAF:</div>
+                <div class="col-md-9">
+                    <select id="selectDafFiltro" class="form-select" onchange="cargarGrid()">
+                        <option value="">-- Todas las DAF --</option>
+                        @foreach (var d in dafs)
+                        {
+                            <option value="@d.Id">@d.CodigoDaf - @d.Daf</option>
+                        }
+                    </select>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenedor del Grid -->
+    <div id="contenedorGrid">
+        <div class="text-center py-5 bg-white rounded-3 border shadow-sm">
+            <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+            <p class="text-muted mb-0 fw-semibold">Cargando registros...</p>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Crear/Editar -->
+<div class="modal fade" id="modalUnidad" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold" id="modalUnidadTitle">Agregar Unidad Ejecutora</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="formUnidad">
+                    <input type="hidden" id="txtId" value="0" />
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">DAF Pertenece</label>
+                            <select id="selectDafModal" class="form-select" required>
+                                <option value="">-- Seleccione DAF --</option>
+                                @foreach (var d in dafs)
+                                {
+                                    <option value="@d.Id">@d.CodigoDaf - @d.Daf</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">Código Unidad Ejecutora</label>
+                            <input type="text" id="txtCodigoUE" class="form-control" required maxlength="10" placeholder="Ej. 0001" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold">Nombre Unidad Ejecutora</label>
+                        <input type="text" id="txtNombreUE" class="form-control" required maxlength="250" placeholder="Ej. SENADO DE LA REPUBLICA DOMINICANA" />
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">RNC</label>
+                            <input type="text" id="txtRnc" class="form-control" maxlength="20" placeholder="Ej. 401000123" />
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold">ID Padre (Opcional)</label>
+                            <input type="number" id="txtIdPadre" class="form-control" placeholder="ID unidad superior" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check form-switch mt-2">
+                                <input class="form-check-input" type="checkbox" id="chkPortalCompra">
+                                <label class="form-check-label fw-bold" for="chkPortalCompra">Portal Compra</label>
+                            </div>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check form-switch mt-2">
+                                <input class="form-check-input" type="checkbox" id="chkEstado" checked>
+                                <label class="form-check-label fw-bold" for="chkEstado">Estado Activo</label>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-success" onclick="guardarUnidad()">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let modalUnidadBs;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            modalUnidadBs = new bootstrap.Modal(document.getElementById('modalUnidad'));
+            cargarGrid();
+        });
+
+        function cargarGrid() {
+            const idDaf = document.getElementById('selectDafFiltro').value;
+            const contenedor = document.getElementById('contenedorGrid');
+
+            contenedor.innerHTML = `
+                                <div class="text-center py-5 bg-white rounded-3 border shadow-sm">
+                                    <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+                                    <p class="text-muted mb-0 fw-semibold">Cargando registros...</p>
+                                </div>`;
+
+            fetch(`/UnidadEjecutora/ObtenerGrid?idDaf=${encodeURIComponent(idDaf)}`)
+                .then(res => {
+                    if (!res.ok) throw new Error('Error de comunicación con el servidor');
+                    return res.text();
+                })
+                .then(html => {
+                    contenedor.innerHTML = html;
+                })
+                .catch(err => {
+                    console.error(err);
+                    contenedor.innerHTML = `
+                                        <div class="alert alert-danger border shadow-sm text-center py-4 rounded-3 mb-0">
+                                            <i class="bi bi-exclamation-octagon fs-3 d-block mb-2"></i>
+                                            <span class="fw-semibold">Error al cargar los datos.</span>
+                                        </div>`;
+                });
+        }
+
+        function abrirModalCrear() {
+            document.getElementById('modalUnidadTitle').innerText = 'Agregar Unidad Ejecutora';
+            document.getElementById('txtId').value = '0';
+            document.getElementById('selectDafModal').value = document.getElementById('selectDafFiltro').value || '';
+            document.getElementById('txtCodigoUE').value = '';
+            document.getElementById('txtNombreUE').value = '';
+            document.getElementById('txtRnc').value = '';
+            document.getElementById('txtIdPadre').value = '';
+            document.getElementById('chkPortalCompra').checked = false;
+            document.getElementById('chkEstado').checked = true;
+
+            modalUnidadBs.show();
+        }
+
+        function abrirModalEditar(id) {
+            fetch(`/UnidadEjecutora/ObtenerPorId?id=${id}`)
+                .then(res => res.json())
+                .then(res => {
+                    if (res.success) {
+                        const data = res.data;
+                        document.getElementById('modalUnidadTitle').innerText = 'Editar Unidad Ejecutora';
+                        document.getElementById('txtId').value = data.id;
+                        document.getElementById('selectDafModal').value = data.idDaf;
+                        document.getElementById('txtCodigoUE').value = data.codigoUnidadEjecutora;
+                        document.getElementById('txtNombreUE').value = data.nombreUnidadEjecutora;
+                        document.getElementById('txtRnc').value = data.rnc || '';
+                        document.getElementById('txtIdPadre').value = data.idPadre || '';
+                        document.getElementById('chkPortalCompra').checked = data.portalCompra;
+                        document.getElementById('chkEstado').checked = data.estado;
+
+                        modalUnidadBs.show();
+                    } else {
+                        alert('Error: ' + res.message);
+                    }
+                });
+        }
+
+        function guardarUnidad() {
+            const id = parseInt(document.getElementById('txtId').value);
+            const esEdicion = id > 0;
+            const idPadreVal = document.getElementById('txtIdPadre').value;
+
+            const dto = {
+                id: id,
+                idDaf: parseInt(document.getElementById('selectDafModal').value),
+                codigoUnidadEjecutora: document.getElementById('txtCodigoUE').value,
+                nombreUnidadEjecutora: document.getElementById('txtNombreUE').value,
+                rnc: document.getElementById('txtRnc').value,
+                idPadre: idPadreVal ? parseInt(idPadreVal) : null,
+                portalCompra: document.getElementById('chkPortalCompra').checked,
+                estado: document.getElementById('chkEstado').checked
+            };
+
+            const endpoint = esEdicion ? '/UnidadEjecutora/Actualizar' : '/UnidadEjecutora/Crear';
+
+            fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dto)
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        modalUnidadBs.hide();
+                        cargarGrid();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                });
+        }
+
+        function eliminarUnidad(id) {
+            if (!confirm('¿Desea desactivar esta unidad ejecutora?')) return;
+
+            fetch(`/UnidadEjecutora/Eliminar?id=${id}`, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        cargarGrid();
+                    } else {
+                        alert('Error al desactivar: ' + data.message);
+                    }
+                });
+        }
+    </script>
+}

@@ -1,0 +1,57 @@
+﻿@using Mantenimiento.Core.Application.DTOs.UnidadEjecutora
+@model IEnumerable<UnidadEjecutoraDto>
+
+@if (Model != null && Model.Any())
+{
+    <div class="table-responsive bg-white rounded shadow-sm">
+        <table class="table table-hover align-middle mb-0">
+            <thead class="table-light">
+                <tr>
+                    <th style="width: 8%;">ID</th>
+                    <th style="width: 15%;">DAF</th>
+                    <th style="width: 12%;">Código UE</th>
+                    <th>Unidad Ejecutora</th>
+                    <th style="width: 12%;">RNC</th>
+                    <th class="text-center" style="width: 10%;">Estado</th>
+                    <th class="text-center" style="width: 18%;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr>
+                        <td>@item.Id</td>
+                        <td><small class="fw-bold">@item.CodigoDaf</small> - @item.NombreDaf</td>
+                        <td><span class="badge bg-secondary">@item.CodigoUnidadEjecutora</span></td>
+                        <td>@item.NombreUnidadEjecutora</td>
+                        <td>@(string.IsNullOrEmpty(item.Rnc) ? "-" : item.Rnc)</td>
+                        <td class="text-center">
+                            @if (item.Estado)
+                            {
+                                <span class="badge bg-success">Activo</span>
+                            }
+                            else
+                            {
+                                <span class="badge bg-danger">Inactivo</span>
+                            }
+                        </td>
+                        <td class="text-center">
+                            <button class="btn btn-sm btn-outline-primary me-1" onclick="abrirModalEditar(@item.Id)">
+                                <i class="bi bi-pencil"></i> Editar
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="eliminarUnidad(@item.Id)">
+                                <i class="bi bi-trash"></i> Eliminar
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <div class="alert alert-warning text-center mb-0">
+        No se encontraron unidades ejecutoras registradas.
+    </div>
+}
