@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.14.37710.0
+# Visual Studio Version 18
+VisualStudioVersion = 18.10.12201.205 stable
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Mantenimiento.Core.Domain", "Mantenimiento.Core\Mantenimiento.Core.Domain.csproj", "{4B928EEE-E2F2-41CC-A982-FC6C5018D580}"
 EndProject
@@ -16,6 +16,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Infraestructure", "Infraestructure", "{3555E738-A015-4186-A015-A13022B477A1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Presentation", "Presentation", "{A0979F82-A6BA-40E5-8D71-0CA61F914989}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "capituloPaginaPrueba", "capituloPaginaPrueba", "{B0911598-28CD-4D63-AC87-B56BA1CE70F6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -48,6 +50,7 @@ Global
 		{C8BB3734-6C55-4AEA-8E04-FD2E89466B56} = {3555E738-A015-4186-A015-A13022B477A1}
 		{0F078C9C-E3AA-488C-B93B-B437E6308126} = {A0979F82-A6BA-40E5-8D71-0CA61F914989}
 		{6934C300-FAAB-455B-A87C-682A0C43D04F} = {02EA681E-C7D8-13C7-8484-4AC65E1B71E8}
+		{B0911598-28CD-4D63-AC87-B56BA1CE70F6} = {A0979F82-A6BA-40E5-8D71-0CA61F914989}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {FCD89C8C-87EE-4792-8E98-63C6EE8AD2FA}

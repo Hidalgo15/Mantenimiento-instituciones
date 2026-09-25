@@ -14,8 +14,10 @@ namespace MantenimientoPresentation.Controllers
         }
 
         [HttpGet]
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
+            var capitulos = await _service.ObtenerCapitulosAsync(null);
+            ViewBag.Capitulos = capitulos;
             return View();
         }
 
