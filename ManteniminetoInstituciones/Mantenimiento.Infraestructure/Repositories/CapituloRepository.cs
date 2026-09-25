@@ -44,10 +44,12 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
         /// </summary>
         /// <param name="buscar"></param>
         /// <returns></returns>
-        public async Task<List<Capitulo>> ObtenerCapitulosAsync()
+        public async Task<List<Capitulo>> ObtenerCapitulosAsync(string? codigo = null)
         {
+            var paramCodigo = new SqlParameter("@codigo", string.IsNullOrWhiteSpace(codigo) ? DBNull.Value : codigo);
+
             return await _context.Capitulos
-                .FromSqlRaw("EXEC dbo.sp_capitulo_Obtener")
+                .FromSqlRaw("EXEC dbo.sp_capitulo_obtener @id = NULL, @codigo = @codigo", paramCodigo)
                 .AsNoTracking()
                 .ToListAsync();
         }
