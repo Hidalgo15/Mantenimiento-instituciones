@@ -1,0 +1,241 @@
+﻿@using Mantenimiento.Core.Application.DTOs.SubCapitulo
+@{
+    ViewData["Title"] = "Gestión de Subcapítulos";
+    var subcapitulos = ViewBag.SubCapitulos as List<SubCapituloDto> ?? new List<SubCapituloDto>();
+}
+
+<div class="container-fluid py-2">
+    <!-- CABECERA SUPERIOR ALINEADA -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h4 class="fw-bold mb-0 text-dark">Gestión de Subcapítulos</h4>
+            <small class="text-muted">Administre y consulte los subcapítulos institucionales</small>
+        </div>
+        <span class="badge text-white py-2 px-3 fs-6" style="background-color: #0d5493;">
+            <i class="bi bi-diagram-2 me-1"></i> Institucional
+        </span>
+    </div>
+
+    <!-- TARJETA DE FILTRO -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-body p-4">
+            <div class="row align-items-end g-3">
+                <!-- SELECCIÓN PRINCIPAL (SUBCAPÍTULO O BÚSQUEDA) -->
+                <div class="col-md-5">
+                    <label for="selectSubCapitulo" class="form-label fw-bold text-dark mb-2">
+                        <i class="bi bi-search me-1 text-primary"></i> Seleccionar Subcapítulo
+                    </label>
+                    <select id="selectSubCapitulo" class="form-select form-select-lg rounded-3 fs-6 border-secondary-subtle" onchange="cargarGridSubCapitulos()">
+                        <option value="">-- Seleccione un subcapítulo --</option>
+                        @foreach (var item in subcapitulos)
+                        {
+                            <option value="@item.CodigoSubCapitulo">@item.CodigoSubCapitulo - @item.subcapitulo</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- FILTRO CÓDIGO O TEXTO -->
+                <div class="col-md-4">
+                    <label for="txtBuscarCodigo" class="form-label fw-bold text-dark mb-2">
+                        <i class="bi bi-hash me-1 text-primary"></i> Código o Nombre
+                    </label>
+                    <div class="input-group">
+                        <input type="text" id="txtBuscarCodigo" class="form-control form-control-lg rounded-start-3 fs-6 border-secondary-subtle" placeholder="Ej: 01 o Personal" onkeypress="if(event.key === 'Enter') cargarGridSubCapitulos()" />
+                        <button class="btn btn-outline-secondary px-3" type="button" onclick="cargarGridSubCapitulos()">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- BOTÓN NUEVO SUBCAPÍTULO -->
+                <div class="col-md-3 text-end">
+                    <button type="button" class="btn btn-cgr-primary btn-lg w-100 rounded-3" id="btnNuevoSubCapitulo" onclick="abrirModalCrear()">
+                        <i class="bi bi-plus-circle me-2"></i> Nuevo Subcapítulo
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR DEL GRID -->
+    <div id="contenedorGrid">
+        <div class="alert alert-light border shadow-sm text-center py-5 rounded-3">
+            <i class="bi bi-info-circle text-primary fs-1 d-block mb-2"></i>
+            <h6 class="fw-bold text-dark">Ningún subcapítulo seleccionado</h6>
+            <p class="text-muted small mb-0">Seleccione un subcapítulo del menú desplegable o busque por código/nombre para visualizar su información.</p>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CREAR / EDITAR SUBCAPÍTULO -->
+<div class="modal fade" id="modalSubCapitulo" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-3">
+            <div class="modal-header text-white" style="background-color: #0d5493;">
+                <h5 class="modal-title fw-bold" id="modalSubCapituloTitle">
+                    <i class="bi bi-diagram-2-fill me-2"></i> Agregar Subcapítulo
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="formSubCapitulo">
+                    <input type="hidden" id="txtId" value="0" />
+
+                    <!-- ID CAPÍTULO PADRE -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark">ID Capítulo</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-folder"></i></span>
+                            <input type="number" id="txtIdCapitulo" class="form-control" required placeholder="Ej: 1" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark">Código del Subcapítulo</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-hash"></i></span>
+                            <input type="text" id="txtCodigo" class="form-control" required placeholder="Ej: 01" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark">Descripción del Subcapítulo</label>
+                        <input type="text" id="txtSubCapitulo" class="form-control" required maxlength="255" placeholder="Ej: Personal Permanente" />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light border-top-0 rounded-bottom-3">
+                <button type="button" class="btn btn-outline-secondary px-4 rounded-3" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-cgr-primary px-4 rounded-3" onclick="guardarSubCapitulo()">
+                    <i class="bi bi-check-circle me-1"></i> Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let modalSubCapituloBs;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            modalSubCapituloBs = new bootstrap.Modal(document.getElementById('modalSubCapitulo'));
+        });
+
+        function cargarGridSubCapitulos() {
+            const selectVal = document.getElementById('selectSubCapitulo').value;
+            const inputVal = document.getElementById('txtBuscarCodigo').value.trim();
+            const codigo = inputVal || selectVal;
+
+            const contenedor = document.getElementById('contenedorGrid');
+
+            if (!codigo) {
+                contenedor.innerHTML = `
+                    <div class="alert alert-light border shadow-sm text-center py-5 rounded-3">
+                        <i class="bi bi-info-circle text-primary fs-1 d-block mb-2"></i>
+                        <h6 class="fw-bold text-dark">Ningún subcapítulo seleccionado</h6>
+                        <p class="text-muted small mb-0">Seleccione un subcapítulo del menú desplegable o busque por código/nombre para visualizar su información.</p>
+                    </div>`;
+                return;
+            }
+
+            contenedor.innerHTML = `
+                <div class="text-center py-5 bg-white rounded-3 border shadow-sm">
+                    <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+                    <p class="text-muted mb-0 fw-semibold">Cargando registros...</p>
+                </div>`;
+
+            fetch(`/SubCapitulo/ObtenerGrid?codigo=${encodeURIComponent(codigo)}`)
+                .then(res => res.text())
+                .then(html => {
+                    contenedor.innerHTML = html;
+                })
+                .catch(err => {
+                    contenedor.innerHTML = `
+                        <div class="alert alert-danger border shadow-sm text-center py-4 rounded-3 mb-0">
+                            <i class="bi bi-exclamation-octagon fs-3 d-block mb-2"></i>
+                            <span class="fw-semibold">Error al cargar los datos.</span>
+                        </div>`;
+                });
+        }
+
+        function abrirModalCrear() {
+            document.getElementById('modalSubCapituloTitle').innerHTML = '<i class="bi bi-plus-circle me-2"></i> Agregar Subcapítulo';
+            document.getElementById('txtId').value = '0';
+            document.getElementById('txtIdCapitulo').value = '';
+            document.getElementById('txtCodigo').value = '';
+            document.getElementById('txtSubCapitulo').value = '';
+
+            modalSubCapituloBs.show();
+        }
+
+        function abrirModalEditar(id, idCapitulo = 0, buscar = '') {
+            fetch(`/SubCapitulo/ObtenerPorId?id=${id}&id_capitulo=${idCapitulo}&buscar=${encodeURIComponent(buscar)}`)
+                .then(res => res.json())
+                .then(res => {
+                    if (res.success) {
+                        const data = res.data;
+                        document.getElementById('modalSubCapituloTitle').innerHTML = '<i class="bi bi-pencil-square me-2"></i> Editar Subcapítulo';
+                        document.getElementById('txtId').value = data.id;
+                        document.getElementById('txtIdCapitulo').value = data.idCapitulo || 0;
+                        document.getElementById('txtCodigo').value = data.codigoSubCapitulo;
+                        document.getElementById('txtSubCapitulo').value = data.subcapitulo;
+
+                        modalSubCapituloBs.show();
+                    } else {
+                        alert('Error: ' + res.message);
+                    }
+                });
+        }
+
+        function guardarSubCapitulo() {
+            const id = parseInt(document.getElementById('txtId').value);
+            const idCapitulo = parseInt(document.getElementById('txtIdCapitulo').value) || 0;
+            const codigo = document.getElementById('txtCodigo').value.trim();
+            const subcapituloText = document.getElementById('txtSubCapitulo').value.trim();
+
+            if (!codigo || !subcapituloText) {
+                alert('Por favor complete todos los campos requeridos.');
+                return;
+            }
+
+            const dto = {
+                id: id,
+                idCapitulo: idCapitulo,
+                codigoSubCapitulo: codigo,
+                subcapitulo: subcapituloText
+            };
+
+            const endpoint = id > 0 ? '/SubCapitulo/Actualizar' : '/SubCapitulo/Crear';
+
+            fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dto)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    modalSubCapituloBs.hide();
+                    cargarGridSubCapitulos();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            });
+        }
+
+        function eliminarSubCapitulo(id) {
+            if (!confirm('¿Desea eliminar este subcapítulo?')) return;
+
+            fetch(`/SubCapitulo/Eliminar?id=${id}`, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        cargarGridSubCapitulos();
+                    } else {
+                        alert('Error al eliminar: ' + data.message);
+                    }
+                });
+        }
+    </script>
+}

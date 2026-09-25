@@ -10,5 +10,10 @@ namespace Mantenimiento.Core.Domain.RepositoryInterfaces
     Task<int> InsertarConSpAsync(SubCapitulo subCapitulo);
     Task ActualizarConSpAsync(SubCapitulo subCapitulo);
     Task EliminarConSpAsync(int id);
+    Task<List<SubCapitulo>> ObtenerSubCapitulosPorCapituloAsync(int capituloId);
+    Task<List<SubCapitulo>> ObtenerSubCapitulosPorCodigoCapituloAsync(string codigoCapitulo);
+    Task<List<SubCapitulo>> ObtenerSubCapitulosPorNombreCapituloAsync(string nombreCapitulo);
+    Task<List<SubCapitulo>> ObtenerSubCapitulosPorCodigoSubCapituloAsync(string codigoSubCapitulo);
+    Task<List<SubCapitulo>> ObtenerSubCapitulosPorNombreSubCapituloAsync(string nombreSubCapitulo);
     }
 }
