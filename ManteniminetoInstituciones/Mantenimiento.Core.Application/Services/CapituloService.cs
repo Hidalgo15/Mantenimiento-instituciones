@@ -16,7 +16,18 @@ namespace Mantenimiento.Core.Application.Services
 
         public async Task<List<CapituloDto>> ObtenerCapitulosAsync(string? buscar = null)
         {
-            var lista = await _repo.ObtenerCapitulosAsync(buscar);
+            var lista = await _repo.ObtenerCapitulosAsync();
+
+            // Si viene un criterio de búsqueda, se filtra en memoria con LINQ
+            if (!string.IsNullOrWhiteSpace(buscar))
+            {
+                var termino = buscar.Trim();
+                lista = lista.Where(c =>
+                    c.CodigoCapitulo.Contains(termino, StringComparison.OrdinalIgnoreCase) ||
+                    c.NombreCapitulo.Contains(termino, StringComparison.OrdinalIgnoreCase)
+                ).ToList();
+            }
+
             return lista.Select(MapToDto).ToList();
         }
 

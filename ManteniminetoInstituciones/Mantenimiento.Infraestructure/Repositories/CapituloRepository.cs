@@ -44,15 +44,14 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
         /// </summary>
         /// <param name="buscar"></param>
         /// <returns></returns>
-        public async Task<List<Capitulo>> ObtenerCapitulosAsync(string? buscar = null)
+        public async Task<List<Capitulo>> ObtenerCapitulosAsync()
         {
-            var paramBuscar = new SqlParameter("@buscar", string.IsNullOrWhiteSpace(buscar) ? DBNull.Value : buscar);
-
             return await _context.Capitulos
-                .FromSqlRaw("EXEC dbo.sp_capitulo_Obtener @id = NULL, @buscar = @buscar", paramBuscar)
+                .FromSqlRaw("EXEC dbo.sp_capitulo_Obtener")
                 .AsNoTracking()
                 .ToListAsync();
         }
+
 
         /// <summary>
         /// Inserta un nuevo capítulo utilizando un procedimiento almacenado 
