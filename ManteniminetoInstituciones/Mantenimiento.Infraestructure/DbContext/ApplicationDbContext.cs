@@ -31,7 +31,7 @@ namespace Mantenimiento.Infraestructure.Persistence
                 entity.Property(e => e.IdPadre).HasColumnName("id_padre");
                 entity.Property(e => e.IdDaf).HasColumnName("id_daf");
                 entity.Property(e => e.CodigoDaf).HasColumnName("codigo_daf");
-                entity.Property(e => e.NombreDaf).HasColumnName("daf"); // ¡Importante! El SP lo retorna como 'daf'
+                entity.Property(e => e.NombreDaf).HasColumnName("daf");
                 entity.Property(e => e.CodigoUnidadEjecutora).HasColumnName("codigo_unidad_ejecutora");
                 entity.Property(e => e.NombreUnidadEjecutora).HasColumnName("unidad_ejecutora");
                 entity.Property(e => e.Rnc).HasColumnName("rnc");

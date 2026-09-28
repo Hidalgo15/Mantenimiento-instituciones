@@ -29,7 +29,7 @@ namespace Mantenimiento.Core.Application.Services
 
         public async Task CrearAsync(CrearUnidadEjecutoraDto dto)
         {
-            Validar(dto.IdDaf, dto.CodigoUnidadEjecutora, dto.NombreUnidadEjecutora);
+            Validar(dto.IdDaf, dto.CodigoUnidadEjecutora, dto.NombreUnidadEjecutora, dto.Rnc);
 
             var entidad = new UnidadEjecutora
             {
@@ -47,7 +47,7 @@ namespace Mantenimiento.Core.Application.Services
 
         public async Task ActualizarAsync(ActualizarUnidadEjecutoraDto dto)
         {
-            Validar(dto.IdDaf, dto.CodigoUnidadEjecutora, dto.NombreUnidadEjecutora);
+            Validar(dto.IdDaf, dto.CodigoUnidadEjecutora, dto.NombreUnidadEjecutora, dto.Rnc);
 
             var entidad = new UnidadEjecutora
             {
@@ -69,7 +69,7 @@ namespace Mantenimiento.Core.Application.Services
             await _repo.EliminarConSpAsync(id, borradoLogico: true, usuario: usuario);
         }
 
-        private static void Validar(int idDaf, string codigo, string nombre)
+        private static void Validar(int idDaf, string codigo, string nombre, string? rnc)
         {
             if (idDaf <= 0)
                 throw new ArgumentException("Debe seleccionar una DAF válida.");
@@ -77,8 +77,17 @@ namespace Mantenimiento.Core.Application.Services
             if (string.IsNullOrWhiteSpace(codigo))
                 throw new ArgumentException("El código de unidad ejecutora es obligatorio.");
 
+            if (codigo.Trim().Length > 10)
+                throw new ArgumentException("El código de unidad ejecutora no puede tener más de 10 caracteres.");
+
             if (string.IsNullOrWhiteSpace(nombre))
                 throw new ArgumentException("El nombre de la unidad ejecutora es obligatorio.");
+
+            if (nombre.Trim().Length > 250)
+                throw new ArgumentException("El nombre de la unidad ejecutora no puede tener más de 250 caracteres.");
+
+            if (!string.IsNullOrWhiteSpace(rnc) && rnc.Trim().Length > 20)
+                throw new ArgumentException("El RNC no puede superar los 20 caracteres.");
         }
 
         private static UnidadEjecutoraDto MapToDto(UnidadEjecutora u) => new()
@@ -92,7 +101,7 @@ namespace Mantenimiento.Core.Application.Services
             NombreUnidadEjecutora = u.NombreUnidadEjecutora ?? string.Empty,
             Rnc = u.Rnc,
             Estado = u.Estado,
-            PortalCompra = u.PortalCompra == 1
+            PortalCompra = u.PortalCompra
         };
     }
 }

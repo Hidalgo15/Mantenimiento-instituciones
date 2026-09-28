@@ -67,7 +67,11 @@ namespace MantenimientoPresentation.Controllers
 
             try
             {
-                dto.Usuario = User.Identity?.Name ?? "SISTEMA";
+                var usuarioActual = !string.IsNullOrWhiteSpace(User.Identity?.Name)
+                ? User.Identity.Name
+                : (Environment.UserName ?? "SISTEMA");
+
+                dto.Usuario = usuarioActual;
                 await _service.CrearAsync(dto);
                 return Json(new { success = true, message = "Unidad Ejecutora registrada con éxito." });
             }
@@ -85,7 +89,11 @@ namespace MantenimientoPresentation.Controllers
 
             try
             {
-                dto.Usuario = User.Identity?.Name ?? "SISTEMA";
+                var usuarioActual = !string.IsNullOrWhiteSpace(User.Identity?.Name)
+                ? User.Identity.Name
+                : (Environment.UserName ?? "SISTEMA");
+
+                dto.Usuario = usuarioActual;
                 await _service.ActualizarAsync(dto);
                 return Json(new { success = true, message = "Unidad Ejecutora actualizada con éxito." });
             }
@@ -100,8 +108,11 @@ namespace MantenimientoPresentation.Controllers
         {
             try
             {
-                var usuario = User.Identity?.Name ?? "SISTEMA";
-                await _service.EliminarAsync(id, usuario);
+                var usuarioActual = !string.IsNullOrWhiteSpace(User.Identity?.Name)
+                ? User.Identity.Name
+                : (Environment.UserName ?? "SISTEMA");
+
+                await _service.EliminarAsync(id, usuarioActual);
                 return Json(new { success = true, message = "Unidad Ejecutora desactivada correctamente." });
             }
             catch (Exception ex)
