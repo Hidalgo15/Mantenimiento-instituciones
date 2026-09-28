@@ -1,22 +1,51 @@
 html {
-  font-size: 14px;
+    font-size: 14px;
 }
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+    html {
+        font-size: 16px;
+    }
 }
 
 html {
-  position: relative;
-  min-height: 100%;
+    position: relative;
+    min-height: 100%;
 }
 
 body {
-  margin-bottom: 60px;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* NAVBAR Y ESTILOS CGR */
+.style-cgr-navbar {
+    background-color: #0d5493 !important;
+}
+
+/* BOTONES PERSONALIZADOS */
+.btn-cgr-primary {
+    background-color: #0d5493;
+    color: #ffffff;
+    border: none;
+    font-weight: 600;
+    transition: all 0.2s ease-in-out;
+}
+
+    .btn-cgr-primary:hover:not(:disabled) {
+        background-color: #093c69;
+        color: #ffffff;
+    }
+
+    .btn-cgr-primary:disabled {
+        background-color: #6c757d;
+        opacity: 0.65;
+    }
+
+/* ENFOCADO DE INPUTS */
+.form-control:focus, .form-select:focus {
+    border-color: #0d5493;
+    box-shadow: 0 0 0 0.25rem rgba(13, 84, 147, 0.25);
 }

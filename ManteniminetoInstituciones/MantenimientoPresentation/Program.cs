@@ -23,6 +23,14 @@ namespace MantenimientoPresentation
             // Repositorios y Servicios
             builder.Services.AddScoped<ICuentaInstitucionRepository, CuentaInstitucionRepository>();
             builder.Services.AddScoped<ICuentaInstitucionService, CuentaInstitucionService>();
+            builder.Services.AddScoped<ICapituloRepository, CapituloRepository>();
+            builder.Services.AddScoped<ICapituloService, CapituloService>();
+            builder.Services.AddScoped<ISubCapituloRepository, SubCapituloRepository>();
+            builder.Services.AddScoped<ISubCapituloService, SubCapituloService>();
+            builder.Services.AddScoped<IDafRepository, DafRepository>();
+            builder.Services.AddScoped<IDafService, DafService>();
+            builder.Services.AddScoped<IUnidadEjecutoraRepository, UnidadEjecutoraRepository>();
+            builder.Services.AddScoped<IUnidadEjecutoraService, UnidadEjecutoraService>();
 
             var app = builder.Build();
 
@@ -42,7 +50,7 @@ namespace MantenimientoPresentation
 
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=CuentaInstitucion}/{action=Index}/{id?}");
+                pattern: "{controller=Home}/{action=Index}/{id?}");
 
             app.Run();
         }

@@ -1,4 +1,4 @@
-﻿using Mantenimiento.Core.Application.DTOs;
+﻿using Mantenimiento.Core.Application.DTOs.CuentaInstitucion;
 
 namespace Mantenimiento.Core.Application.InterfaceServices
 {
