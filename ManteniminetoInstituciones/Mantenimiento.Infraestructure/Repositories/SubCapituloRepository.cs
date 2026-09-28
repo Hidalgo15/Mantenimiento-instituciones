@@ -25,7 +25,7 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
             var pCapitulo = new SqlParameter("@id_capitulo", subCapitulo.IdCapitulo);
 
             await _context.Database.ExecuteSqlRawAsync(
-                "EXEC sp_subcapitulo_Actualizar @id, @codigo_sub_capitulo, @sub_capitulo", "@id_capitulo",
+                "EXEC sp_subcapitulo_Actualizar @id, @codigo_sub_capitulo, @sub_capitulo, @id_capitulo",
                 pId, pCodigo, pNombre, pCapitulo);
         }
 
@@ -66,8 +66,9 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
                 Direction = ParameterDirection.Output
             };
 
+            // Llamar al SP correcto para insertar subcapítulo
             await _context.Database.ExecuteSqlRawAsync(
-                "EXEC dbo.sp_capitulo_Insertar @codigo_capitulo, @capitulo, @id_generado OUTPUT",
+                "EXEC dbo.sp_subcapitulo_Insertar @codigo_sub_capitulo, @sub_capitulo, @id_generado OUTPUT",
                 pCodigo, pNombre, pIdGenerado);
 
             return (int)pIdGenerado.Value;
@@ -75,8 +76,8 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
 
         public async Task<List<SubCapitulo>> ObtenerSubCapitulosAsync(string? buscar = null)
         {
-            var pId = new SqlParameter("@id", DBNull.Value);
-            var pIdCapitulo = new SqlParameter("@id_capitulo", DBNull.Value);
+            var pId = new SqlParameter("@id", SqlDbType.Int) { Value = DBNull.Value };
+            var pIdCapitulo = new SqlParameter("@id_capitulo", SqlDbType.Int) { Value = DBNull.Value };
             var pBuscar = new SqlParameter("@buscar", string.IsNullOrWhiteSpace(buscar) ? (object)DBNull.Value : buscar);
 
             return await _context.SubCapitulos
@@ -87,7 +88,7 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
 
         public async Task<List<SubCapitulo>> ObtenerSubCapitulosPorCapituloAsync(int capituloId)
         {
-            var pId = new SqlParameter("@id", DBNull.Value);
+            var pId = new SqlParameter("@id", SqlDbType.Int) { Value = DBNull.Value };
             var pIdCapitulo = new SqlParameter("@id_capitulo", capituloId);
             var pBuscar = new SqlParameter("@buscar", DBNull.Value);
 
@@ -99,8 +100,8 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
 
         public async Task<List<SubCapitulo>> ObtenerSubCapitulosPorCodigoCapituloAsync(string codigoCapitulo)
         {
-            var pId = new SqlParameter("@id", DBNull.Value);
-            var pIdCapitulo = new SqlParameter("@id_capitulo", DBNull.Value);
+            var pId = new SqlParameter("@id", SqlDbType.Int) { Value = DBNull.Value };
+            var pIdCapitulo = new SqlParameter("@id_capitulo", SqlDbType.Int) { Value = DBNull.Value };
             var pBuscar = new SqlParameter("@buscar", string.IsNullOrWhiteSpace(codigoCapitulo) ? (object)DBNull.Value : codigoCapitulo);
 
             return await _context.SubCapitulos
@@ -111,8 +112,8 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
 
         public async Task<List<SubCapitulo>> ObtenerSubCapitulosPorNombreCapituloAsync(string nombreCapitulo)
         {
-            var pId = new SqlParameter("@id", DBNull.Value);
-            var pIdCapitulo = new SqlParameter("@id_capitulo", DBNull.Value);
+            var pId = new SqlParameter("@id", SqlDbType.Int) { Value = DBNull.Value };
+            var pIdCapitulo = new SqlParameter("@id_capitulo", SqlDbType.Int) { Value = DBNull.Value };
             var pBuscar = new SqlParameter("@buscar", string.IsNullOrWhiteSpace(nombreCapitulo) ? (object)DBNull.Value : nombreCapitulo);
 
             return await _context.SubCapitulos
@@ -123,8 +124,8 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
 
         public async Task<List<SubCapitulo>> ObtenerSubCapitulosPorCodigoSubCapituloAsync(string codigoSubCapitulo)
         {
-            var pId = new SqlParameter("@id", DBNull.Value);
-            var pIdCapitulo = new SqlParameter("@id_capitulo", DBNull.Value);
+            var pId = new SqlParameter("@id", SqlDbType.Int) { Value = DBNull.Value };
+            var pIdCapitulo = new SqlParameter("@id_capitulo", SqlDbType.Int) { Value = DBNull.Value };
             var pBuscar = new SqlParameter("@buscar", string.IsNullOrWhiteSpace(codigoSubCapitulo) ? (object)DBNull.Value : codigoSubCapitulo);
 
             return await _context.SubCapitulos
@@ -135,8 +136,8 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
 
         public async Task<List<SubCapitulo>> ObtenerSubCapitulosPorNombreSubCapituloAsync(string nombreSubCapitulo)
         {
-            var pId = new SqlParameter("@id", DBNull.Value);
-            var pIdCapitulo = new SqlParameter("@id_capitulo", DBNull.Value);
+            var pId = new SqlParameter("@id", SqlDbType.Int) { Value = DBNull.Value };
+            var pIdCapitulo = new SqlParameter("@id_capitulo", SqlDbType.Int) { Value = DBNull.Value };
             var pBuscar = new SqlParameter("@buscar", string.IsNullOrWhiteSpace(nombreSubCapitulo) ? (object)DBNull.Value : nombreSubCapitulo);
 
             return await _context.SubCapitulos
