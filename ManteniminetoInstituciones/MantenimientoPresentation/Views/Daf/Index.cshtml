@@ -1,0 +1,267 @@
+﻿@using Mantenimiento.Core.Application.DTOs.SubCapitulo
+@{
+    ViewData["Title"] = "Gestión de DAF";
+    var subcapitulos = ViewBag.SubCapitulos as IEnumerable<SubCapituloDto> ?? new List<SubCapituloDto>();
+}
+
+<div class="container-fluid py-2">
+    <!-- CABECERA SUPERIOR -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h4 class="fw-bold mb-0 text-dark">Gestión de DAF</h4>
+            <small class="text-muted">Administre las Direcciones Administrativas y Financieras asociadas a cada subcapítulo</small>
+        </div>
+        <span class="badge text-white py-2 px-3 fs-6" style="background-color: #0d5493;">
+            <i class="bi bi-building me-1"></i> Dirección Financiera
+        </span>
+    </div>
+
+    <!-- TARJETA DE FILTROS Y BÚSQUEDA -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-body p-4">
+            <div class="row align-items-end g-3">
+                <!-- DROPDOWN SUBCAPÍTULO PADRE -->
+                <div class="col-md-5">
+                    <label for="selectSubCapitulo" class="form-label fw-bold text-dark mb-2">
+                        <i class="bi bi-diagram-2 me-1 text-primary"></i> Filtrar por Subcapítulo
+                    </label>
+                    <select id="selectSubCapitulo" class="form-select form-select-lg rounded-3 fs-6 border-secondary-subtle" onchange="cargarGridDaf()">
+                        <option value="">-- Seleccione un Subcapítulo --</option>
+                        @foreach (var item in subcapitulos)
+                        {
+                            <option value="@item.Id">@item.CodigoSubCapitulo - @item.subcapitulo</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- CAMPO BÚSQUEDA TEXTO O CÓDIGO DAF -->
+                <div class="col-md-4">
+                    <label for="txtBuscarDaf" class="form-label fw-bold text-dark mb-2">
+                        <i class="bi bi-search me-1 text-primary"></i> Código o Descripción DAF
+                    </label>
+                    <div class="input-group">
+                        <input type="text" id="txtBuscarDaf" class="form-control form-control-lg rounded-start-3 fs-6 border-secondary-subtle" placeholder="Ej: 0012 o Dirección General" onkeypress="if(event.key === 'Enter') cargarGridDaf()" />
+                        <button class="btn btn-outline-secondary px-3" type="button" onclick="cargarGridDaf()">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- BOTÓN NUEVO DAF -->
+                <div class="col-md-3 text-end">
+                    <button type="button" class="btn btn-cgr-primary btn-lg w-100 rounded-3" onclick="abrirModalCrear()">
+                        <i class="bi bi-plus-circle me-2"></i> Nuevo DAF
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR DINÁMICO DEL GRID -->
+    <div id="contenedorGrid">
+        <div class="alert alert-light border shadow-sm text-center py-5 rounded-3">
+            <i class="bi bi-info-circle text-primary fs-1 d-block mb-2"></i>
+            <h6 class="fw-bold text-dark">Ningún DAF seleccionado</h6>
+            <p class="text-muted small mb-0">Seleccione un subcapítulo o escriba un código/descripción para consultar sus DAF correspondientes.</p>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CREAR / EDITAR DAF -->
+<div class="modal fade" id="modalDaf" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-3">
+            <div class="modal-header text-white" style="background-color: #0d5493;">
+                <h5 class="modal-title fw-bold" id="modalDafTitle">
+                    <i class="bi bi-building me-2"></i> Agregar DAF
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="formDaf">
+                    <input type="hidden" id="txtId" value="0" />
+
+                    <!-- SELECCIÓN DE SUBCAPÍTULO -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark">Subcapítulo Perteneciente</label>
+                        <select id="modalSelectSubCapitulo" class="form-select" required>
+                            <option value="">-- Seleccione un Subcapítulo --</option>
+                            @foreach (var item in subcapitulos)
+                            {
+                                <option value="@item.Id">@item.CodigoSubCapitulo - @item.subcapitulo</option>
+                            }
+                        </select>
+                    </div>
+
+                    <!-- CÓDIGO DAF -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark">Código DAF</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-hash"></i></span>
+                            <input type="text" id="txtCodigoDaf" class="form-control" required maxlength="10" placeholder="Ej: 001" />
+                        </div>
+                    </div>
+
+                    <!-- NOMBRE / DESCRIPCIÓN DAF -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark">Nombre / Descripción del DAF</label>
+                        <input type="text" id="txtNombreDaf" class="form-control" required placeholder="Ej: Dirección Administrativa y Financiera" />
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light border-top-0 rounded-bottom-3">
+                <button type="button" class="btn btn-outline-secondary px-4 rounded-3" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-cgr-primary px-4 rounded-3" onclick="guardarDaf()">
+                    <i class="bi bi-check-circle me-1"></i> Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let modalDafBs;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            modalDafBs = new bootstrap.Modal(document.getElementById('modalDaf'));
+        });
+
+        function cargarGridDaf() {
+            const idSubCapitulo = document.getElementById('selectSubCapitulo').value;
+            const inputVal = document.getElementById('txtBuscarDaf').value.trim();
+
+            const contenedor = document.getElementById('contenedorGrid');
+
+            if (!inputVal && !idSubCapitulo) {
+                contenedor.innerHTML = `
+                    <div class="alert alert-light border shadow-sm text-center py-5 rounded-3">
+                        <i class="bi bi-info-circle text-primary fs-1 d-block mb-2"></i>
+                        <h6 class="fw-bold text-dark">Ningún DAF seleccionado</h6>
+                        <p class="text-muted small mb-0">Seleccione un subcapítulo o escriba un código/descripción para consultar sus DAF correspondientes.</p>
+                    </div>`;
+                return;
+            }
+
+            contenedor.innerHTML = `
+                <div class="text-center py-5 bg-white rounded-3 border shadow-sm">
+                    <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+                    <p class="text-muted mb-0 fw-semibold">Cargando registros DAF...</p>
+                </div>`;
+
+            let url = '';
+            if (inputVal) {
+                // Si contiene letras es una búsqueda por texto, si es completamente numérico asumimos código DAF
+                const isNumeric = /^\d+$/.test(inputVal);
+                url = isNumeric 
+                    ? `/Daf/ObtenerGrid?codigo=${encodeURIComponent(inputVal)}` 
+                    : `/Daf/ObtenerGrid?buscar=${encodeURIComponent(inputVal)}`;
+            } else {
+                url = `/Daf/ObtenerGrid?idSubCapitulo=${encodeURIComponent(idSubCapitulo)}`;
+            }
+
+            fetch(url)
+                .then(res => res.text())
+                .then(html => {
+                    contenedor.innerHTML = html;
+                })
+                .catch(err => {
+                    contenedor.innerHTML = `
+                        <div class="alert alert-danger border shadow-sm text-center py-4 rounded-3 mb-0">
+                            <i class="bi bi-exclamation-octagon fs-3 d-block mb-2"></i>
+                            <span class="fw-semibold">Error al cargar los datos de DAF.</span>
+                        </div>`;
+                });
+        }
+
+        function abrirModalCrear() {
+            document.getElementById('modalDafTitle').innerHTML = '<i class="bi bi-plus-circle me-2"></i> Agregar DAF';
+            document.getElementById('txtId').value = '0';
+            document.getElementById('modalSelectSubCapitulo').value = document.getElementById('selectSubCapitulo').value || '';
+            document.getElementById('txtCodigoDaf').value = '';
+            document.getElementById('txtNombreDaf').value = '';
+
+            modalDafBs.show();
+        }
+
+    function abrirModalEditar(id) {
+    fetch(`/Daf/ObtenerPorId?id=${id}`)
+        .then(res => res.json())
+        .then(res => {
+            if (res.success) {
+                const data = res.data;
+                
+                document.getElementById('modalDafTitle').innerHTML = '<i class="bi bi-pencil-square me-2"></i> Editar DAF';
+                document.getElementById('txtId').value = data.id || data.Id || 0;
+                
+                // Evalúa ambas nomenclaturas (camelCase o PascalCase / SnakeCase)
+                const subCapituloId = data.idSubCapitulo || data.id_sub_capitulo || data.IdSubCapitulo || '';
+                document.getElementById('modalSelectSubCapitulo').value = subCapituloId;
+                
+                document.getElementById('txtCodigoDaf').value = data.codigoDaf || data.codigo_daf || data.CodigoDaf || '';
+                
+                // Mapear descripción DAF
+                document.getElementById('txtNombreDaf').value = data.nombreDaf || data.daf || data.NombreDaf || '';
+
+                modalDafBs.show();
+            } else {
+                alert('Error: ' + res.message);
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Error al obtener la información del DAF.');
+        });
+}
+
+            function guardarDaf() {
+                const id = parseInt(document.getElementById('txtId').value) || 0;
+                const idSubCapitulo = parseInt(document.getElementById('modalSelectSubCapitulo').value) || 0;
+                const codigoDaf = document.getElementById('txtCodigoDaf').value.trim();
+                const nombreDaf = document.getElementById('txtNombreDaf').value.trim();
+
+                if (idSubCapitulo <= 0) {
+                    alert('Debe seleccionar un subcapítulo válido.');
+                    return;
+                }
+
+                const dto = {
+                    id: id,
+                    idSubCapitulo: idSubCapitulo,
+                    codigoDaf: codigoDaf,
+                    daf: nombreDaf // Coincide exactamente con la propiedad Daf de ActualizarDafDTO
+                };
+
+                const endpoint = id > 0 ? '/Daf/Actualizar' : '/Daf/Crear';
+
+                fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dto)
+                })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        modalDafBs.hide();
+                        cargarGridDaf();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                });
+            }
+
+        function eliminarDaf(id) {
+            if (!confirm('¿Desea eliminar este DAF?')) return;
+
+            fetch(`/Daf/Eliminar?id=${id}`, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        cargarGridDaf();
+                    } else {
+                        alert('Error al eliminar: ' + data.message);
+                    }
+                });
+        }
+    </script>
+}

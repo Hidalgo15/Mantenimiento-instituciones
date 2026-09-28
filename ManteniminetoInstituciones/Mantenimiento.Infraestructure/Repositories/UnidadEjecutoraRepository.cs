@@ -17,9 +17,9 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
 
         public async Task<IEnumerable<UnidadEjecutora>> ObtenerAsync(int? id = null, string? codigoUnidadEjecutora = null, int? idDaf = null)
         {
-            var pId = new SqlParameter("@id", id.HasValue ? id.Value : DBNull.Value);
+            var pId = new SqlParameter("@id", SqlDbType.Int) { Value = id.HasValue ? id.Value : DBNull.Value };
             var pCodigo = new SqlParameter("@codigo_unidad_ejecutora", string.IsNullOrWhiteSpace(codigoUnidadEjecutora) ? DBNull.Value : codigoUnidadEjecutora);
-            var pIdDaf = new SqlParameter("@id_daf", idDaf.HasValue ? idDaf.Value : DBNull.Value);
+            var pIdDaf = new SqlParameter("@id_daf", SqlDbType.Int) { Value = idDaf.HasValue ? idDaf.Value : DBNull.Value };
 
             return await _context.UnidadesEjecutoras
                 .FromSqlRaw("EXEC dbo.sp_unidad_ejecutora_Obtener @id = @id, @codigo_unidad_ejecutora = @codigo_unidad_ejecutora, @id_daf = @id_daf", pId, pCodigo, pIdDaf)
@@ -29,8 +29,8 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
 
         public async Task<int> CrearConSpAsync(UnidadEjecutora entidad, string usuario)
         {
-            var pIdPadre = new SqlParameter("@id_padre", entidad.IdPadre.HasValue ? entidad.IdPadre.Value : DBNull.Value);
-            var pIdDaf = new SqlParameter("@id_daf", entidad.IdDaf);
+            var pIdPadre = new SqlParameter("@id_padre", SqlDbType.Int) { Value = entidad.IdPadre.HasValue ? entidad.IdPadre.Value : DBNull.Value };
+            var pIdDaf = new SqlParameter("@id_daf", SqlDbType.Int) { Value = entidad.IdDaf };
             var pCodigo = new SqlParameter("@codigo_unidad_ejecutora", entidad.CodigoUnidadEjecutora ?? (object)DBNull.Value);
             var pNombre = new SqlParameter("@unidad_ejecutora", entidad.NombreUnidadEjecutora ?? (object)DBNull.Value);
             var pRnc = new SqlParameter("@rnc", string.IsNullOrWhiteSpace(entidad.Rnc) ? DBNull.Value : entidad.Rnc);
@@ -57,8 +57,8 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
         public async Task ActualizarConSpAsync(UnidadEjecutora entidad, string usuario)
         {
             var pId = new SqlParameter("@id", entidad.Id);
-            var pIdPadre = new SqlParameter("@id_padre", entidad.IdPadre.HasValue ? entidad.IdPadre.Value : DBNull.Value);
-            var pIdDaf = new SqlParameter("@id_daf", entidad.IdDaf);
+            var pIdPadre = new SqlParameter("@id_padre", SqlDbType.Int) { Value = entidad.IdPadre.HasValue ? entidad.IdPadre.Value : DBNull.Value };
+            var pIdDaf = new SqlParameter("@id_daf", SqlDbType.Int) { Value = entidad.IdDaf };
             var pCodigo = new SqlParameter("@codigo_unidad_ejecutora", entidad.CodigoUnidadEjecutora ?? (object)DBNull.Value);
             var pNombre = new SqlParameter("@unidad_ejecutora", entidad.NombreUnidadEjecutora ?? (object)DBNull.Value);
             var pRnc = new SqlParameter("@rnc", string.IsNullOrWhiteSpace(entidad.Rnc) ? DBNull.Value : entidad.Rnc);

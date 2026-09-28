@@ -1,7 +1,7 @@
 ﻿
 namespace Mantenimiento.Core.Application.DTOs.SubCapitulo
 {
-    public class ActualizarSubCapituloDto
+    public record ActualizarSubCapituloDto
     {
 
         public int Id { get; set; }
