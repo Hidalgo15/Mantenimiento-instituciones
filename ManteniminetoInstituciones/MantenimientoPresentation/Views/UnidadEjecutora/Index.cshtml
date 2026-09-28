@@ -4,21 +4,27 @@
     var dafs = ViewBag.Dafs as IEnumerable<DafDto> ?? new List<DafDto>();
 }
 
-<div class="container py-4">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h3 class="fw-bold mb-0">Gestión de Unidades Ejecutoras</h3>
-        <button type="button" id="btnNuevaUnidad" class="btn btn-primary" onclick="abrirModalCrear()">
-            <i class="bi bi-plus-lg me-1"></i> Nueva Unidad Ejecutora
-        </button>
+<div class="container-fluid py-2">
+    <!-- CABECERA SUPERIOR ALINEADA -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h4 class="fw-bold mb-0 text-dark">Gestión de Unidades Ejecutoras</h4>
+            <small class="text-muted">Administre y consulte las unidades ejecutoras por DAF</small>
+        </div>
+        <span class="badge text-white py-2 px-3 fs-6" style="background-color: #0d5493;">
+            <i class="bi bi-building me-1"></i> Institucional
+        </span>
     </div>
 
-    <!-- Filtro por DAF -->
-    <div class="card shadow-sm mb-4">
-        <div class="card-body">
-            <div class="row align-items-center">
-                <div class="col-md-3 fw-bold">Filtrar por DAF:</div>
-                <div class="col-md-9">
-                    <select id="selectDafFiltro" class="form-select" onchange="cargarGrid()">
+    <!-- TARJETA DE FILTRO Y ACCIONES -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-body p-4">
+            <div class="row align-items-end g-3">
+                <div class="col-md-8">
+                    <label for="selectDafFiltro" class="form-label fw-bold text-dark mb-2">
+                        <i class="bi bi-funnel me-1 text-primary"></i> Filtrar por DAF
+                    </label>
+                    <select id="selectDafFiltro" class="form-select form-select-lg rounded-3 fs-6 border-secondary-subtle" onchange="cargarGrid()">
                         <option value="">-- Todas las DAF --</option>
                         @foreach (var d in dafs)
                         {
@@ -26,11 +32,16 @@
                         }
                     </select>
                 </div>
+                <div class="col-md-4 text-end">
+                    <button type="button" id="btnNuevaUnidad" class="btn btn-cgr-primary btn-lg w-100 rounded-3" onclick="abrirModalCrear()">
+                        <i class="bi bi-plus-circle me-2"></i> Nueva Unidad Ejecutora
+                    </button>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- Contenedor del Grid -->
+    <!-- CONTENEDOR DEL GRID -->
     <div id="contenedorGrid">
         <div class="text-center py-5 bg-white rounded-3 border shadow-sm">
             <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
@@ -39,22 +50,24 @@
     </div>
 </div>
 
-<!-- Modal Crear/Editar -->
+<!-- MODAL CREAR / EDITAR UNIDAD EJECUTORA -->
 <div class="modal fade" id="modalUnidad" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title fw-bold" id="modalUnidadTitle">Agregar Unidad Ejecutora</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-3">
+            <div class="modal-header text-white" style="background-color: #0d5493;">
+                <h5 class="modal-title fw-bold" id="modalUnidadTitle">
+                    <i class="bi bi-plus-circle me-2"></i> Agregar Unidad Ejecutora
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="modal-body">
+            <div class="modal-body p-4">
                 <form id="formUnidad">
                     <input type="hidden" id="txtId" value="0" />
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">DAF Pertenece</label>
-                            <select id="selectDafModal" class="form-select" required>
+                            <label class="form-label fw-bold text-dark">DAF Pertenece</label>
+                            <select id="selectDafModal" class="form-select border-secondary-subtle" required>
                                 <option value="">-- Seleccione DAF --</option>
                                 @foreach (var d in dafs)
                                 {
@@ -63,23 +76,26 @@
                             </select>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">Código Unidad Ejecutora</label>
-                            <input type="text" id="txtCodigoUE" class="form-control" required maxlength="10" placeholder="Ej. 0001" />
+                            <label class="form-label fw-bold text-dark">Código Unidad Ejecutora</label>
+                            <div class="input-group">
+                                <span class="input-group-text bg-light"><i class="bi bi-hash"></i></span>
+                                <input type="text" id="txtCodigoUE" class="form-control" required maxlength="10" placeholder="Ej: 0001" />
+                            </div>
                         </div>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label fw-bold">Nombre Unidad Ejecutora</label>
-                        <input type="text" id="txtNombreUE" class="form-control" required maxlength="250" placeholder="Ej. SENADO DE LA REPUBLICA DOMINICANA" />
+                        <label class="form-label fw-bold text-dark">Nombre Unidad Ejecutora</label>
+                        <input type="text" id="txtNombreUE" class="form-control" required maxlength="250" placeholder="Ej: SENADO DE LA REPUBLICA DOMINICANA" />
                     </div>
 
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">RNC</label>
-                            <input type="text" id="txtRnc" class="form-control" maxlength="20" placeholder="Ej. 401000123" />
+                            <label class="form-label fw-bold text-dark">RNC</label>
+                            <input type="text" id="txtRnc" class="form-control" maxlength="20" placeholder="Ej: 401000123" />
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label class="form-label fw-bold">ID Padre (Opcional)</label>
+                            <label class="form-label fw-bold text-dark">ID Padre (Opcional)</label>
                             <input type="number" id="txtIdPadre" class="form-control" placeholder="ID unidad superior" />
                         </div>
                     </div>
@@ -88,21 +104,23 @@
                         <div class="col-md-6 mb-3">
                             <div class="form-check form-switch mt-2">
                                 <input class="form-check-input" type="checkbox" id="chkPortalCompra">
-                                <label class="form-check-label fw-bold" for="chkPortalCompra">Portal Compra</label>
+                                <label class="form-check-label fw-bold text-dark" for="chkPortalCompra">Portal Compra</label>
                             </div>
                         </div>
                         <div class="col-md-6 mb-3">
                             <div class="form-check form-switch mt-2">
                                 <input class="form-check-input" type="checkbox" id="chkEstado" checked>
-                                <label class="form-check-label fw-bold" for="chkEstado">Estado Activo</label>
+                                <label class="form-check-label fw-bold text-dark" for="chkEstado">Estado Activo</label>
                             </div>
                         </div>
                     </div>
                 </form>
             </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-success" onclick="guardarUnidad()">Guardar</button>
+            <div class="modal-footer bg-light border-top-0 rounded-bottom-3">
+                <button type="button" class="btn btn-outline-secondary px-4 rounded-3" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-cgr-primary px-4 rounded-3" onclick="guardarUnidad()">
+                    <i class="bi bi-check-circle me-1"></i> Guardar
+                </button>
             </div>
         </div>
     </div>
@@ -122,10 +140,10 @@
             const contenedor = document.getElementById('contenedorGrid');
 
             contenedor.innerHTML = `
-                                <div class="text-center py-5 bg-white rounded-3 border shadow-sm">
-                                    <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
-                                    <p class="text-muted mb-0 fw-semibold">Cargando registros...</p>
-                                </div>`;
+                <div class="text-center py-5 bg-white rounded-3 border shadow-sm">
+                    <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+                    <p class="text-muted mb-0 fw-semibold">Cargando registros...</p>
+                </div>`;
 
             fetch(`/UnidadEjecutora/ObtenerGrid?idDaf=${encodeURIComponent(idDaf)}`)
                 .then(res => {
@@ -138,15 +156,15 @@
                 .catch(err => {
                     console.error(err);
                     contenedor.innerHTML = `
-                                        <div class="alert alert-danger border shadow-sm text-center py-4 rounded-3 mb-0">
-                                            <i class="bi bi-exclamation-octagon fs-3 d-block mb-2"></i>
-                                            <span class="fw-semibold">Error al cargar los datos.</span>
-                                        </div>`;
+                        <div class="alert alert-danger border shadow-sm text-center py-4 rounded-3 mb-0">
+                            <i class="bi bi-exclamation-octagon fs-3 d-block mb-2"></i>
+                            <span class="fw-semibold">Error al cargar los datos.</span>
+                        </div>`;
                 });
         }
 
         function abrirModalCrear() {
-            document.getElementById('modalUnidadTitle').innerText = 'Agregar Unidad Ejecutora';
+            document.getElementById('modalUnidadTitle').innerHTML = '<i class="bi bi-plus-circle me-2"></i> Agregar Unidad Ejecutora';
             document.getElementById('txtId').value = '0';
             document.getElementById('selectDafModal').value = document.getElementById('selectDafFiltro').value || '';
             document.getElementById('txtCodigoUE').value = '';
@@ -165,7 +183,7 @@
                 .then(res => {
                     if (res.success) {
                         const data = res.data;
-                        document.getElementById('modalUnidadTitle').innerText = 'Editar Unidad Ejecutora';
+                        document.getElementById('modalUnidadTitle').innerHTML = '<i class="bi bi-pencil-square me-2"></i> Editar Unidad Ejecutora';
                         document.getElementById('txtId').value = data.id;
                         document.getElementById('selectDafModal').value = data.idDaf;
                         document.getElementById('txtCodigoUE').value = data.codigoUnidadEjecutora;
@@ -183,16 +201,45 @@
         }
 
         function guardarUnidad() {
-            const id = parseInt(document.getElementById('txtId').value);
+            const id = parseInt(document.getElementById('txtId').value) || 0;
             const esEdicion = id > 0;
-            const idPadreVal = document.getElementById('txtIdPadre').value;
+            const idDaf = parseInt(document.getElementById('selectDafModal').value) || 0;
+            const codigo = document.getElementById('txtCodigoUE').value.trim();
+            const nombre = document.getElementById('txtNombreUE').value.trim();
+            const rnc = document.getElementById('txtRnc').value.trim();
+            const idPadreVal = document.getElementById('txtIdPadre').value.trim();
+
+            if (idDaf <= 0) {
+                alert('Debe seleccionar una DAF válida.');
+                return;
+            }
+            if (!codigo) {
+                alert('El código de la unidad ejecutora es obligatorio.');
+                return;
+            }
+            if (codigo.length > 10) {
+                alert('El código no puede exceder los 10 caracteres.');
+                return;
+            }
+            if (!nombre) {
+                alert('El nombre de la unidad ejecutora es obligatorio.');
+                return;
+            }
+            if (nombre.length > 250) {
+                alert('El nombre no puede exceder los 250 caracteres.');
+                return;
+            }
+            if (rnc && rnc.length > 9) {
+                alert('El RNC no puede exceder los 9 caracteres.');
+                return;
+            }
 
             const dto = {
                 id: id,
-                idDaf: parseInt(document.getElementById('selectDafModal').value),
-                codigoUnidadEjecutora: document.getElementById('txtCodigoUE').value,
-                nombreUnidadEjecutora: document.getElementById('txtNombreUE').value,
-                rnc: document.getElementById('txtRnc').value,
+                idDaf: idDaf,
+                codigoUnidadEjecutora: codigo,
+                nombreUnidadEjecutora: nombre,
+                rnc: rnc || null,
                 idPadre: idPadreVal ? parseInt(idPadreVal) : null,
                 portalCompra: document.getElementById('chkPortalCompra').checked,
                 estado: document.getElementById('chkEstado').checked
@@ -205,15 +252,19 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dto)
             })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        modalUnidadBs.hide();
-                        cargarGrid();
-                    } else {
-                        alert('Error: ' + data.message);
-                    }
-                });
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    modalUnidadBs.hide();
+                    cargarGrid();
+                } else {
+                    alert(data.message || 'Ocurrió un problema al procesar la solicitud.');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Error al conectar con el servidor.');
+            });
         }
 
         function eliminarUnidad(id) {
