@@ -1,6 +1,6 @@
 ﻿namespace Mantenimiento.Core.Application.DTOs.SubCapitulo
 {
-    public class CrearSubCapituloDto
+    public record CrearSubCapituloDto
     {
         
         public int IdCapitulo { get; set; }
