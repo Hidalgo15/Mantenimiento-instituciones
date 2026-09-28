@@ -38,7 +38,8 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
             var pEstado = new SqlParameter("@estado", SqlDbType.Int) { Value = entidad.Estado };
             var pPortalCompra = new SqlParameter("@portal_compra", SqlDbType.Int) { Value = entidad.PortalCompra };
 
-            var pUsuario = new SqlParameter("@usuario", usuario ?? (object)DBNull.Value);
+            var usuarioValidado = string.IsNullOrWhiteSpace(usuario) ? "SISTEMA" : usuario.Trim();
+            var pUsuario = new SqlParameter("@usuario", usuarioValidado);
             var pIdGenerado = new SqlParameter
             {
                 ParameterName = "@id_generado",
