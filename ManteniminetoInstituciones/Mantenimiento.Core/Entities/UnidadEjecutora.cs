@@ -11,7 +11,7 @@
         public string? NombreUnidadEjecutora { get; set; }
         public string? Rnc { get; set; }
         public bool Estado { get; set; }
-        public int PortalCompra { get; set; }
+        public int? PortalCompra { get; set; }
         public DateTime? Creado { get; set; }
         public DateTime? Modificado { get; set; }
         public string? UsuarioCreacion { get; set; }

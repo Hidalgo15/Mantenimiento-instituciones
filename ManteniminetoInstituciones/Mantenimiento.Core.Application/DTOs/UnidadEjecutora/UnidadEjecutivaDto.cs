@@ -11,6 +11,6 @@
         public string NombreUnidadEjecutora { get; set; } = string.Empty;
         public string? Rnc { get; set; }
         public bool Estado { get; set; }
-        public bool PortalCompra { get; set; }
+        public int? PortalCompra { get; set; }
     }
 }
