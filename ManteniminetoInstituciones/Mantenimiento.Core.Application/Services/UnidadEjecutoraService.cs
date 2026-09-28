@@ -77,7 +77,7 @@ namespace Mantenimiento.Core.Application.Services
         public async Task EliminarAsync(int id, string usuario)
         {
             if (id <= 0) throw new ArgumentException("El identificador a eliminar no es válido.");
-            await _repo.EliminarConSpAsync(id, borradoLogico: true, usuario: usuario);
+            await _repo.EliminarConSpAsync(id, borradoLogico: false, usuario: usuario);
         }
 
         private static void Validar(int idDaf, string codigo, string nombre, string? rnc, int? idPadre)
