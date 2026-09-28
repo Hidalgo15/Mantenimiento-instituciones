@@ -183,16 +183,46 @@
         }
 
         function guardarUnidad() {
-            const id = parseInt(document.getElementById('txtId').value);
+            const id = parseInt(document.getElementById('txtId').value) || 0;
             const esEdicion = id > 0;
-            const idPadreVal = document.getElementById('txtIdPadre').value;
+            const idDaf = parseInt(document.getElementById('selectDafModal').value) || 0;
+            const codigo = document.getElementById('txtCodigoUE').value.trim();
+            const nombre = document.getElementById('txtNombreUE').value.trim();
+            const rnc = document.getElementById('txtRnc').value.trim();
+            const idPadreVal = document.getElementById('txtIdPadre').value.trim();
+
+            // Validaciones inmediatas cliente
+            if (idDaf <= 0) {
+                alert('Debe seleccionar una DAF válida.');
+                return;
+            }
+            if (!codigo) {
+                alert('El código de la unidad ejecutora es obligatorio.');
+                return;
+            }
+            if (codigo.length > 10) {
+                alert('El código de la unidad ejecutora no puede exceder los 10 caracteres.');
+                return;
+            }
+            if (!nombre) {
+                alert('El nombre de la unidad ejecutora es obligatorio.');
+                return;
+            }
+            if (nombre.length > 250) {
+                alert('El nombre de la unidad ejecutora no puede exceder los 250 caracteres.');
+                return;
+            }
+            if (rnc && rnc.length > 9) {
+                alert('El RNC no puede exceder los 9 caracteres.');
+                return;
+            }
 
             const dto = {
                 id: id,
-                idDaf: parseInt(document.getElementById('selectDafModal').value),
-                codigoUnidadEjecutora: document.getElementById('txtCodigoUE').value,
-                nombreUnidadEjecutora: document.getElementById('txtNombreUE').value,
-                rnc: document.getElementById('txtRnc').value,
+                idDaf: idDaf,
+                codigoUnidadEjecutora: codigo,
+                nombreUnidadEjecutora: nombre,
+                rnc: rnc || null,
                 idPadre: idPadreVal ? parseInt(idPadreVal) : null,
                 portalCompra: document.getElementById('chkPortalCompra').checked,
                 estado: document.getElementById('chkEstado').checked
@@ -205,15 +235,19 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dto)
             })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        modalUnidadBs.hide();
-                        cargarGrid();
-                    } else {
-                        alert('Error: ' + data.message);
-                    }
-                });
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    modalUnidadBs.hide();
+                    cargarGrid();
+                } else {
+                    alert(data.message || 'Ocurrió un problema al procesar la solicitud.');
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                alert('Error al conectar con el servidor.');
+            });
         }
 
         function eliminarUnidad(id) {
