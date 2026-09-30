@@ -1,5 +1,6 @@
 ﻿using Mantenimiento.Core.Application.DTOs.SubCapitulo;
 using Mantenimiento.Core.Application.InterfaceServices;
+using Mantenimiento.Core.Application.Services;
 using Mantenimiento.Core.Domain.Entities;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,23 +10,45 @@ namespace MantenimientoPresentation.Controllers
     public class SubCapituloController : Controller
     {
         private readonly ISubCapituloService _service;
-        public SubCapituloController(ISubCapituloService service)
+        private readonly ICapituloService _capituloService;
+        public SubCapituloController(
+            ISubCapituloService service, 
+            ICapituloService capituloService)
         { 
             _service = service;
+            _capituloService = capituloService;
         }
 
         public async Task<IActionResult> Index()
         {
+
+            // Cargamos los capítulos para poblar los<select>(tanto el filtro como el modal)
+            var capitulos = await _capituloService.ObtenerCapitulosAsync(); // Ajusta según tu método real
+            ViewBag.Capitulos = capitulos;
+            return View();
+
+            /*
             // Carga la lista inicial para popular el <select> en el Index.cshtml
             var subCapitulos = await _service.ObtenerSubCapitulosAsync(null);
             ViewBag.SubCapitulos = subCapitulos;
             return View();
+            */
         }
 
+        /*
         [HttpGet]
         public async Task<IActionResult> ObtenerGrid(string? codigo)
         {
             var subCapitulos = await _service.ObtenerSubCapitulosAsync(codigo);
+            return PartialView("_SubCapitulosGridPartial", subCapitulos);
+        }
+        */
+
+        [HttpGet]
+        public async Task<IActionResult> ObtenerGrid(int capituloId)
+        {
+            // Filtramos los subcapítulos por el ID del capítulo seleccionado
+            var subCapitulos = await _service.ObtenerSubCapitulosPorCapituloAsync(capituloId);
             return PartialView("_SubCapitulosGridPartial", subCapitulos);
         }
 
