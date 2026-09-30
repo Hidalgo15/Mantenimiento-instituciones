@@ -94,10 +94,10 @@
                             <label class="form-label fw-bold text-dark">RNC</label>
                             <input type="text" id="txtRnc" class="form-control" maxlength="20" placeholder="Ej: 401000123" />
                         </div>
-                        <div class="col-md-6 mb-3">
+                        @* <div class="col-md-6 mb-3">
                             <label class="form-label fw-bold text-dark">ID Padre (Opcional)</label>
                             <input type="number" id="txtIdPadre" class="form-control" placeholder="ID unidad superior" />
-                        </div>
+                        </div> *@
                     </div>
 
                     <div class="row">
@@ -170,7 +170,7 @@
             document.getElementById('txtCodigoUE').value = '';
             document.getElementById('txtNombreUE').value = '';
             document.getElementById('txtRnc').value = '';
-            document.getElementById('txtIdPadre').value = '';
+            // document.getElementById('txtIdPadre').value = '';
             document.getElementById('chkPortalCompra').checked = false;
             document.getElementById('chkEstado').checked = true;
 
@@ -189,7 +189,7 @@
                         document.getElementById('txtCodigoUE').value = data.codigoUnidadEjecutora;
                         document.getElementById('txtNombreUE').value = data.nombreUnidadEjecutora;
                         document.getElementById('txtRnc').value = data.rnc || '';
-                        document.getElementById('txtIdPadre').value = data.idPadre || '';
+                        // document.getElementById('txtIdPadre').value = data.idPadre || '';
                         document.getElementById('chkPortalCompra').checked = data.portalCompra;
                         document.getElementById('chkEstado').checked = data.estado;
 
@@ -207,7 +207,7 @@
             const codigo = document.getElementById('txtCodigoUE').value.trim();
             const nombre = document.getElementById('txtNombreUE').value.trim();
             const rnc = document.getElementById('txtRnc').value.trim();
-            const idPadreVal = document.getElementById('txtIdPadre').value.trim();
+            // const idPadreVal = document.getElementById('txtIdPadre').value.trim();
 
             if (idDaf <= 0) {
                 alert('Debe seleccionar una DAF válida.');
@@ -240,7 +240,7 @@
                 codigoUnidadEjecutora: codigo,
                 nombreUnidadEjecutora: nombre,
                 rnc: rnc || null,
-                idPadre: idPadreVal ? parseInt(idPadreVal) : null,
+                // idPadre: idPadreVal ? parseInt(idPadreVal) : null,
                 portalCompra: document.getElementById('chkPortalCompra').checked,
                 estado: document.getElementById('chkEstado').checked
             };
