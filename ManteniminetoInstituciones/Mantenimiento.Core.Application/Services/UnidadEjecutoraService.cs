@@ -10,7 +10,7 @@ namespace Mantenimiento.Core.Application.Services
         private readonly IUnidadEjecutoraRepository _repo;
 
         public UnidadEjecutoraService(IUnidadEjecutoraRepository repo)
-        {
+        {   
             _repo = repo;
         }
 
@@ -33,11 +33,11 @@ namespace Mantenimiento.Core.Application.Services
         {
             if (dto == null) throw new ArgumentException("Los datos enviados son nulos.");
 
-            Validar(dto.IdDaf, dto.CodigoUnidadEjecutora, dto.NombreUnidadEjecutora, dto.Rnc, dto.IdPadre);
+            Validar(dto.IdDaf, dto.CodigoUnidadEjecutora, dto.NombreUnidadEjecutora, dto.Rnc);
 
             var entidad = new UnidadEjecutora
             {
-                IdPadre = dto.IdPadre,
+                IdPadre = null,
                 IdDaf = dto.IdDaf,
                 CodigoUnidadEjecutora = dto.CodigoUnidadEjecutora.Trim(),
                 NombreUnidadEjecutora = dto.NombreUnidadEjecutora.Trim(),
@@ -54,7 +54,7 @@ namespace Mantenimiento.Core.Application.Services
             if (dto == null) throw new ArgumentException("Los datos enviados son nulos.");
             if (dto.Id <= 0) throw new ArgumentException("El identificador a actualizar no es válido.");
 
-            Validar(dto.IdDaf, dto.CodigoUnidadEjecutora, dto.NombreUnidadEjecutora, dto.Rnc, dto.IdPadre);
+            Validar(dto.IdDaf, dto.CodigoUnidadEjecutora, dto.NombreUnidadEjecutora, dto.Rnc);
 
             if (dto.IdPadre.HasValue && dto.IdPadre.Value == dto.Id)
                 throw new ArgumentException("Una unidad ejecutora no puede ser su propia entidad padre.");
@@ -62,7 +62,7 @@ namespace Mantenimiento.Core.Application.Services
             var entidad = new UnidadEjecutora
             {
                 Id = dto.Id,
-                IdPadre = dto.IdPadre,
+                IdPadre = dto.Id,
                 IdDaf = dto.IdDaf,
                 CodigoUnidadEjecutora = dto.CodigoUnidadEjecutora.Trim(),
                 NombreUnidadEjecutora = dto.NombreUnidadEjecutora.Trim(),
@@ -77,10 +77,10 @@ namespace Mantenimiento.Core.Application.Services
         public async Task EliminarAsync(int id, string usuario)
         {
             if (id <= 0) throw new ArgumentException("El identificador a eliminar no es válido.");
-            await _repo.EliminarConSpAsync(id, borradoLogico: false, usuario: usuario);
+            await _repo.EliminarConSpAsync(id, borradoLogico: true, usuario: usuario);
         }
 
-        private static void Validar(int idDaf, string codigo, string nombre, string? rnc, int? idPadre)
+        private static void Validar(int idDaf, string codigo, string nombre, string? rnc)
         {
             if (idDaf <= 0)
                 throw new ArgumentException("Debe seleccionar una DAF válida.");
@@ -99,9 +99,6 @@ namespace Mantenimiento.Core.Application.Services
 
             if (!string.IsNullOrWhiteSpace(rnc) && rnc.Trim().Length > 20)
                 throw new ArgumentException("El RNC no puede superar los 20 caracteres.");
-
-            if (idPadre.HasValue && idPadre.Value <= 0)
-                throw new ArgumentException("El ID Padre especificado no es válido.");
         }
 
         private static UnidadEjecutoraDto MapToDto(UnidadEjecutora u) => new()
