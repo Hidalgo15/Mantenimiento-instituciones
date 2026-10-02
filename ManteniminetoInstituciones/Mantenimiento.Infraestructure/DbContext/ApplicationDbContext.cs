@@ -15,10 +15,17 @@ namespace Mantenimiento.Infraestructure.Persistence
         public DbSet<SubCapitulo> SubCapitulos { get; set; }
         public DbSet<Daf> Dafs { get; set; }
         public DbSet<UnidadEjecutora> UnidadesEjecutoras { get; set; }
+        public DbSet<AnalistaSupervisorConsulta> AnalistaSupervisorConsultas { get; set; }
+        public DbSet<SupervisorOption> SupervisorOptions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            // AnalistaSupervisor
+
+            modelBuilder.Entity<AnalistaSupervisorConsulta>().HasNoKey();
+            modelBuilder.Entity<SupervisorOption>().HasNoKey();
 
             // Mapeo Tabla UnidadEjecutiva
 
