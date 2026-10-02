@@ -1,5 +1,81 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
+﻿@using Mantenimiento.Core.Application.DTOs.AnalistaSupervisor
+@model List<AnalistaSupervisorConsultaDto>
+
+@if (Model != null && Model.Any())
+{
+    <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light text-dark border-bottom">
+                    <tr>
+                        <th class="py-3 px-3">Despacho Analista</th>
+                        <th class="py-3 px-3">Analista</th>
+                        <th class="py-3 px-3 text-center">Estado</th>
+                        <th class="py-3 px-3">Despacho Supervisor</th>
+                        <th class="py-3 px-3">Supervisor Asignado</th>
+                        <th class="py-3 px-3 text-center">Acciones de Relación</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        bool tieneSupervisor = !string.IsNullOrWhiteSpace(item.DespachoSupervisor);
+                        <tr>
+                            <td class="px-3">
+                                <span class="badge bg-light text-dark border">@item.DespachoAnalista</span>
+                            </td>
+                            <td class="px-3 fw-bold text-dark">@item.NombreAnalista</td>
+                            <td class="px-3 text-center">
+                                @if (string.Equals(item.EstadoAnalista, "Activo", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
+                                        <i class="bi bi-check-circle me-1"></i> @item.EstadoAnalista
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1">
+                                        @item.EstadoAnalista
+                                    </span>
+                                }
+                            </td>
+                            <td class="px-3 text-secondary">
+                                @(tieneSupervisor ? item.DespachoSupervisor : "-")
+                            </td>
+                            <td class="px-3 text-dark fw-semibold">
+                                @(tieneSupervisor ? item.NombreSupervisor : "Sin supervisor asignado")
+                            </td>
+                            <td class="px-3 text-center">
+                                @if (tieneSupervisor)
+                                {
+                                    <button class="btn btn-sm btn-outline-primary rounded-2 me-1"
+                                            onclick="abrirModalAsignacion('@item.DespachoAnalista', '@item.NombreAnalista', '@item.DespachoSupervisor', true)">
+                                        <i class="bi bi-arrow-repeat"></i> Cambiar
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger rounded-2"
+                                            onclick="desvincularAnalista('@item.DespachoAnalista', '@item.NombreAnalista')">
+                                        <i class="bi bi-person-x"></i> Desvincular
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-sm btn-success rounded-2"
+                                            onclick="abrirModalAsignacion('@item.DespachoAnalista', '@item.NombreAnalista', '', false)">
+                                        <i class="bi bi-person-plus-fill me-1"></i> Asignar
+                                    </button>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-warning border-0 shadow-sm text-center py-4 rounded-3 mb-0">
+        <i class="bi bi-exclamation-triangle fs-3 text-warning d-block mb-2"></i>
+        <span class="fw-semibold">No se encontraron registros de analistas con los criterios especificados.</span>
+    </div>
 }
