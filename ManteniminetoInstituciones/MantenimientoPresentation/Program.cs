@@ -16,6 +16,9 @@ namespace MantenimientoPresentation
             // Add services to the container.
             builder.Services.AddControllersWithViews();
 
+            // AutoMapper - Registro Global
+            builder.Services.AddAutoMapper(cfg => cfg.AddMaps(AppDomain.CurrentDomain.GetAssemblies()));
+
             // DbContext Corregido
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("ConexionSIGOB")));
@@ -31,6 +34,8 @@ namespace MantenimientoPresentation
             builder.Services.AddScoped<IDafService, DafService>();
             builder.Services.AddScoped<IUnidadEjecutoraRepository, UnidadEjecutoraRepository>();
             builder.Services.AddScoped<IUnidadEjecutoraService, UnidadEjecutoraService>();
+            builder.Services.AddScoped<IAnalistaSupervisorRepository, AnalistaSupervisorRepository>();
+            builder.Services.AddScoped<IAnalistaSupervisorService, AnalistaSupervisorService>();
 
             var app = builder.Build();
 
