@@ -25,8 +25,14 @@
                     <label for="txtNombreAnalista" class="form-label fw-bold text-dark mb-2">
                         <i class="bi bi-search me-1 text-primary"></i> Nombre del Analista
                     </label>
-                    <input type="text" id="txtNombreAnalista" class="form-control rounded-3 border-secondary-subtle"
-                           placeholder="Ej: Carmen Lugo" onkeypress="if(event.key === 'Enter') cargarGrid()" />
+                    <div class="input-group">
+                        <input type="text" id="txtNombreAnalista" class="form-control rounded-start-3 border-secondary-subtle"
+                               placeholder="Ej: Carmen Lugo" onkeypress="if(event.key === 'Enter') cargarGrid()" />
+                        <button type="button" class="btn btn-outline-secondary rounded-end-3"
+                                onclick="limpiarBusquedaAnalista()" title="Limpiar búsqueda" aria-label="Limpiar búsqueda por nombre">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- FILTRO ESTADO ANALISTA -->
@@ -36,8 +42,8 @@
                     </label>
                     <select id="selectEstadoAnalista" class="form-select rounded-3 border-secondary-subtle" onchange="cargarGrid()">
                         <option value="">-- Todos los estados --</option>
-                        <option value="Activo">Activo</option>
-                        <option value="Inactivo">Inactivo</option>
+                        <option value="Asignado">Asignado</option>
+                        <option value="Pendiente de asignacion">Pendiente de asignación</option>
                     </select>
                 </div>
 
@@ -57,8 +63,11 @@
 
                 <!-- BOTÓN BUSCAR -->
                 <div class="col-md-2 text-end">
-                    <button type="button" class="btn btn-cgr-primary w-100 rounded-3" onclick="cargarGrid()">
+                    <button type="button" class="btn btn-cgr-primary w-100 rounded-3 mb-2" onclick="cargarGrid()">
                         <i class="bi bi-filter me-1"></i> Filtrar
+                    </button>
+                    <button type="button" class="btn btn-outline-secondary w-100 rounded-3" onclick="limpiarFiltros()">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> Limpiar filtros
                     </button>
                 </div>
             </div>
@@ -149,17 +158,35 @@
             });
 
             fetch(`/AnalistaSupervisor/ObtenerGrid?${queryParams.toString()}`)
-                .then(res => res.text())
+                .then(res => {
+                    if (!res.ok) throw new Error(`Error del servidor (${res.status})`);
+                    return res.text();
+                })
                 .then(html => {
                     contenedor.innerHTML = html;
                 })
                 .catch(err => {
+                    console.error(err);
                     contenedor.innerHTML = `
-                                <div class="alert alert-danger border shadow-sm text-center py-4 rounded-3 mb-0">
-                                    <i class="bi bi-exclamation-octagon fs-3 d-block mb-2"></i>
-                                    <span class="fw-semibold">Error al obtener las relaciones.</span>
-                                </div>`;
+                        <div class="alert alert-danger border shadow-sm text-center py-4 rounded-3 mb-0">
+                            <i class="bi bi-exclamation-octagon fs-3 d-block mb-2"></i>
+                            <span class="fw-semibold">Ocurrió un error al cargar las relaciones. Intente nuevamente.</span>
+                        </div>`;
                 });
+        }
+
+        function limpiarBusquedaAnalista() {
+            const inputNombreAnalista = document.getElementById('txtNombreAnalista');
+            inputNombreAnalista.value = '';
+            cargarGrid();
+            inputNombreAnalista.focus();
+        }
+
+        function limpiarFiltros() {
+            document.getElementById('txtNombreAnalista').value = '';
+            document.getElementById('selectEstadoAnalista').value = '';
+            document.getElementById('selectSupervisorFiltro').value = '';
+            cargarGrid();
         }
 
         function abrirModalAsignacion(despachoAnalista, nombreAnalista, despachoSupervisorActual, esReasignacion) {
