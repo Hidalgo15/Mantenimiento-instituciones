@@ -26,7 +26,7 @@
                             </td>
                             <td class="px-3 fw-bold text-dark">@item.NombreAnalista</td>
                             <td class="px-3 text-center">
-                                @if (string.Equals(item.EstadoAnalista, "Activo", StringComparison.OrdinalIgnoreCase))
+                                @if (string.Equals(item.EstadoAnalista, "Asignado", StringComparison.OrdinalIgnoreCase))
                                 {
                                     <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
                                         <i class="bi bi-check-circle me-1"></i> @item.EstadoAnalista
@@ -74,8 +74,27 @@
 }
 else
 {
+    var nombreAnalistaFiltro = ViewData["NombreAnalista"] as string;
+    var estadoAnalistaFiltro = ViewData["EstadoAnalista"] as string;
+    var supervisorFiltro = ViewData["DespachoSupervisor"] as string;
+
     <div class="alert alert-warning border-0 shadow-sm text-center py-4 rounded-3 mb-0">
         <i class="bi bi-exclamation-triangle fs-3 text-warning d-block mb-2"></i>
-        <span class="fw-semibold">No se encontraron registros de analistas con los criterios especificados.</span>
+        @if (!string.IsNullOrWhiteSpace(supervisorFiltro))
+        {
+            if (string.IsNullOrWhiteSpace(nombreAnalistaFiltro)
+                && string.IsNullOrWhiteSpace(estadoAnalistaFiltro))
+            {
+                <span class="fw-semibold">El supervisor seleccionado no tiene analistas asignados.</span>
+            }
+            else
+            {
+                <span class="fw-semibold">No hay analistas que coincidan con los criterios seleccionados para este supervisor.</span>
+            }
+        }
+        else
+        {
+            <span class="fw-semibold">No se encontraron analistas que coincidan con los criterios seleccionados.</span>
+        }
     </div>
 }

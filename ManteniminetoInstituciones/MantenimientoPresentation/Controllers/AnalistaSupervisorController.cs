@@ -7,10 +7,14 @@ namespace MantenimientoPresentation.Controllers
     public class AnalistaSupervisorController : Controller
     {
         private readonly IAnalistaSupervisorService _service;
+        private readonly ILogger<AnalistaSupervisorController> _logger;
 
-        public AnalistaSupervisorController(IAnalistaSupervisorService service)
+        public AnalistaSupervisorController(
+            IAnalistaSupervisorService service,
+            ILogger<AnalistaSupervisorController> logger)
         {
             _service = service;
+            _logger = logger;
         }
 
         public async Task<IActionResult> Index()
@@ -23,8 +27,19 @@ namespace MantenimientoPresentation.Controllers
         [HttpGet]
         public async Task<IActionResult> ObtenerGrid(string? nombreAnalista, string? estadoAnalista, string? despachoSupervisor)
         {
-            var data = await _service.ObtenerMantenimientoAsync(nombreAnalista, estadoAnalista, despachoSupervisor);
-            return PartialView("_AnalistaSupervisorGridPartial", data);
+            try
+            {
+                var data = await _service.ObtenerMantenimientoAsync(nombreAnalista, estadoAnalista, despachoSupervisor);
+                ViewData["NombreAnalista"] = nombreAnalista;
+                ViewData["EstadoAnalista"] = estadoAnalista;
+                ViewData["DespachoSupervisor"] = despachoSupervisor;
+                return PartialView("_AnalistaSupervisorGridPartial", data);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener las relaciones de analistas y supervisores.");
+                return StatusCode(500, "Ocurrió un error al cargar las relaciones. Intente nuevamente.");
+            }
         }
 
         [HttpPost]
@@ -94,4 +109,3 @@ namespace MantenimientoPresentation.Controllers
 
     }
 }
-
