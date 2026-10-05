@@ -23,11 +23,25 @@
                     <label for="selectInstitucion" class="form-label fw-bold text-dark mb-2">
                         <i class="bi bi-search me-1 text-primary"></i> Seleccionar Institución
                     </label>
+                    <div class="position-relative mb-2">
+                        <div class="input-group">
+                            <input type="text" id="txtBuscarInstitucion" class="form-control rounded-start-3 border-secondary-subtle"
+                                   placeholder="Buscar institución por nombre o código..." aria-label="Buscar institución"
+                                   oninput="filtrarOpcionesSelect(this, 'selectInstitucion', 'resultadosBusquedaInstitucion')" />
+                            <button type="button" class="btn btn-outline-secondary rounded-end-3"
+                                    onclick="limpiarBusquedaSelect('txtBuscarInstitucion', 'selectInstitucion', 'resultadosBusquedaInstitucion')"
+                                    title="Limpiar búsqueda" aria-label="Limpiar búsqueda de institución">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                        <div id="resultadosBusquedaInstitucion" class="list-group position-absolute top-100 start-0 w-100 shadow d-none"
+                             style="z-index: 1050; max-height: 18rem; overflow-y: auto;" role="listbox"></div>
+                    </div>
                     <select id="selectInstitucion" class="form-select form-select-lg rounded-3 fs-6 border-secondary-subtle" onchange="cargarGridCuentas()">
                         <option value="">-- Seleccione una institución --</option>
                         @foreach (var inst in instituciones)
                         {
-                            <option value="@inst.Estructura">@inst.UnidadEjecutora</option>
+                            <option value="@inst.Estructura">@inst.Estructura - @inst.UnidadEjecutora</option>
                         }
                     </select>
                 </div>
