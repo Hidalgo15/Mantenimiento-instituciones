@@ -1,5 +1,234 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
+﻿@using Mantenimiento.Core.Application.DTOs.AnalistaSupervisor
 @{
+    ViewData["Title"] = "Relación Analistas y Supervisores";
+    var supervisores = ViewBag.Supervisores as List<SupervisorOptionDto> ?? new List<SupervisorOptionDto>();
+}
+
+<div class="container-fluid py-2">
+    <!-- CABECERA SUPERIOR ALINEADA -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h4 class="fw-bold mb-0 text-dark">Gestión de Relaciones: Analista - Supervisor</h4>
+            <small class="text-muted">Administre las vinculaciones y asignaciones jerárquicas del personal</small>
+        </div>
+        <span class="badge text-white py-2 px-3 fs-6" style="background-color: #0d5493;">
+            <i class="bi bi-people-fill me-1"></i> Personal
+        </span>
+    </div>
+
+    <!-- TARJETA DE FILTROS -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-body p-4">
+            <div class="row align-items-end g-3">
+                <!-- BUSCAR POR NOMBRE ANALISTA -->
+                <div class="col-md-4">
+                    <label for="txtNombreAnalista" class="form-label fw-bold text-dark mb-2">
+                        <i class="bi bi-search me-1 text-primary"></i> Nombre del Analista
+                    </label>
+                    <input type="text" id="txtNombreAnalista" class="form-control rounded-3 border-secondary-subtle"
+                           placeholder="Ej: Carmen Lugo" onkeypress="if(event.key === 'Enter') cargarGrid()" />
+                </div>
+
+                <!-- FILTRO ESTADO ANALISTA -->
+                <div class="col-md-3">
+                    <label for="selectEstadoAnalista" class="form-label fw-bold text-dark mb-2">
+                        <i class="bi bi-funnel me-1 text-primary"></i> Estado
+                    </label>
+                    <select id="selectEstadoAnalista" class="form-select rounded-3 border-secondary-subtle" onchange="cargarGrid()">
+                        <option value="">-- Todos los estados --</option>
+                        <option value="Activo">Activo</option>
+                        <option value="Inactivo">Inactivo</option>
+                    </select>
+                </div>
+
+                <!-- FILTRO DESPACHO SUPERVISOR -->
+                <div class="col-md-3">
+                    <label for="selectSupervisorFiltro" class="form-label fw-bold text-dark mb-2">
+                        <i class="bi bi-person-badge me-1 text-primary"></i> Supervisor
+                    </label>
+                    <select id="selectSupervisorFiltro" class="form-select rounded-3 border-secondary-subtle" onchange="cargarGrid()">
+                        <option value="">-- Todos los supervisores --</option>
+                        @foreach (var sup in supervisores)
+                        {
+                            <option value="@sup.DespachoSupervisor">@sup.NombreSupervisor</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- BOTÓN BUSCAR -->
+                <div class="col-md-2 text-end">
+                    <button type="button" class="btn btn-cgr-primary w-100 rounded-3" onclick="cargarGrid()">
+                        <i class="bi bi-filter me-1"></i> Filtrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR DEL GRID -->
+    <div id="contenedorGrid">
+        <div class="text-center py-5 bg-white rounded-3 border shadow-sm">
+            <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+            <p class="text-muted mb-0 fw-semibold">Cargando relaciones de analistas...</p>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL ASIGNAR / REASIGNAR SUPERVISOR -->
+<div class="modal fade" id="modalAsignacion" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-3">
+            <div class="modal-header text-white" style="background-color: #0d5493;">
+                <h5 class="modal-title fw-bold" id="modalAsignacionTitle">
+                    <i class="bi bi-person-plus-fill me-2"></i> Asignar Supervisor
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="formAsignacion">
+                    <input type="hidden" id="hdnEsReasignacion" value="false" />
+
+                    <!-- ANALISTA (SOLO LECTURA) -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark">Analista</label>
+                        <input type="text" id="txtAnalistaModal" class="form-control bg-light" readonly />
+                        <input type="hidden" id="hdnDespachoAnalista" />
+                    </div>
+
+                    <!-- SELECT SUPERVISOR -->
+                    <div class="mb-3">
+                        <label for="selectSupervisorModal" class="form-label fw-bold text-dark">Seleccionar Supervisor</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-person-badge-fill"></i></span>
+                            <select id="selectSupervisorModal" class="form-select" required>
+                                <option value="">-- Seleccione un supervisor --</option>
+                                @foreach (var sup in supervisores)
+                                {
+                                    <option value="@sup.DespachoSupervisor">@sup.NombreSupervisor</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light border-top-0 rounded-bottom-3">
+                <button type="button" class="btn btn-outline-secondary px-4 rounded-3" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-cgr-primary px-4 rounded-3" onclick="guardarAsignacion()">
+                    <i class="bi bi-check-circle me-1"></i> Guardar Relación
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let modalAsignacionBs;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            modalAsignacionBs = new bootstrap.Modal(document.getElementById('modalAsignacion'));
+            cargarGrid();
+        });
+
+        function cargarGrid() {
+            const nombreAnalista = document.getElementById('txtNombreAnalista').value.trim();
+            const estadoAnalista = document.getElementById('selectEstadoAnalista').value;
+            const despachoSupervisor = document.getElementById('selectSupervisorFiltro').value;
+
+            const contenedor = document.getElementById('contenedorGrid');
+            contenedor.innerHTML = `
+                        <div class="text-center py-5 bg-white rounded-3 border shadow-sm">
+                            <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+                            <p class="text-muted mb-0 fw-semibold">Cargando datos...</p>
+                        </div>`;
+
+            const queryParams = new URLSearchParams({
+                nombreAnalista: nombreAnalista,
+                estadoAnalista: estadoAnalista,
+                despachoSupervisor: despachoSupervisor
+            });
+
+            fetch(`/AnalistaSupervisor/ObtenerGrid?${queryParams.toString()}`)
+                .then(res => res.text())
+                .then(html => {
+                    contenedor.innerHTML = html;
+                })
+                .catch(err => {
+                    contenedor.innerHTML = `
+                                <div class="alert alert-danger border shadow-sm text-center py-4 rounded-3 mb-0">
+                                    <i class="bi bi-exclamation-octagon fs-3 d-block mb-2"></i>
+                                    <span class="fw-semibold">Error al obtener las relaciones.</span>
+                                </div>`;
+                });
+        }
+
+        function abrirModalAsignacion(despachoAnalista, nombreAnalista, despachoSupervisorActual, esReasignacion) {
+            document.getElementById('hdnEsReasignacion').value = esReasignacion ? 'true' : 'false';
+            document.getElementById('hdnDespachoAnalista').value = despachoAnalista;
+            document.getElementById('txtAnalistaModal').value = `${despachoAnalista} - ${nombreAnalista}`;
+            document.getElementById('selectSupervisorModal').value = despachoSupervisorActual || '';
+
+            const titleElement = document.getElementById('modalAsignacionTitle');
+            if (esReasignacion) {
+                titleElement.innerHTML = '<i class="bi bi-arrow-repeat me-2"></i> Reasignar Supervisor';
+            } else {
+                titleElement.innerHTML = '<i class="bi bi-person-plus-fill me-2"></i> Asignar Supervisor';
+            }
+
+            modalAsignacionBs.show();
+        }
+
+        function guardarAsignacion() {
+            const despachoAnalista = document.getElementById('hdnDespachoAnalista').value;
+            const despachoSupervisor = document.getElementById('selectSupervisorModal').value;
+            const esReasignacion = document.getElementById('hdnEsReasignacion').value === 'true';
+
+            if (!despachoSupervisor) {
+                alert('Debe seleccionar un supervisor.');
+                return;
+            }
+
+            const dto = {
+                despachoAnalista: despachoAnalista,
+                despachoSupervisor: despachoSupervisor
+            };
+
+            const endpoint = esReasignacion ? '/AnalistaSupervisor/Reasignar' : '/AnalistaSupervisor/Asignar';
+
+            fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dto)
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        modalAsignacionBs.hide();
+                        cargarGrid();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                });
+        }
+
+        function desvincularAnalista(despachoAnalista, nombreAnalista) {
+            if (!confirm(`¿Desea desvincular al supervisor del analista "${nombreAnalista}"?`)) return;
+
+            const dto = { despachoAnalista: despachoAnalista };
+
+            fetch('/AnalistaSupervisor/Desvincular', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dto)
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        cargarGrid();
+                    } else {
+                        alert('Error al desvincular: ' + data.message);
+                    }
+                });
+        }
+    </script>
 }
