@@ -29,14 +29,13 @@
                     </span>
                     Estructura Institucional
                 </h5>
-                
             </div>
 
             <!-- ACORDEÓN TIPO MENÚ -->
             <div class="accordion custom-nav-accordion shadow-sm rounded-4 overflow-hidden" id="accordionEstructura">
 
                 <div class="accordion-item border-0">
-                    <!-- CABECERA DEL MENÚ -->
+                    <!-- CABECERA DEL MENÚ PRINCIPAL -->
                     <div class="accordion-header p-3 bg-white d-flex align-items-center justify-content-between">
 
                         <div class="d-flex align-items-center gap-3 cursor-pointer flex-grow-1 me-2"
@@ -45,19 +44,15 @@
                              aria-expanded="true"
                              aria-controls="collapseEstructura">
                             <div class="icon-shape bg-navy text-white rounded-3 shadow-sm">
-                                <i class="bi bi-bookmark-check-fill fs-5"></i>
+                                <i class="bi bi-diagram-3-fill fs-5"></i>
                             </div>
                             <div>
-                                <h6 class="fw-bold mb-0 text-dark">Capítulos</h6>
-                                <small class="text-muted">Gestión principal de capítulos</small>
+                                <h6 class="fw-bold mb-0 text-dark">Estructura Orgánica</h6>
+                                <small class="text-muted">Niveles y componentes institucionales</small>
                             </div>
                         </div>
 
                         <div class="d-flex align-items-center gap-2">
-                            <!-- BOTÓN DE ACCESO DIRECTO REDIRECCIONABLE -->
-                            <a asp-controller="Capitulo" asp-action="Index" class="btn btn-outline-primary btn-sm px-3 fw-semibold rounded-3 d-inline-flex align-items-center gap-1">
-                                Acceder <i class="bi bi-arrow-right fs-6"></i>
-                            </a>
                             <!-- BOTÓN DE DESPLEGAR ACORDEÓN -->
                             <button class="btn btn-menu-toggle rounded-circle p-2 border-0"
                                     type="button"
@@ -71,10 +66,28 @@
                         </div>
                     </div>
 
-                    <!-- DESPLEGABLE TIPO MENÚ ANIDADO -->
+                    <!-- DESPLEGABLE CON LOS MÓDULOS INTERNOS -->
                     <div id="collapseEstructura" class="accordion-collapse collapse show" data-bs-parent="#accordionEstructura">
                         <div class="accordion-body bg-light-subtle p-3 border-top">
                             <div class="nav-tree-wrapper d-flex flex-column gap-2 ms-md-2">
+
+                                <!-- ITEM MENÚ: CAPÍTULOS -->
+                                <a asp-controller="Capitulo" asp-action="Index" class="menu-subitem-link text-decoration-none">
+                                    <div class="menu-subitem p-3 bg-white rounded-3 border d-flex align-items-center justify-content-between transition-all">
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="sub-icon-shape bg-primary-subtle text-primary rounded-3">
+                                                <i class="bi bi-bookmark-check-fill fs-5"></i>
+                                            </div>
+                                            <div>
+                                                <h6 class="fw-semibold mb-0 text-dark">Capítulos</h6>
+                                                <small class="text-muted">Gestión principal de capítulos</small>
+                                            </div>
+                                        </div>
+                                        <span class="subitem-arrow text-muted">
+                                            <i class="bi bi-chevron-right fs-6"></i>
+                                        </span>
+                                    </div>
+                                </a>
 
                                 <!-- ITEM MENÚ: SUB-CAPÍTULOS -->
                                 <a asp-controller="SubCapitulo" asp-action="Index" class="menu-subitem-link text-decoration-none">
@@ -147,7 +160,6 @@
                     </span>
                     Otros Catálogos
                 </h5>
-                
             </div>
 
             <div class="d-flex flex-column gap-3">

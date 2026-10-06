@@ -16,5 +16,9 @@
         public DateTime? Modificado { get; set; }
         public string? UsuarioCreacion { get; set; }
         public string? UsuarioModificacion { get; set; }
+
+        public int? IdCategoria { get; set; }
+        public string? Estructura { get; set; }
+        public string? DescripcionCategoria { get; set; }
     }
 }

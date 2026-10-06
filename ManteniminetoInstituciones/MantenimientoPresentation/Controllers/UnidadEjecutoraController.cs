@@ -10,15 +10,18 @@ namespace MantenimientoPresentation.Controllers
     {
         private readonly IUnidadEjecutoraService _service;
         private readonly IDafService _dafService;
+        private readonly ICategoriaTramiteService _categoriaService;
         private readonly ILogger<UnidadEjecutoraController> _logger;
 
         public UnidadEjecutoraController(
             IUnidadEjecutoraService service,
             IDafService dafService,
+            ICategoriaTramiteService categoriaService,
             ILogger<UnidadEjecutoraController> logger)
         {
             _service = service;
             _dafService = dafService;
+            _categoriaService = categoriaService;
             _logger = logger;
         }
 
@@ -28,11 +31,13 @@ namespace MantenimientoPresentation.Controllers
             try
             {
                 ViewBag.Dafs = await _dafService.ObtenerAsync();
+                ViewBag.Categorias = await _categoriaService.ObtenerTodasAsync();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al cargar el catálogo de DAFs para el index de Unidad Ejecutora.");
+                _logger.LogError(ex, "Error al cargar catálogos para Unidad Ejecutora.");
                 ViewBag.Dafs = new List<DafDto>();
+                ViewBag.Categorias = new List<CategoriaTramiteDto>();
             }
             return View();
         }

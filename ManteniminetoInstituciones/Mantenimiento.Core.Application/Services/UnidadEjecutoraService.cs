@@ -10,7 +10,7 @@ namespace Mantenimiento.Core.Application.Services
         private readonly IUnidadEjecutoraRepository _repo;
 
         public UnidadEjecutoraService(IUnidadEjecutoraRepository repo)
-        {   
+        {
             _repo = repo;
         }
 
@@ -33,12 +33,13 @@ namespace Mantenimiento.Core.Application.Services
         {
             if (dto == null) throw new ArgumentException("Los datos enviados son nulos.");
 
-            Validar(dto.IdDaf, dto.CodigoUnidadEjecutora, dto.NombreUnidadEjecutora, dto.Rnc);
+            Validar(dto.IdDaf, dto.IdCategoria, dto.CodigoUnidadEjecutora, dto.NombreUnidadEjecutora, dto.Rnc);
 
             var entidad = new UnidadEjecutora
             {
                 IdPadre = null,
                 IdDaf = dto.IdDaf,
+                IdCategoria = dto.IdCategoria,
                 CodigoUnidadEjecutora = dto.CodigoUnidadEjecutora.Trim(),
                 NombreUnidadEjecutora = dto.NombreUnidadEjecutora.Trim(),
                 Rnc = dto.Rnc?.Trim(),
@@ -54,7 +55,7 @@ namespace Mantenimiento.Core.Application.Services
             if (dto == null) throw new ArgumentException("Los datos enviados son nulos.");
             if (dto.Id <= 0) throw new ArgumentException("El identificador a actualizar no es válido.");
 
-            Validar(dto.IdDaf, dto.CodigoUnidadEjecutora, dto.NombreUnidadEjecutora, dto.Rnc);
+            Validar(dto.IdDaf, dto.IdCategoria, dto.CodigoUnidadEjecutora, dto.NombreUnidadEjecutora, dto.Rnc);
 
             if (dto.IdPadre.HasValue && dto.IdPadre.Value == dto.Id)
                 throw new ArgumentException("Una unidad ejecutora no puede ser su propia entidad padre.");
@@ -64,6 +65,8 @@ namespace Mantenimiento.Core.Application.Services
                 Id = dto.Id,
                 IdPadre = dto.Id,
                 IdDaf = dto.IdDaf,
+                IdCategoria = dto.IdCategoria,
+                Estructura = dto.Estructura, // <--- Asignación agregada
                 CodigoUnidadEjecutora = dto.CodigoUnidadEjecutora.Trim(),
                 NombreUnidadEjecutora = dto.NombreUnidadEjecutora.Trim(),
                 Rnc = dto.Rnc?.Trim(),
@@ -77,13 +80,19 @@ namespace Mantenimiento.Core.Application.Services
         public async Task EliminarAsync(int id, string usuario)
         {
             if (id <= 0) throw new ArgumentException("El identificador a eliminar no es válido.");
-            await _repo.EliminarConSpAsync(id, borradoLogico: true, usuario: usuario);
+            /// <summary>
+            /// Elimina una unidad ejecutora de manera lógica. Si es true el registro se marca como eliminado, si es false se elimina físicamente.
+            /// </summary>
+            await _repo.EliminarConSpAsync(id, borradoLogico: false, usuario: usuario);
         }
 
-        private static void Validar(int idDaf, string codigo, string nombre, string? rnc)
+        private static void Validar(int idDaf, int idCategoria, string codigo, string nombre, string? rnc)
         {
             if (idDaf <= 0)
                 throw new ArgumentException("Debe seleccionar una DAF válida.");
+
+            if (idCategoria <= 0)
+                throw new ArgumentException("Debe seleccionar una categoría válida.");
 
             if (string.IsNullOrWhiteSpace(codigo))
                 throw new ArgumentException("El código de unidad ejecutora es obligatorio.");
@@ -106,6 +115,9 @@ namespace Mantenimiento.Core.Application.Services
             Id = u.Id,
             IdPadre = u.IdPadre,
             IdDaf = u.IdDaf,
+            IdCategoria = u.IdCategoria,
+            Estructura = u.Estructura,
+            DescripcionCategoria = u.DescripcionCategoria,
             CodigoDaf = u.CodigoDaf ?? string.Empty,
             NombreDaf = u.NombreDaf ?? string.Empty,
             CodigoUnidadEjecutora = u.CodigoUnidadEjecutora ?? string.Empty,

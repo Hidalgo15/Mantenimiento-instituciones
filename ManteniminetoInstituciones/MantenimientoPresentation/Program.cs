@@ -36,6 +36,8 @@ namespace MantenimientoPresentation
             builder.Services.AddScoped<IUnidadEjecutoraService, UnidadEjecutoraService>();
             builder.Services.AddScoped<IAnalistaSupervisorRepository, AnalistaSupervisorRepository>();
             builder.Services.AddScoped<IAnalistaSupervisorService, AnalistaSupervisorService>();
+            builder.Services.AddScoped<ICategoriaTramiteRepository, CategoriaTramiteRepository>();
+            builder.Services.AddScoped<ICategoriaTramiteService, CategoriaTramiteService>();
 
             var app = builder.Build();
 

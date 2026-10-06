@@ -1,7 +1,9 @@
 ﻿@using Mantenimiento.Core.Application.DTOs.Daf
+@using Mantenimiento.Core.Application.DTOs.UnidadEjecutora
 @{
     ViewData["Title"] = "Gestión de Unidades Ejecutoras";
     var dafs = ViewBag.Dafs as IEnumerable<DafDto> ?? new List<DafDto>();
+    var categorias = ViewBag.Categorias as IEnumerable<CategoriaTramiteDto> ?? new List<CategoriaTramiteDto>();
 }
 
 <div class="container-fluid py-2">
@@ -86,6 +88,16 @@
                                 @foreach (var d in dafs)
                                 {
                                     <option value="@d.Id">@d.CodigoDaf - @d.Daf</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label fw-bold text-dark">Categoría Trámite</label>
+                            <select id="selectCategoriaModal" class="form-select border-secondary-subtle" required>
+                                <option value="">-- Seleccione Categoría --</option>
+                                @foreach (var c in categorias)
+                                {
+                                    <option value="@c.CodigoCategoria">@c.Descripcion</option>
                                 }
                             </select>
                         </div>
@@ -181,6 +193,7 @@
             document.getElementById('modalUnidadTitle').innerHTML = '<i class="bi bi-plus-circle me-2"></i> Agregar Unidad Ejecutora';
             document.getElementById('txtId').value = '0';
             document.getElementById('selectDafModal').value = document.getElementById('selectDafFiltro').value || '';
+            document.getElementById('selectCategoriaModal').value = '';
             document.getElementById('txtCodigoUE').value = '';
             document.getElementById('txtNombreUE').value = '';
             document.getElementById('txtRnc').value = '';
@@ -200,6 +213,7 @@
                         document.getElementById('modalUnidadTitle').innerHTML = '<i class="bi bi-pencil-square me-2"></i> Editar Unidad Ejecutora';
                         document.getElementById('txtId').value = data.id;
                         document.getElementById('selectDafModal').value = data.idDaf;
+                        document.getElementById('selectCategoriaModal').value = data.idCategoria || '';
                         document.getElementById('txtCodigoUE').value = data.codigoUnidadEjecutora;
                         document.getElementById('txtNombreUE').value = data.nombreUnidadEjecutora;
                         document.getElementById('txtRnc').value = data.rnc || '';
@@ -218,6 +232,7 @@
             const id = parseInt(document.getElementById('txtId').value) || 0;
             const esEdicion = id > 0;
             const idDaf = parseInt(document.getElementById('selectDafModal').value) || 0;
+            const idCategoria = parseInt(document.getElementById('selectCategoriaModal').value) || 0;
             const codigo = document.getElementById('txtCodigoUE').value.trim();
             const nombre = document.getElementById('txtNombreUE').value.trim();
             const rnc = document.getElementById('txtRnc').value.trim();
@@ -225,6 +240,10 @@
 
             if (idDaf <= 0) {
                 alert('Debe seleccionar una DAF válida.');
+                return;
+            }
+            if (idCategoria <= 0) {
+                alert('Debe seleccionar una Categoría válida.');
                 return;
             }
             if (!codigo) {
@@ -251,6 +270,7 @@
             const dto = {
                 id: id,
                 idDaf: idDaf,
+                idCategoria: idCategoria,
                 codigoUnidadEjecutora: codigo,
                 nombreUnidadEjecutora: nombre,
                 rnc: rnc || null,
