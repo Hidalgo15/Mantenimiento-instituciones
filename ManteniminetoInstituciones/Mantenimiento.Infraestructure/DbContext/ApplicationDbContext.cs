@@ -19,9 +19,14 @@ namespace Mantenimiento.Infraestructure.Persistence
         public DbSet<SupervisorOption> SupervisorOptions { get; set; }
         public DbSet<CategoriaTramite> CategoriasTramite { get; set; }
 
+        public DbSet<FondosEspeciales> FondosEspeciales { get; set; }
+
+        public DbSet<TipoTramiteContrato> TipoTramiteContratos { get; set; }   
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            #region CategoriaTramite
 
             // CategoriaTramite
 
@@ -31,11 +36,17 @@ namespace Mantenimiento.Infraestructure.Persistence
                 entity.ToView("v_categoria_tramite", "dbo");
             });
 
+            #endregion
+
+            #region AnalistaSupervisor
             // AnalistaSupervisor
 
             modelBuilder.Entity<AnalistaSupervisorConsulta>().HasNoKey();
             modelBuilder.Entity<SupervisorOption>().HasNoKey();
 
+            #endregion
+            
+            #region UnidadEjecutora
             // Mapeo Tabla UnidadEjecutiva
 
             modelBuilder.Entity<UnidadEjecutora>(entity =>
@@ -63,6 +74,9 @@ namespace Mantenimiento.Infraestructure.Persistence
                 entity.Property(e => e.DescripcionCategoria).HasColumnName("descripcion");
             });
 
+            #endregion
+
+            #region Daf
             // Mapeo Tabla Daf
 
             modelBuilder.Entity<Daf>(entity =>
@@ -75,6 +89,9 @@ namespace Mantenimiento.Infraestructure.Persistence
                 entity.Property(e => e.NombreDaf).HasColumnName("daf");
             });
 
+            #endregion
+
+            #region capitulo
             // Mapeo Tabla capitulo
             modelBuilder.Entity<Capitulo>(entity =>
             {
@@ -85,7 +102,9 @@ namespace Mantenimiento.Infraestructure.Persistence
                 entity.Property(e => e.NombreCapitulo).HasColumnName("capitulo");
             });
 
+            #endregion
 
+            #region SubCapitul
             // Mapeo Tabla SubCapitulo
             modelBuilder.Entity<SubCapitulo>(entity =>
             {
@@ -102,8 +121,9 @@ namespace Mantenimiento.Infraestructure.Persistence
                 entity.Property(e => e.Capitulo).HasColumnName("capitulo");
             });
 
+            #endregion
 
-
+            #region v_institucion
             // Mapeo Vista v_institucion
             modelBuilder.Entity<Institucion>(entity =>
             {
@@ -121,6 +141,9 @@ namespace Mantenimiento.Infraestructure.Persistence
                 entity.Property(e => e.PortalCompra).HasColumnName("portal_compra");
             });
 
+            #endregion
+
+            #region t_cta_institucion
             // Mapeo Tabla t_cta_institucion
             modelBuilder.Entity<CuentaInstitucion>(entity =>
             {
@@ -132,6 +155,38 @@ namespace Mantenimiento.Infraestructure.Persistence
                 entity.Property(e => e.CtaCtaBanco).HasColumnName("cta_cta_banco");
                 entity.Property(e => e.CtaDescripcion).HasColumnName("cta_descripcion");
             });
+
+            #endregion
+
+            #region FondosEspeciales
+            // Mapeo Tabla FondosEspeciales
+            modelBuilder.Entity<FondosEspeciales>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.ToTable("Fondo_especiales", "dbo");
+                entity.Property(e => e.Id).HasColumnName("Id");
+                entity.Property(e => e.Fondo).HasColumnName("Fondo");
+                entity.Property(e => e.Descripcion).HasColumnName("descripcion");
+                entity.Property(e => e.Estructura).HasColumnName("estructura_institucion");
+                entity.Property(e => e.TipoTramiteContrato).HasColumnName("tipo_tramite");
+                // Configurar la relación con TipoTramiteContrato
+                entity.HasOne(e => e.TipoTramiteContrato)
+                      .WithMany()
+                      .HasForeignKey(e => e.TipoTramiteContrato)
+                      .OnDelete(DeleteBehavior.Restrict);
+            });
+            #endregion
+
+            #region TipoTramiteContrato
+            // Mapeo Tabla TipoTramiteContrato
+            modelBuilder.Entity<TipoTramiteContrato>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.ToTable("tipo_tramite_contrato", "dbo");
+                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.TipoTramite).HasColumnName("tipo_tramite");
+            });
+            #endregion
         }
     }
 }

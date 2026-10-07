@@ -1,0 +1,211 @@
+﻿@using Mantenimiento.Core.Application.DTOs.TipoTramite
+
+@{
+    ViewData["Title"] = "Gestión de Fondos Especiales";
+    var tiposTramite = ViewBag.TiposTramite as List<TipoTramiteDto> ?? new List<TipoTramiteDto>();
+}
+
+<div class="container-fluid py-2">
+    <!-- CABECERA SUPERIOR -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h4 class="fw-bold mb-0 text-dark">Gestión de Fondos Especiales</h4>
+            <small class="text-muted">Administre y consulte los Fondos Especiales institucionales</small>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-cgr-primary rounded-3" onclick="abrirModalCrear()">
+                <i class="bi bi-plus-circle me-1"></i> Nuevo Fondo Especial
+            </button>
+            <span class="badge text-white py-2 px-3 fs-6" style="background-color: #0d5493;">
+                <i class="bi bi-bank me-1"></i> Institucional
+            </span>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR DEL GRID -->
+    <div id="contenedorGrid">
+        <div class="text-center py-5 bg-white rounded-3 border shadow-sm">
+            <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+            <p class="text-muted mb-0 fw-semibold">Cargando registros...</p>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CREAR / EDITAR FONDO ESPECIAL -->
+<div class="modal fade" id="modalFondo" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow rounded-3">
+            <div class="modal-header text-white" style="background-color: #0d5493;">
+                <h5 class="modal-title fw-bold" id="modalFondoTitle">
+                    <i class="bi bi-bank-fill me-2"></i> Agregar Fondo Especial
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="formFondo">
+                    <input type="hidden" id="txtId" value="0" />
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark">Código / Nombre del Fondo</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light"><i class="bi bi-hash"></i></span>
+                            <input type="text" id="txtFondo" class="form-control" required placeholder="Ej: 007227" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark">Estructura</label>
+                        <input type="text" id="txtEstructura" class="form-control" placeholder="Ej: 513101010001 (Opcional)" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark">Descripción</label>
+                        <textarea id="txtDescripcion" class="form-control" rows="2" placeholder="Descripción del fondo (Opcional)"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="selectTipoTramite" class="form-label fw-bold text-dark">Tipo de Trámite</label>
+                        <select id="selectTipoTramite" class="form-select">
+                            <option value="0">-- Seleccione un Tipo de Trámite --</option>
+                            @foreach (var tramite in tiposTramite)
+                            {
+                                <option value="@tramite.Id">@tramite.TipoTramite</option>
+                            }
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light border-top-0 rounded-bottom-3">
+                <button type="button" class="btn btn-outline-secondary px-4 rounded-3" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-cgr-primary px-4 rounded-3" onclick="guardarFondo()">
+                    <i class="bi bi-check-circle me-1"></i> Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let modalFondoBs;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            modalFondoBs = new bootstrap.Modal(document.getElementById('modalFondo'));
+            cargarGridFondos();
+        });
+
+        function cargarGridFondos() {
+            const contenedor = document.getElementById('contenedorGrid');
+
+            fetch('/FondoEspeciales/ObtenerGrid')
+                .then(res => res.text())
+                .then(html => {
+                    contenedor.innerHTML = html;
+                })
+                .catch(err => {
+                    contenedor.innerHTML = `
+                                <div class="alert alert-danger border shadow-sm text-center py-4 rounded-3 mb-0">
+                                    <i class="bi bi-exclamation-octagon fs-3 d-block mb-2"></i>
+                                    <span class="fw-semibold">Error al cargar los datos.</span>
+                                </div>`;
+                });
+        }
+
+        function abrirModalCrear() {
+            document.getElementById('modalFondoTitle').innerHTML = '<i class="bi bi-plus-circle me-2"></i> Agregar Fondo Especial';
+            document.getElementById('txtId').value = '0';
+            document.getElementById('txtFondo').value = '';
+            document.getElementById('txtEstructura').value = '';
+            document.getElementById('txtDescripcion').value = '';
+            document.getElementById('selectTipoTramite').value = '0';
+
+            modalFondoBs.show();
+        }
+
+        function abrirModalEditar(id) {
+            fetch(`/FondoEspeciales/ObtenerPorId?id=${id}`)
+                .then(res => res.json())
+                .then(res => {
+                    if (res.success) {
+                        const data = res.data;
+                        document.getElementById('modalFondoTitle').innerHTML = '<i class="bi bi-pencil-square me-2"></i> Editar Fondo Especial';
+                        document.getElementById('txtId').value = data.id;
+                        document.getElementById('txtFondo').value = data.fondo || '';
+                        document.getElementById('txtEstructura').value = data.estructura || '';
+                        document.getElementById('txtDescripcion').value = data.descripcion || '';
+                        document.getElementById('selectTipoTramite').value = data.tipoTramiteContrato?.id || '0';
+
+                        modalFondoBs.show();
+                    } else {
+                        alert('Error: ' + res.message);
+                    }
+                });
+        }
+
+        function guardarFondo() {
+            const id = parseInt(document.getElementById('txtId').value);
+            const fondoText = document.getElementById('txtFondo').value.trim();
+            const estructuraText = document.getElementById('txtEstructura').value.trim();
+            const descripcionText = document.getElementById('txtDescripcion').value.trim();
+            const tipoTramiteId = parseInt(document.getElementById('selectTipoTramite').value) || 0;
+
+            if (!fondoText) {
+                alert('Por favor ingrese el código/nombre del fondo.');
+                return;
+            }
+
+            if (tipoTramiteId <= 0) {
+                alert('Por favor seleccione un Tipo de Trámite válido.');
+                return;
+            }
+
+            const dto = {
+                id: id,
+                fondo: fondoText,
+                estructura: estructuraText,
+                descripcion: descripcionText,
+                tipoTramiteContrato: {
+                    id: tipoTramiteId,
+                    tipoTramite: ''
+                }
+            };
+
+            const endpoint = id > 0 ? '/FondoEspeciales/Actualizar' : '/FondoEspeciales/Crear';
+
+            fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dto)
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        modalFondoBs.hide();
+                        cargarGridFondos();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(err => {
+                    alert('Ocurrió un error al procesar la solicitud.');
+                });
+        }
+
+        function eliminarFondo(id) {
+            if (!confirm('¿Desea eliminar este Fondo Especial?')) return;
+
+            fetch(`/FondoEspeciales/Eliminar?id=${id}`, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        cargarGridFondos();
+                    } else {
+                        alert('Error al eliminar: ' + data.message);
+                    }
+                })
+                .catch(err => {
+                    alert('Ocurrió un error al intentar eliminar el registro.');
+                });
+        }
+    </script>
+}
