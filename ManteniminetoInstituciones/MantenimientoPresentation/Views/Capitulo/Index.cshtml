@@ -24,6 +24,20 @@
                     <label for="selectCapitulo" class="form-label fw-bold text-dark mb-2">
                         <i class="bi bi-search me-1 text-primary"></i> Seleccionar Capítulo
                     </label>
+                    <div class="position-relative mb-2">
+                        <div class="input-group">
+                            <input type="text" id="txtBuscarCapitulo" class="form-control rounded-start-3 border-secondary-subtle"
+                                   placeholder="Buscar capítulo por código o nombre..." aria-label="Buscar capítulo"
+                                   oninput="filtrarOpcionesSelect(this, 'selectCapitulo', 'resultadosBusquedaCapitulo')" />
+                            <button type="button" class="btn btn-outline-secondary rounded-end-3"
+                                    onclick="limpiarBusquedaSelect('txtBuscarCapitulo', 'selectCapitulo', 'resultadosBusquedaCapitulo')"
+                                    title="Limpiar búsqueda" aria-label="Limpiar búsqueda de capítulo">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                        <div id="resultadosBusquedaCapitulo" class="list-group position-absolute top-100 start-0 w-100 shadow d-none"
+                             style="z-index: 1050; max-height: 18rem; overflow-y: auto;" role="listbox"></div>
+                    </div>
                     <select id="selectCapitulo" class="form-select form-select-lg rounded-3 fs-6 border-secondary-subtle" onchange="cargarGridCapitulos()">
                         <option value="">-- Seleccione un capítulo --</option>
                         @foreach (var cap in capitulos)

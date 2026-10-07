@@ -12,5 +12,9 @@
         public string? Rnc { get; set; }
         public bool Estado { get; set; }
         public int? PortalCompra { get; set; }
+
+        public int? IdCategoria { get; set; }
+        public string? Estructura { get; set; }
+        public string? DescripcionCategoria { get; set; }
     }
 }
