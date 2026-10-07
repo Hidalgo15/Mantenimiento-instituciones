@@ -14,12 +14,24 @@ namespace Mantenimiento.Core.Application.Services
             _repo = repo;
         }
 
+        /// <summary>
+        /// Obtiene una lista de unidades ejecutoras según los parámetros proporcionados.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="codigoUnidadEjecutora"></param>
+        /// <param name="idDaf"></param>
+        /// <returns></returns>
         public async Task<IEnumerable<UnidadEjecutoraDto>> ObtenerAsync(int? id = null, string? codigoUnidadEjecutora = null, int? idDaf = null)
         {
             var lista = await _repo.ObtenerAsync(id, codigoUnidadEjecutora, idDaf);
             return lista.Select(MapToDto);
         }
 
+        /// <summary>
+        /// Obtiene una unidad ejecutora por su identificador.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public async Task<UnidadEjecutoraDto?> ObtenerPorIdAsync(int id)
         {
             if (id <= 0) return null;
@@ -29,6 +41,12 @@ namespace Mantenimiento.Core.Application.Services
             return entidad != null ? MapToDto(entidad) : null;
         }
 
+        /// <summary>
+        /// Crea una nueva unidad ejecutora en la base de datos.
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
         public async Task CrearAsync(CrearUnidadEjecutoraDto dto)
         {
             if (dto == null) throw new ArgumentException("Los datos enviados son nulos.");
@@ -50,6 +68,12 @@ namespace Mantenimiento.Core.Application.Services
             await _repo.CrearConSpAsync(entidad, dto.Usuario);
         }
 
+        /// <summary>
+        /// Actualiza una unidad ejecutora existente en la base de datos.
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException"></exception>
         public async Task ActualizarAsync(ActualizarUnidadEjecutoraDto dto)
         {
             if (dto == null) throw new ArgumentException("Los datos enviados son nulos.");
@@ -66,7 +90,7 @@ namespace Mantenimiento.Core.Application.Services
                 IdPadre = dto.Id,
                 IdDaf = dto.IdDaf,
                 IdCategoria = dto.IdCategoria,
-                Estructura = dto.Estructura, // <--- Asignación agregada
+                Estructura = dto.Estructura,
                 CodigoUnidadEjecutora = dto.CodigoUnidadEjecutora.Trim(),
                 NombreUnidadEjecutora = dto.NombreUnidadEjecutora.Trim(),
                 Rnc = dto.Rnc?.Trim(),
@@ -83,9 +107,18 @@ namespace Mantenimiento.Core.Application.Services
             /// <summary>
             /// Elimina una unidad ejecutora de manera lógica. Si es true el registro se marca como eliminado, si es false se elimina físicamente.
             /// </summary>
-            await _repo.EliminarConSpAsync(id, borradoLogico: false, usuario: usuario);
+            await _repo.EliminarConSpAsync(id, borradoLogico: true, usuario: usuario);
         }
 
+        /// <summary>
+        /// Valida los datos de la unidad ejecutora antes de crear o actualizar.
+        /// </summary>
+        /// <param name="idDaf"></param>
+        /// <param name="idCategoria"></param>
+        /// <param name="codigo"></param>
+        /// <param name="nombre"></param>
+        /// <param name="rnc"></param>
+        /// <exception cref="ArgumentException"></exception>
         private static void Validar(int idDaf, int idCategoria, string codigo, string nombre, string? rnc)
         {
             if (idDaf <= 0)
@@ -110,6 +143,11 @@ namespace Mantenimiento.Core.Application.Services
                 throw new ArgumentException("El RNC no puede superar los 20 caracteres.");
         }
 
+        /// <summary>
+        /// Mapea una entidad UnidadEjecutora a su correspondiente DTO UnidadEjecutoraDto.
+        /// </summary>
+        /// <param name="u"></param>
+        /// <returns></returns>
         private static UnidadEjecutoraDto MapToDto(UnidadEjecutora u) => new()
         {
             Id = u.Id,

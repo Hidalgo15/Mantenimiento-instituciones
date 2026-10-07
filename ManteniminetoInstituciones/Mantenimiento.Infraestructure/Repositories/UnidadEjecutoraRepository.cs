@@ -71,11 +71,10 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
 
             var pUsuario = new SqlParameter("@usuario", usuario ?? (object)DBNull.Value);
             var pIdCategoria = new SqlParameter("@id_categoria", SqlDbType.Int) { Value = entidad.IdCategoria.HasValue ? entidad.IdCategoria.Value : DBNull.Value };
-            var pEstructura = new SqlParameter("@estructura", string.IsNullOrWhiteSpace(entidad.Estructura) ? DBNull.Value : entidad.Estructura);
 
             await _context.Database.ExecuteSqlRawAsync(
-                "EXEC dbo.sp_unidad_ejecutora_Actualizar @id, @id_padre, @id_daf, @codigo_unidad_ejecutora, @unidad_ejecutora, @rnc, @estado, @portal_compra, @usuario, @id_categoria, @estructura",
-                pId, pIdPadre, pIdDaf, pCodigo, pNombre, pRnc, pEstado, pPortalCompra, pUsuario, pIdCategoria, pEstructura);
+                "EXEC dbo.sp_unidad_ejecutora_Actualizar @id, @id_padre, @id_daf, @codigo_unidad_ejecutora, @unidad_ejecutora, @rnc, @estado, @portal_compra, @usuario, @id_categoria",
+                pId, pIdPadre, pIdDaf, pCodigo, pNombre, pRnc, pEstado, pPortalCompra, pUsuario, pIdCategoria);
         }
 
         public async Task EliminarConSpAsync(int id, bool borradoLogico, string usuario)
