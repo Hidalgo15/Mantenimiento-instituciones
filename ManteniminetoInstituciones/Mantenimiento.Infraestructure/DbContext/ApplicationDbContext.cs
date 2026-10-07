@@ -17,10 +17,19 @@ namespace Mantenimiento.Infraestructure.Persistence
         public DbSet<UnidadEjecutora> UnidadesEjecutoras { get; set; }
         public DbSet<AnalistaSupervisorConsulta> AnalistaSupervisorConsultas { get; set; }
         public DbSet<SupervisorOption> SupervisorOptions { get; set; }
+        public DbSet<CategoriaTramite> CategoriasTramite { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            // CategoriaTramite
+
+            modelBuilder.Entity<CategoriaTramite>(entity =>
+            {
+                entity.HasNoKey();
+                entity.ToView("v_categoria_tramite", "dbo");
+            });
 
             // AnalistaSupervisor
 
@@ -48,6 +57,10 @@ namespace Mantenimiento.Infraestructure.Persistence
                 entity.Property(e => e.Modificado).HasColumnName("modificado");
                 entity.Property(e => e.UsuarioCreacion).HasColumnName("usuario_creacion");
                 entity.Property(e => e.UsuarioModificacion).HasColumnName("usuario_modificacion");
+
+                entity.Property(e => e.IdCategoria).HasColumnName("id_categoria");
+                entity.Property(e => e.Estructura).HasColumnName("estructura");
+                entity.Property(e => e.DescripcionCategoria).HasColumnName("descripcion");
             });
 
             // Mapeo Tabla Daf

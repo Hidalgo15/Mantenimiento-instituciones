@@ -8,13 +8,14 @@
             <table class="table table-hover align-middle mb-0">
                 <thead class="bg-light text-dark border-bottom">
                     <tr>
-                        <th class="py-3 px-3" style="width: 8%;">ID</th>
+                        <th class="py-3 px-3" style="width: 6%;">ID</th>
                         <th class="py-3 px-3" style="width: 18%;">DAF</th>
-                        <th class="py-3 px-3" style="width: 12%;">Código UE</th>
-                        <th class="py-3 px-3">Unidad Ejecutora</th>
-                        <th class="py-3 px-3" style="width: 12%;">RNC</th>
-                        <th class="py-3 px-3 text-center" style="width: 10%;">Estado</th>
-                        <th class="py-3 px-3 text-center" style="width: 18%;">Acciones</th>
+                        <th class="py-3 px-3" style="width: 10%;">Código UE</th>
+                        <th class="py-3 px-3" style="width: 22%;">Unidad Ejecutora</th>
+                        <th class="py-3 px-3" style="width: 16%;">Categoría</th>
+                        <th class="py-3 px-3" style="width: 10%;">RNC</th>
+                        <th class="py-3 px-3 text-center" style="width: 8%;">Estado</th>
+                        <th class="py-3 px-3 text-center" style="width: 10%;">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -29,7 +30,16 @@
                                 <span class="badge bg-light text-dark border">@item.CodigoUnidadEjecutora</span>
                             </td>
                             <td class="px-3 fw-bold text-dark">@item.NombreUnidadEjecutora</td>
-                            <td class="px-3">@(string.IsNullOrEmpty(item.Rnc) ? "-" : item.Rnc)</td>
+                            
+                            @* Celda de Categoría recuperada directamente desde el SP *@
+                            <td class="px-3">
+                                @(string.IsNullOrEmpty(item.DescripcionCategoria) ? "-" : item.DescripcionCategoria)
+                            </td>
+
+                            <td class="px-3">
+                                @(string.IsNullOrEmpty(item.Rnc) ? "-" : item.Rnc)
+                            </td>
+
                             <td class="px-3 text-center">
                                 @if (item.Estado)
                                 {
@@ -40,12 +50,13 @@
                                     <span class="badge bg-danger-subtle text-danger border border-danger-subtle px-2 py-1">Inactivo</span>
                                 }
                             </td>
+
                             <td class="px-3 text-center">
                                 <button class="btn btn-sm btn-outline-primary rounded-2 me-1" onclick="abrirModalEditar(@item.Id)">
-                                    <i class="bi bi-pencil-square"></i> Editar
+                                    <i class="bi bi-pencil-square"></i>
                                 </button>
                                 <button class="btn btn-sm btn-outline-danger rounded-2" onclick="eliminarUnidad(@item.Id)">
-                                    <i class="bi bi-trash"></i> Eliminar
+                                    <i class="bi bi-trash"></i>
                                 </button>
                             </td>
                         </tr>

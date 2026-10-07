@@ -40,6 +40,9 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
 
             var usuarioValidado = string.IsNullOrWhiteSpace(usuario) ? "SISTEMA" : usuario.Trim();
             var pUsuario = new SqlParameter("@usuario", usuarioValidado);
+
+            var pIdCategoria = new SqlParameter("@id_categoria", SqlDbType.Int) { Value = entidad.IdCategoria.HasValue ? entidad.IdCategoria.Value : DBNull.Value };
+
             var pIdGenerado = new SqlParameter
             {
                 ParameterName = "@id_generado",
@@ -48,8 +51,8 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
             };
 
             await _context.Database.ExecuteSqlRawAsync(
-                "EXEC dbo.sp_unidad_ejecutora_Crear @id_padre, @id_daf, @codigo_unidad_ejecutora, @unidad_ejecutora, @rnc, @estado, @portal_compra, @usuario, @id_generado OUTPUT",
-                pIdPadre, pIdDaf, pCodigo, pNombre, pRnc, pEstado, pPortalCompra, pUsuario, pIdGenerado);
+                "EXEC dbo.sp_unidad_ejecutora_Crear @id_padre, @id_daf, @codigo_unidad_ejecutora, @unidad_ejecutora, @rnc, @estado, @portal_compra, @usuario, @id_categoria, @id_generado OUTPUT",
+                pIdPadre, pIdDaf, pCodigo, pNombre, pRnc, pEstado, pPortalCompra, pUsuario, pIdCategoria, pIdGenerado);
 
             return (int)pIdGenerado.Value;
         }
@@ -67,10 +70,11 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
             var pPortalCompra = new SqlParameter("@portal_compra", SqlDbType.Int) { Value = entidad.PortalCompra };
 
             var pUsuario = new SqlParameter("@usuario", usuario ?? (object)DBNull.Value);
+            var pIdCategoria = new SqlParameter("@id_categoria", SqlDbType.Int) { Value = entidad.IdCategoria.HasValue ? entidad.IdCategoria.Value : DBNull.Value };
 
             await _context.Database.ExecuteSqlRawAsync(
-                "EXEC dbo.sp_unidad_ejecutora_Actualizar @id, @id_padre, @id_daf, @codigo_unidad_ejecutora, @unidad_ejecutora, @rnc, @estado, @portal_compra, @usuario",
-                pId, pIdPadre, pIdDaf, pCodigo, pNombre, pRnc, pEstado, pPortalCompra, pUsuario);
+                "EXEC dbo.sp_unidad_ejecutora_Actualizar @id, @id_padre, @id_daf, @codigo_unidad_ejecutora, @unidad_ejecutora, @rnc, @estado, @portal_compra, @usuario, @id_categoria",
+                pId, pIdPadre, pIdDaf, pCodigo, pNombre, pRnc, pEstado, pPortalCompra, pUsuario, pIdCategoria);
         }
 
         public async Task EliminarConSpAsync(int id, bool borradoLogico, string usuario)
