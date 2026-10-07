@@ -14,6 +14,13 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
             _context = context;
         }
 
+        /// <summary>
+        /// Obtiene la lista de analistas y supervisores según los filtros proporcionados.
+        /// </summary>
+        /// <param name="nombreAnalista"></param>
+        /// <param name="estadoAnalista"></param>
+        /// <param name="despachoSupervisor"></param>
+        /// <returns></returns>
         public async Task<List<AnalistaSupervisorConsulta>> ObtenerMantenimientoAsync(string? nombreAnalista, string? estadoAnalista, string? despachoSupervisor)
         {
             var pNombre = new SqlParameter("@NombreAnalista", (object?)nombreAnalista ?? DBNull.Value);
@@ -27,6 +34,10 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
                 .ToListAsync();
         }
 
+        /// <summary>
+        /// Obtiene la lista de supervisores disponibles para asignación.
+        /// </summary>
+        /// <returns></returns>
         public async Task<List<SupervisorOption>> ObtenerSupervisoresDisponiblesAsync()
         {
             return await _context.SupervisorOptions
@@ -35,6 +46,12 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
                 .ToListAsync();
         }
 
+        /// <summary>
+        /// Asigna un supervisor a un analista mediante el procedimiento almacenado correspondiente.
+        /// </summary>
+        /// <param name="despachoAnalista"></param>
+        /// <param name="despachoSupervisor"></param>
+        /// <returns></returns>
         public async Task AsignarSupervisorAsync(string despachoAnalista, string despachoSupervisor)
         {
             var pAnalista = new SqlParameter("@DespachoAnalista", despachoAnalista);
@@ -45,6 +62,12 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
                 pAnalista, pSupervisor);
         }
 
+        /// <summary>
+        /// Reasigna un supervisor a un analista mediante el procedimiento almacenado correspondiente.
+        /// </summary>
+        /// <param name="despachoAnalista"></param>
+        /// <param name="nuevoDespachoSupervisor"></param>
+        /// <returns></returns>
         public async Task ReasignarSupervisorAsync(string despachoAnalista, string nuevoDespachoSupervisor)
         {
             var pAnalista = new SqlParameter("@DespachoAnalista", despachoAnalista);
@@ -55,6 +78,11 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
                 pAnalista, pNuevoSupervisor);
         }
 
+        /// <summary>
+        /// Elimina la asignación de un supervisor a un analista mediante el procedimiento almacenado correspondiente.
+        /// </summary>
+        /// <param name="despachoAnalista"></param>
+        /// <returns></returns>
         public async Task EliminarAsignacionAsync(string despachoAnalista)
         {
             var pAnalista = new SqlParameter("@DespachoAnalista", despachoAnalista);
