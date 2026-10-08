@@ -17,26 +17,15 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
         public async Task<List<TipoTramiteContrato>> GetAllTipoTramiteAsync()
         {
             return await _context.TipoTramiteContratos
-                .FromSqlRaw("SELECT [id] AS Id, " +
-                "[tipo_tramite] AS TipoTramite " +
-                "FROM [dbo].[tipo_tramite_contrato]")
                 .AsNoTracking()
                 .ToListAsync();
         }
 
         public async Task<TipoTramiteContrato> GetTipoTramiteByIdAsync(int id)
         {
-            var pId = new SqlParameter("@Id", id);
-
-            var resultado = await _context.TipoTramiteContratos
-                .FromSqlRaw("SELECT [id] AS Id, " +
-                "[tipo_tramite] AS TipoTramite " +
-                "FROM [dbo].[tipo_tramite_contrato] " +
-                "WHERE [id] = @Id", pId)
+            return (await _context.TipoTramiteContratos
                 .AsNoTracking()
-                .ToListAsync();
-
-            return resultado.FirstOrDefault()!;
+                .FirstOrDefaultAsync(t => t.Id == id))!;
         }
     }
 }

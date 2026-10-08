@@ -1,38 +1,48 @@
 ﻿using Mantenimiento.Core.Application.DTOs.Fondos;
 using Mantenimiento.Core.Application.InterfaceServices;
+using Mantenimiento.Core.Application.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MantenimientoPresentation.Controllers
 {
+
+    [Route("FondoEspeciales/[action]/{id?}")]
     public class FondoEspecialesController : Controller
     {
 
         private readonly IFondoEspecialesService _fondoService;
         private readonly ITipoTramiteService _tipoTramiteService;
+        private readonly IUnidadEjecutoraService _unidadEjecutoraService; // 1. Inyectar el servicio
 
         public FondoEspecialesController(
             IFondoEspecialesService fondoService,
-            ITipoTramiteService tipoTramiteService)
+            ITipoTramiteService tipoTramiteService,
+            IUnidadEjecutoraService unidadEjecutoraService) // 1. Inyectar el servicio)
         {
             _fondoService = fondoService;
             _tipoTramiteService = tipoTramiteService;
+            _unidadEjecutoraService = unidadEjecutoraService;
         }
 
-        [HttpGet]
+        [HttpGet("")]
+        [HttpGet("Index")]
         public async Task<IActionResult> Index()
         {
             // Carga los tipos de trámite desde el nuevo ITipoTramiteService
             var tiposTramite = await _tipoTramiteService.ObtenerTiposTramiteAsync();
             ViewBag.TiposTramite = tiposTramite;
+            var unidadejecutora = await _unidadEjecutoraService.ObtenerAsync();
+            ViewBag.UnidadEjecutora = unidadejecutora;
             return View();
         }
 
         [HttpGet]
-        public async Task<IActionResult> ObtenerGrid()
+        public async Task<IActionResult> ObtenerGrid(string? descripcion = null, string? tipoTramite = null)
         {
-            var fondos = await _fondoService.ObtenerFondosEspecialesAsync();
+            var fondos = await _fondoService.ObtenerFondosEspecialesAsync(descripcion, tipoTramite);
             return PartialView("_FondosGridPartial", fondos);
         }
+
 
         [HttpGet]
         public async Task<IActionResult> ObtenerPorId(int id)

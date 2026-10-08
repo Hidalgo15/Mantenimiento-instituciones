@@ -19,10 +19,24 @@ namespace Mantenimiento.Core.Application.Services
             _tipoTramiteService = tipoTramiteService;
         }
 
-        public async Task<List<FondoDto>> ObtenerFondosEspecialesAsync()
+        public async Task<List<FondoDto>> ObtenerFondosEspecialesAsync(string? descripcion = null, string? tipoTramite = null)
         {
             var lista = await _fondoRepo.GetAllFondosEspecialesAsync();
-            return lista.Select(MapToDto).ToList();
+            var query = lista.AsEnumerable();
+
+            if (!string.IsNullOrWhiteSpace(descripcion))
+            {
+                query = query.Where(f => f.Descripcion != null &&
+                    f.Descripcion.Contains(descripcion, StringComparison.OrdinalIgnoreCase));
+            }
+
+            if (!string.IsNullOrWhiteSpace(tipoTramite))
+            {
+                query = query.Where(f => f.TipoTramite != null &&
+                    f.TipoTramite.Equals(tipoTramite, StringComparison.OrdinalIgnoreCase));
+            }
+
+            return query.Select(MapToDto).ToList();
         }
 
         public async Task<FondoDto> ObtenerPorIdAsync(int id)
@@ -34,9 +48,12 @@ namespace Mantenimiento.Core.Application.Services
         public async Task CrearFondoEspecialAsync(CrearFondoDto dto)
         {
             int tipoTramiteId = dto.TipoTramiteContrato?.Id ?? 0;
-            ValidarFondo(dto.Fondo, tipoTramiteId);
+            ValidarFondo(dto.Fondo);
 
-            // Obtenemos el Tipo de Trámite a través del nuevo Servicio
+            if (dto.IdInstitucion <= 0)
+                throw new ArgumentException("Debe seleccionar una institución válida.");
+
+            // Validar el tipo de trámite seleccionado
             var tipoTramiteDto = await _tipoTramiteService.ObtenerPorIdAsync(tipoTramiteId);
             if (tipoTramiteDto == null)
                 throw new ArgumentException("El tipo de trámite seleccionado no es válido.");
@@ -44,24 +61,22 @@ namespace Mantenimiento.Core.Application.Services
             var entidad = new FondosEspeciales
             {
                 Fondo = dto.Fondo.Trim(),
-                Descripcion = dto.Descripcion?.Trim(),
-                Estructura = dto.Estructura?.Trim(),
-                TipoTramiteContrato = new TipoTramiteContrato
-                {
-                    Id = tipoTramiteDto.Id,
-                    TipoTramite = tipoTramiteDto.TipoTramite
-                }
+                TipoTramite = tipoTramiteDto.TipoTramite
             };
 
-            await _fondoRepo.CreateFondosEspecialesAsync(entidad);
+            // Pasamos la entidad y el IdInstitucion al repositorio
+            await _fondoRepo.CreateFondosEspecialesAsync(entidad, dto.IdInstitucion);
         }
 
         public async Task ActualizarFondoEspecialAsync(FondoDto dto)
         {
             int tipoTramiteId = dto.TipoTramiteContrato?.Id ?? 0;
-            ValidarFondo(dto.Fondo, tipoTramiteId);
+            ValidarFondo(dto.Fondo);
 
-            // Obtenemos el Tipo de Trámite a través del nuevo Servicio
+            if (dto.IdInstitucion <= 0)
+                throw new ArgumentException("Debe seleccionar una institución válida.");
+
+            // Validar el tipo de trámite seleccionado
             var tipoTramiteDto = await _tipoTramiteService.ObtenerPorIdAsync(tipoTramiteId);
             if (tipoTramiteDto == null)
                 throw new ArgumentException("El tipo de trámite seleccionado no es válido.");
@@ -70,16 +85,11 @@ namespace Mantenimiento.Core.Application.Services
             {
                 Id = dto.Id,
                 Fondo = dto.Fondo.Trim(),
-                Descripcion = dto.Descripcion?.Trim(),
-                Estructura = dto.Estructura?.Trim(),
-                TipoTramiteContrato = new TipoTramiteContrato
-                {
-                    Id = tipoTramiteDto.Id,
-                    TipoTramite = tipoTramiteDto.TipoTramite
-                }
+                TipoTramite = tipoTramiteDto.TipoTramite
             };
 
-            await _fondoRepo.UpdateFondosEspecialesAsync(entidad);
+            // Pasamos la entidad y el IdInstitucion al repositorio
+            await _fondoRepo.UpdateFondosEspecialesAsync(entidad, dto.IdInstitucion);
         }
 
         public async Task EliminarFondoEspecialAsync(int id)
@@ -87,12 +97,13 @@ namespace Mantenimiento.Core.Application.Services
             await _fondoRepo.DeleteFondosEspecialesAsync(id);
         }
 
-        private static void ValidarFondo(string fondo, int? tipoTramiteId)
+        private static void ValidarFondo(string fondo)
         {
-            if (int.TryParse(fondo, out var fondoValue) && fondoValue <= 0)
-                throw new ArgumentException("El campo debe de ser un número positivo.");
             if (string.IsNullOrWhiteSpace(fondo))
                 throw new ArgumentException("El campo fondo es requerido.");
+
+            if (int.TryParse(fondo, out var fondoValue) && fondoValue <= 0)
+                throw new ArgumentException("El campo fondo debe ser un número positivo.");
         }
 
         private static FondoDto MapToDto(FondosEspeciales f) => new()
@@ -103,10 +114,10 @@ namespace Mantenimiento.Core.Application.Services
             Estructura = f.Estructura,
             TipoTramiteContrato = new TipoTramiteContrato
             {
-                Id = f.TipoTramiteContrato?.Id ?? 0,
-                TipoTramite = f.TipoTramiteContrato?.TipoTramite ?? string.Empty
+                TipoTramite = f.TipoTramite ?? string.Empty
             }
         };
     }
+
 }
 
