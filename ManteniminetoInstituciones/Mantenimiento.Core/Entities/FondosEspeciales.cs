@@ -1,16 +1,21 @@
 ﻿namespace Mantenimiento.Core.Domain.Entities
 {
+    using System.ComponentModel.DataAnnotations.Schema;
+
+    [Table("Fondo_especiales", Schema = "dbo")]
     public class FondosEspeciales
     {
         public int Id { get; set; }
+
         public string Fondo { get; set; } = string.Empty;
-        public string? Descripcion { get; set; } = string.Empty;
-        public string? Estructura { get; set; } = string.Empty;
 
-        // Clave Foránea (columna escalar en la BD)
-        public int? TipoTramiteContratoId { get; set; }
+        [Column("descripcion")]
+        public string? Descripcion { get; set; }
 
-        // Propiedad de Navegación (Entidad Relacionada)
-        public TipoTramiteContrato? TipoTramiteContrato { get; set; }
+        [Column("estructura_institucion")]
+        public string? Estructura { get; set; }
+
+        [Column("tipo_tramite")]
+        public string TipoTramite { get; set; } = string.Empty;
     }
 }

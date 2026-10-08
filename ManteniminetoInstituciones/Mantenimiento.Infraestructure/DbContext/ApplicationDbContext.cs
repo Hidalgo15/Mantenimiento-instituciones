@@ -162,22 +162,25 @@ namespace Mantenimiento.Infraestructure.Persistence
             // Mapeo Tabla FondosEspeciales
             modelBuilder.Entity<FondosEspeciales>(entity =>
             {
+             
                 entity.HasKey(e => e.Id);
                 entity.ToTable("Fondo_especiales", "dbo");
-                entity.Property(e => e.Id).HasColumnName("Id");
-                entity.Property(e => e.Fondo).HasColumnName("Fondo");
-                entity.Property(e => e.Descripcion).HasColumnName("descripcion");
-                entity.Property(e => e.Estructura).HasColumnName("estructura_institucion");
 
-                // Mapear el nombre de columna de la Clave Foránea en SQL
-                entity.Property(e => e.TipoTramiteContratoId)
+                entity.Property(e => e.Id)
+                      .HasColumnName("Id");
+
+                entity.Property(e => e.Fondo)
+                      .HasColumnName("Fondo");
+
+                entity.Property(e => e.Descripcion)
+                      .HasColumnName("descripcion");
+
+                entity.Property(e => e.Estructura)
+                      .HasColumnName("estructura_institucion");
+
+                // Mapeo simple como columna de texto
+                entity.Property(e => e.TipoTramite)
                       .HasColumnName("tipo_tramite");
-
-                // Configurar la relación de navegación
-                entity.HasOne(e => e.TipoTramiteContrato)
-                      .WithMany()
-                      .HasForeignKey(e => e.TipoTramiteContratoId)
-                      .OnDelete(DeleteBehavior.Restrict);
             });
             #endregion
 
