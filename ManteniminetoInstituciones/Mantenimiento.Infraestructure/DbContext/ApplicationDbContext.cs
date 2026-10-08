@@ -21,7 +21,7 @@ namespace Mantenimiento.Infraestructure.Persistence
 
         public DbSet<FondosEspeciales> FondosEspeciales { get; set; }
 
-        public DbSet<TipoTramiteContrato> TipoTramiteContratos { get; set; }   
+        public DbSet<TipoTramiteContrato> TipoTramiteContratos { get; set; }
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -45,7 +45,7 @@ namespace Mantenimiento.Infraestructure.Persistence
             modelBuilder.Entity<SupervisorOption>().HasNoKey();
 
             #endregion
-            
+
             #region UnidadEjecutora
             // Mapeo Tabla UnidadEjecutiva
 
@@ -168,11 +168,15 @@ namespace Mantenimiento.Infraestructure.Persistence
                 entity.Property(e => e.Fondo).HasColumnName("Fondo");
                 entity.Property(e => e.Descripcion).HasColumnName("descripcion");
                 entity.Property(e => e.Estructura).HasColumnName("estructura_institucion");
-                entity.Property(e => e.TipoTramiteContrato).HasColumnName("tipo_tramite");
-                // Configurar la relación con TipoTramiteContrato
+
+                // Mapear el nombre de columna de la Clave Foránea en SQL
+                entity.Property(e => e.TipoTramiteContratoId)
+                      .HasColumnName("tipo_tramite");
+
+                // Configurar la relación de navegación
                 entity.HasOne(e => e.TipoTramiteContrato)
                       .WithMany()
-                      .HasForeignKey(e => e.TipoTramiteContrato)
+                      .HasForeignKey(e => e.TipoTramiteContratoId)
                       .OnDelete(DeleteBehavior.Restrict);
             });
             #endregion
