@@ -1,5 +1,4 @@
-﻿
-namespace Mantenimiento.Core.Domain.Entities
+﻿namespace Mantenimiento.Core.Domain.Entities
 {
     public class FondosEspeciales
     {
@@ -7,6 +6,11 @@ namespace Mantenimiento.Core.Domain.Entities
         public string Fondo { get; set; } = string.Empty;
         public string? Descripcion { get; set; } = string.Empty;
         public string? Estructura { get; set; } = string.Empty;
-        public TipoTramiteContrato? TipoTramiteContrato { get; set; } = new TipoTramiteContrato();
+
+        // Clave Foránea (columna escalar en la BD)
+        public int? TipoTramiteContratoId { get; set; }
+
+        // Propiedad de Navegación (Entidad Relacionada)
+        public TipoTramiteContrato? TipoTramiteContrato { get; set; }
     }
 }
