@@ -23,6 +23,9 @@ namespace MantenimientoPresentation
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("ConexionSIGOB")));
 
+            // HttpContextAccessor
+            builder.Services.AddHttpContextAccessor();
+
             // Repositorios y Servicios
             builder.Services.AddScoped<ICuentaInstitucionRepository, CuentaInstitucionRepository>();
             builder.Services.AddScoped<ICuentaInstitucionService, CuentaInstitucionService>();
@@ -36,6 +39,13 @@ namespace MantenimientoPresentation
             builder.Services.AddScoped<IUnidadEjecutoraService, UnidadEjecutoraService>();
             builder.Services.AddScoped<IAnalistaSupervisorRepository, AnalistaSupervisorRepository>();
             builder.Services.AddScoped<IAnalistaSupervisorService, AnalistaSupervisorService>();
+            builder.Services.AddScoped<ICategoriaTramiteRepository, CategoriaTramiteRepository>();
+            builder.Services.AddScoped<ICategoriaTramiteService, CategoriaTramiteService>();
+            builder.Services.AddScoped<IFondoEspecialesService, FondoEspecialesService>();
+            builder.Services.AddScoped<IFondoEspecialesRepository, FondoEspecialesRepository>();
+            builder.Services.AddScoped<ITipoTramiteService, TipoTramiteService>();
+            builder.Services.AddScoped<ITipoTramiteRepository, TipoTramiteContratoRepository>();
+            builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 
             var app = builder.Build();
 

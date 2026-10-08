@@ -10,15 +10,21 @@ namespace MantenimientoPresentation.Controllers
     {
         private readonly IUnidadEjecutoraService _service;
         private readonly IDafService _dafService;
+        private readonly ICategoriaTramiteService _categoriaService;
+        private readonly ICurrentUserService _currentUserService;
         private readonly ILogger<UnidadEjecutoraController> _logger;
 
         public UnidadEjecutoraController(
             IUnidadEjecutoraService service,
             IDafService dafService,
+            ICategoriaTramiteService categoriaService,
+            ICurrentUserService currentUserService,
             ILogger<UnidadEjecutoraController> logger)
         {
             _service = service;
             _dafService = dafService;
+            _categoriaService = categoriaService;
+            _currentUserService = currentUserService;
             _logger = logger;
         }
 
@@ -28,11 +34,13 @@ namespace MantenimientoPresentation.Controllers
             try
             {
                 ViewBag.Dafs = await _dafService.ObtenerAsync();
+                ViewBag.Categorias = await _categoriaService.ObtenerTodasAsync();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al cargar el catálogo de DAFs para el index de Unidad Ejecutora.");
+                _logger.LogError(ex, "Error al cargar catálogos para Unidad Ejecutora.");
                 ViewBag.Dafs = new List<DafDto>();
+                ViewBag.Categorias = new List<CategoriaTramiteDto>();
             }
             return View();
         }
@@ -95,11 +103,7 @@ namespace MantenimientoPresentation.Controllers
 
             try
             {
-                var usuarioActual = !string.IsNullOrWhiteSpace(User.Identity?.Name)
-                    ? User.Identity.Name
-                    : (Environment.UserName ?? "SISTEMA");
-
-                dto.Usuario = usuarioActual;
+                dto.Usuario = _currentUserService.GetUsername(); ;
                 await _service.CrearAsync(dto);
 
                 _logger.LogInformation("Unidad Ejecutora {Codigo} creada exitosamente por el usuario {Usuario}.", dto.CodigoUnidadEjecutora, dto.Usuario);
@@ -139,11 +143,7 @@ namespace MantenimientoPresentation.Controllers
 
             try
             {
-                var usuarioActual = !string.IsNullOrWhiteSpace(User.Identity?.Name)
-                    ? User.Identity.Name
-                    : (Environment.UserName ?? "SISTEMA");
-
-                dto.Usuario = usuarioActual;
+                dto.Usuario = _currentUserService.GetUsername();
                 await _service.ActualizarAsync(dto);
 
                 _logger.LogInformation("Unidad Ejecutora con Id {Id} actualizada exitosamente por el usuario {Usuario}.", dto.Id, dto.Usuario);
@@ -174,9 +174,7 @@ namespace MantenimientoPresentation.Controllers
 
             try
             {
-                var usuarioActual = !string.IsNullOrWhiteSpace(User.Identity?.Name)
-                    ? User.Identity.Name
-                    : (Environment.UserName ?? "SISTEMA");
+                var usuarioActual = _currentUserService.GetUsername();
 
                 await _service.EliminarAsync(id, usuarioActual);
 
