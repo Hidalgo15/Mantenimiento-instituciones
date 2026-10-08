@@ -4,7 +4,7 @@
 @{
     ViewData["Title"] = "Gestión de Fondos Especiales";
     var tiposTramite = ViewBag.TiposTramite as List<TipoTramiteDto> ?? new List<TipoTramiteDto>();
-    var instituciones = ViewBag.UnidadEjecutora as List<UnidadEjecutoraDto> ?? new List<UnidadEjecutoraDto>();
+   var instituciones = ViewBag.UnidadEjecutora as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
 }
 
 <div class="container-fluid py-2">
