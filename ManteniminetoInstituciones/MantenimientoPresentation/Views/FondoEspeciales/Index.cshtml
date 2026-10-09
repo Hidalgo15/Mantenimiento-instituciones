@@ -22,40 +22,67 @@
             </span>
         </div>
     </div>
-
-    <div class="card border-0 shadow-sm rounded-3 mb-4">
-        <div class="card-body p-3 bg-white rounded-3">
-            <div class="row g-2 align-items-center">
-                <div class="col-md-5">
-                    <select id="filtroInstitucion" class="form-select" onchange="filtrarTabla()">
-                        <option value="">-- Todas las Instituciones --</option>
-                        @foreach (var inst in instituciones)
-                        {
-                            <option value="@inst.Estructura">@inst.Estructura - @inst.UnidadEjecutora</option>
-                        }
-                    </select>
+<!-- TARJETA DE FILTROS CON BÚSQUEDA RÁPIDA -->
+<div class="card border-0 shadow-sm rounded-3 mb-4">
+    <div class="card-body p-3 bg-white rounded-3">
+        <div class="row g-3 align-items-end">
+            <!-- Filtro e Input de Búsqueda por Institución -->
+            <div class="col-md-5">
+                <label for="filtroInstitucion" class="form-label fw-bold text-dark small mb-1">
+                    <i class="bi bi-search me-1 text-primary"></i> Seleccionar / Buscar Institución
+                </label>
+                
+                <!-- Input de búsqueda en tiempo real con lista desplegable flotante -->
+                <div class="position-relative mb-2">
+                    <div class="input-group input-group-sm">
+                        <input type="text" id="txtBuscarInstitucion" class="form-control rounded-start-3 border-secondary-subtle"
+                               placeholder="Buscar institución por nombre o estructura..." aria-label="Buscar institución"
+                               oninput="filtrarOpcionesSelect(this, 'filtroInstitucion', 'resultadosBusquedaInstitucion')" />
+                        <button type="button" class="btn btn-outline-secondary rounded-end-3"
+                                onclick="limpiarBusquedaSelect('txtBuscarInstitucion', 'filtroInstitucion', 'resultadosBusquedaInstitucion')"
+                                title="Limpiar búsqueda">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                    <!-- Resultados de coincidencia rápida -->
+                    <div id="resultadosBusquedaInstitucion" class="list-group position-absolute top-100 start-0 w-100 shadow d-none"
+                         style="z-index: 1050; max-height: 15rem; overflow-y: auto;" role="listbox"></div>
                 </div>
 
-                <div class="col-md-5">
-                    <select id="filtroTipoTramite" class="form-select" onchange="filtrarTabla()">
-                        <option value="">-- Todos los Tipos de Trámite --</option>
-                        @foreach (var tramite in tiposTramite)
-                        {
-                            <option value="@tramite.TipoTramite">@tramite.TipoTramite</option>
-                        }
-                        <option value="Pendiente">PENDIENTE</option>
-                    </select>
-                </div>
+                <!-- Selector Principal -->
+                <select id="filtroInstitucion" class="form-select" onchange="filtrarTabla()">
+                    <option value="">-- Todas las Instituciones --</option>
+                    @foreach (var inst in instituciones)
+                    {
+                        <option value="@inst.Estructura">@inst.Estructura - @inst.UnidadEjecutora</option>
+                    }
+                </select>
+            </div>
 
-                <div class="col-md-2 d-grid">
-                    <button type="button" class="btn btn-outline-secondary rounded-3" onclick="limpiarFiltros()">
-                        <i class="bi bi-arrow-counterclockwise me-1"></i> Limpiar
-                    </button>
-                </div>
+            <!-- Filtro por Tipo de Trámite -->
+            <div class="col-md-5">
+                <label for="filtroTipoTramite" class="form-label fw-bold text-dark small mb-1">
+                    <i class="bi bi-funnel me-1 text-primary"></i> Tipo de Trámite
+                </label>
+                <select id="filtroTipoTramite" class="form-select" onchange="filtrarTabla()">
+                    <option value="">-- Todos los Tipos de Trámite --</option>
+                    @foreach (var tramite in tiposTramite)
+                    {
+                        <option value="@tramite.TipoTramite">@tramite.TipoTramite</option>
+                    }
+                    <option value="Pendiente">PENDIENTE</option>
+                </select>
+            </div>
+
+            <!-- Botón Limpiar -->
+            <div class="col-md-2 d-grid">
+                <button type="button" class="btn btn-outline-secondary rounded-3" onclick="limpiarFiltros()">
+                    <i class="bi bi-arrow-counterclockwise me-1"></i> Limpiar
+                </button>
             </div>
         </div>
     </div>
-
+</div>
     <div id="contenedorGrid">
         <div class="text-center py-5 bg-white rounded-3 border shadow-sm">
             <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
@@ -64,6 +91,7 @@
     </div>
 </div>
 
+<!-- MODAL CREAR / EDITAR FONDO ESPECIAL -->
 <div class="modal fade" id="modalFondo" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow rounded-3">
@@ -96,10 +124,16 @@
                         </select>
                     </div>
 
+                    <!-- Campo manual para la Descripción -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark">Descripción</label>
+                        <textarea id="txtDescripcion" class="form-control" rows="2" placeholder="Ingrese la descripción del fondo..."></textarea>
+                    </div>
+
                     <div class="mb-3">
                         <label for="selectTipoTramite" class="form-label fw-bold text-dark">Tipo de Trámite</label>
                         <select id="selectTipoTramite" class="form-select">
-                            <option value="0">-- Seleccione un Tipo de Trámite --</option>
+                            <option value="0">-- Seleccione un Tipo de Trámite (Opcional - Por defecto Pendiente) --</option>
                             @foreach (var tramite in tiposTramite)
                             {
                                 <option value="@tramite.Id">@tramite.TipoTramite</option>
@@ -154,7 +188,65 @@
             cargarGridFondos(estructura, tipoTramite);
         }
 
+        // Filtra las opciones del select y muestra coincidencias flotantes mientras se escribe
+function filtrarOpcionesSelect(input, selectId, resultadosId) {
+    const query = input.value.trim().toLowerCase();
+    const select = document.getElementById(selectId);
+    const contenedorResultados = document.getElementById(resultadosId);
+    
+    contenedorResultados.innerHTML = '';
+
+    if (!query) {
+        contenedorResultados.classList.add('d-none');
+        return;
+    }
+
+    const opciones = Array.from(select.options).filter(opt => opt.value !== '');
+    const coincidencias = opciones.filter(opt => opt.text.toLowerCase().includes(query));
+
+    if (coincidencias.length === 0) {
+        contenedorResultados.innerHTML = `
+            <div class="list-group-item text-muted small py-2">
+                Sin coincidencias encontradas
+            </div>`;
+    } else {
+        coincidencias.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'list-group-item list-group-item-action small py-2 text-start';
+            btn.textContent = opt.text;
+            btn.onclick = () => {
+                select.value = opt.value;
+                input.value = opt.text;
+                contenedorResultados.classList.add('d-none');
+                filtrarTabla(); // Dispara la recarga del grid filtrado
+            };
+            contenedorResultados.appendChild(btn);
+        });
+    }
+
+    contenedorResultados.classList.remove('d-none');
+}
+
+        // Limpia el input de búsqueda y restablece el desplegable
+        function limpiarBusquedaSelect(inputId, selectId, resultadosId) {
+            document.getElementById(inputId).value = '';
+            document.getElementById(resultadosId).classList.add('d-none');
+            document.getElementById(resultadosId).innerHTML = '';
+        }
+
+        // Cerrar lista flotante al hacer clic fuera
+        document.addEventListener('click', (e) => {
+            const contenedor = document.getElementById('resultadosBusquedaInstitucion');
+            const input = document.getElementById('txtBuscarInstitucion');
+            if (contenedor && !contenedor.contains(e.target) && e.target !== input) {
+                contenedor.classList.add('d-none');
+            }
+        });
+
+        // Actualiza la función limpiarFiltros para resetear también el campo de texto de búsqueda
         function limpiarFiltros() {
+            limpiarBusquedaSelect('txtBuscarInstitucion', 'filtroInstitucion', 'resultadosBusquedaInstitucion');
             document.getElementById('filtroInstitucion').value = '';
             document.getElementById('filtroTipoTramite').value = '';
             cargarGridFondos();
@@ -165,6 +257,7 @@
             document.getElementById('txtId').value = '0';
             document.getElementById('txtFondo').value = '';
             document.getElementById('selectInstitucion').value = '';
+            document.getElementById('txtDescripcion').value = '';
             document.getElementById('selectTipoTramite').value = '0';
 
             modalFondoBs.show();
@@ -180,6 +273,7 @@
                         document.getElementById('txtId').value = data.id;
                         document.getElementById('txtFondo').value = data.fondo || '';
                         document.getElementById('selectInstitucion').value = data.estructura || '';
+                        document.getElementById('txtDescripcion').value = data.descripcion || '';
                         document.getElementById('selectTipoTramite').value = data.tipoTramiteContrato?.id || '0';
 
                         modalFondoBs.show();
@@ -192,9 +286,10 @@
                 });
         }
 
-        function guardarFondo() {
+   function guardarFondo() {
             const id = parseInt(document.getElementById('txtId').value);
             const fondoText = document.getElementById('txtFondo').value.trim();
+            const descripcionText = document.getElementById('txtDescripcion').value.trim();
             const institucionSeleccionada = document.getElementById('selectInstitucion').selectedOptions[0];
             const idInstitucion = parseInt(institucionSeleccionada?.dataset.institucionId) || 0;
             const tipoTramiteId = parseInt(document.getElementById('selectTipoTramite').value) || 0;
@@ -209,15 +304,11 @@
                 return;
             }
 
-            if (tipoTramiteId <= 0) {
-                alert('Por favor seleccione un Tipo de Trámite válido.');
-                return;
-            }
-
             const dto = {
                 id: id,
                 idInstitucion: idInstitucion,
                 fondo: fondoText,
+                descripcion: descripcionText,
                 tipoTramiteContrato: {
                     id: tipoTramiteId,
                     tipoTramite: ''
@@ -235,7 +326,8 @@
             .then(data => {
                 if (data.success) {
                     modalFondoBs.hide();
-                    cargarGridFondos();
+                    // RECARGAR MANTENIENDO LOS FILTROS SELECCIONADOS EN PANTALLA
+                    filtrarTabla(); 
                 } else {
                     alert('Error: ' + data.message);
                 }
@@ -252,7 +344,8 @@
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        cargarGridFondos();
+                        // RECARGAR MANTENIENDO LOS FILTROS SELECCIONADOS EN PANTALLA
+                        filtrarTabla(); 
                     } else {
                         alert('Error al eliminar: ' + data.message);
                     }

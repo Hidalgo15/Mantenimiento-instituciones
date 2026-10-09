@@ -55,18 +55,24 @@ namespace Mantenimiento.Core.Application.Services
             if (dto.IdInstitucion <= 0)
                 throw new ArgumentException("Debe seleccionar una institución válida.");
 
-            // Validar el tipo de trámite seleccionado
-            var tipoTramiteDto = await _tipoTramiteService.ObtenerPorIdAsync(tipoTramiteId);
-            if (tipoTramiteDto == null)
-                throw new ArgumentException("El tipo de trámite seleccionado no es válido.");
+            string tipoTramiteNombre = "Pendiente";
+
+            if (tipoTramiteId > 0)
+            {
+                var tipoTramiteDto = await _tipoTramiteService.ObtenerPorIdAsync(tipoTramiteId);
+                if (tipoTramiteDto != null && !string.IsNullOrWhiteSpace(tipoTramiteDto.TipoTramite))
+                {
+                    tipoTramiteNombre = tipoTramiteDto.TipoTramite;
+                }
+            }
 
             var entidad = new FondosEspeciales
             {
                 Fondo = dto.Fondo.Trim(),
-                TipoTramite = tipoTramiteDto.TipoTramite
+                Descripcion = dto.Descripcion?.Trim(), // Guardar la descripción recibida
+                TipoTramite = tipoTramiteNombre
             };
 
-            // Pasamos la entidad y el IdInstitucion al repositorio
             await _fondoRepo.CreateFondosEspecialesAsync(entidad, dto.IdInstitucion);
         }
 
@@ -78,19 +84,25 @@ namespace Mantenimiento.Core.Application.Services
             if (dto.IdInstitucion <= 0)
                 throw new ArgumentException("Debe seleccionar una institución válida.");
 
-            // Validar el tipo de trámite seleccionado
-            var tipoTramiteDto = await _tipoTramiteService.ObtenerPorIdAsync(tipoTramiteId);
-            if (tipoTramiteDto == null)
-                throw new ArgumentException("El tipo de trámite seleccionado no es válido.");
+            string tipoTramiteNombre = "Pendiente";
+
+            if (tipoTramiteId > 0)
+            {
+                var tipoTramiteDto = await _tipoTramiteService.ObtenerPorIdAsync(tipoTramiteId);
+                if (tipoTramiteDto != null && !string.IsNullOrWhiteSpace(tipoTramiteDto.TipoTramite))
+                {
+                    tipoTramiteNombre = tipoTramiteDto.TipoTramite;
+                }
+            }
 
             var entidad = new FondosEspeciales
             {
                 Id = dto.Id,
                 Fondo = dto.Fondo.Trim(),
-                TipoTramite = tipoTramiteDto.TipoTramite
+                Descripcion = dto.Descripcion?.Trim(), // Guardar la descripción recibida
+                TipoTramite = tipoTramiteNombre
             };
 
-            // Pasamos la entidad y el IdInstitucion al repositorio
             await _fondoRepo.UpdateFondosEspecialesAsync(entidad, dto.IdInstitucion);
         }
 
