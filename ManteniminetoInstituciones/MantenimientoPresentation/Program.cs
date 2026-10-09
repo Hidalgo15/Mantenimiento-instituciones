@@ -27,6 +27,8 @@ namespace MantenimientoPresentation
             builder.Services.AddHttpContextAccessor();
 
             // Repositorios y Servicios
+            builder.Services.AddScoped<IInstitucionRepository, InstitucionRepository>();
+            builder.Services.AddScoped<IInstitucionService, InstitucionService>();
             builder.Services.AddScoped<ICuentaInstitucionRepository, CuentaInstitucionRepository>();
             builder.Services.AddScoped<ICuentaInstitucionService, CuentaInstitucionService>();
             builder.Services.AddScoped<ICapituloRepository, CapituloRepository>();

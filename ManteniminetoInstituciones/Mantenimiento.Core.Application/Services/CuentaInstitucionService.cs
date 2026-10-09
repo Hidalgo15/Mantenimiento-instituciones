@@ -14,20 +14,6 @@ namespace Mantenimiento.Core.Application.Services
             _repo = repo;
         }
 
-        public async Task<List<InstitucionSeleccionDto>> ObtenerInstitucionesSelectorAsync()
-        {
-            var lista = await _repo.ObtenerInstitucionesAsync();
-            return lista
-                .Where(x => x.Estatus)
-                .Select(x => new InstitucionSeleccionDto
-                {
-                    Estructura = x.Estructura,
-                    UnidadEjecutora = x.UnidadEjecutora
-                })
-                .DistinctBy(x => x.Estructura)
-                .ToList();
-        }
-
         public async Task<List<CuentaInstitucionDto>> ObtenerCuentasPorEstructuraAsync(string insCodigo)
         {
             var cuentas = await _repo.ObtenerCuentasPorEstructuraAsync(insCodigo);

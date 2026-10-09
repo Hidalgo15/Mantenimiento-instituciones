@@ -1,10 +1,10 @@
 ﻿@using Mantenimiento.Core.Application.DTOs.TipoTramite
-@using Mantenimiento.Core.Application.DTOs.UnidadEjecutora
+@using Mantenimiento.Core.Application.DTOs.Institucion
 
 @{
     ViewData["Title"] = "Gestión de Fondos Especiales";
     var tiposTramite = ViewBag.TiposTramite as List<TipoTramiteDto> ?? new List<TipoTramiteDto>();
-   var instituciones = ViewBag.UnidadEjecutora as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
+    var instituciones = ViewBag.Instituciones as List<InstitucionSeleccionDto> ?? new List<InstitucionSeleccionDto>();
 }
 
 <div class="container-fluid py-2">
@@ -27,11 +27,11 @@
         <div class="card-body p-3 bg-white rounded-3">
             <div class="row g-2 align-items-center">
                 <div class="col-md-5">
-                    <select id="filtroDescripcion" class="form-select" onchange="filtrarTabla()">
+                    <select id="filtroInstitucion" class="form-select" onchange="filtrarTabla()">
                         <option value="">-- Todas las Instituciones --</option>
                         @foreach (var inst in instituciones)
                         {
-                            <option value="@inst.NombreUnidadEjecutora">@inst.NombreUnidadEjecutora</option>
+                            <option value="@inst.Estructura">@inst.Estructura - @inst.UnidadEjecutora</option>
                         }
                     </select>
                 </div>
@@ -88,10 +88,10 @@
                     <div class="mb-3">
                         <label for="selectInstitucion" class="form-label fw-bold text-dark">Institución</label>
                         <select id="selectInstitucion" class="form-select">
-                            <option value="0">-- Seleccione una Institución --</option>
+                            <option value="">-- Seleccione una Institución --</option>
                             @foreach (var inst in instituciones)
                             {
-                                <option value="@inst.Id">@inst.NombreUnidadEjecutora</option>
+                                <option value="@inst.Estructura" data-institucion-id="@inst.IdInstitucion">@inst.Estructura - @inst.UnidadEjecutora</option>
                             }
                         </select>
                     </div>
@@ -127,11 +127,11 @@
             cargarGridFondos();
         });
 
-        function cargarGridFondos(descripcion = '', tipoTramite = '') {
+        function cargarGridFondos(estructura = '', tipoTramite = '') {
             const contenedor = document.getElementById('contenedorGrid');
             
             const params = new URLSearchParams({
-                descripcion: descripcion,
+                estructura: estructura,
                 tipoTramite: tipoTramite
             });
 
@@ -149,13 +149,13 @@
         }
 
         function filtrarTabla() {
-            const descripcion = document.getElementById('filtroDescripcion').value;
+            const estructura = document.getElementById('filtroInstitucion').value;
             const tipoTramite = document.getElementById('filtroTipoTramite').value;
-            cargarGridFondos(descripcion, tipoTramite);
+            cargarGridFondos(estructura, tipoTramite);
         }
 
         function limpiarFiltros() {
-            document.getElementById('filtroDescripcion').value = '';
+            document.getElementById('filtroInstitucion').value = '';
             document.getElementById('filtroTipoTramite').value = '';
             cargarGridFondos();
         }
@@ -164,7 +164,7 @@
             document.getElementById('modalFondoTitle').innerHTML = '<i class="bi bi-plus-circle me-2"></i> Agregar Fondo Especial';
             document.getElementById('txtId').value = '0';
             document.getElementById('txtFondo').value = '';
-            document.getElementById('selectInstitucion').value = '0'; 
+            document.getElementById('selectInstitucion').value = '';
             document.getElementById('selectTipoTramite').value = '0';
 
             modalFondoBs.show();
@@ -179,7 +179,7 @@
                         document.getElementById('modalFondoTitle').innerHTML = '<i class="bi bi-pencil-square me-2"></i> Editar Fondo Especial';
                         document.getElementById('txtId').value = data.id;
                         document.getElementById('txtFondo').value = data.fondo || '';
-                        document.getElementById('selectInstitucion').value = data.idInstitucion || '0'; 
+                        document.getElementById('selectInstitucion').value = data.estructura || '';
                         document.getElementById('selectTipoTramite').value = data.tipoTramiteContrato?.id || '0';
 
                         modalFondoBs.show();
@@ -195,7 +195,8 @@
         function guardarFondo() {
             const id = parseInt(document.getElementById('txtId').value);
             const fondoText = document.getElementById('txtFondo').value.trim();
-            const idInstitucion = parseInt(document.getElementById('selectInstitucion').value) || 0;
+            const institucionSeleccionada = document.getElementById('selectInstitucion').selectedOptions[0];
+            const idInstitucion = parseInt(institucionSeleccionada?.dataset.institucionId) || 0;
             const tipoTramiteId = parseInt(document.getElementById('selectTipoTramite').value) || 0;
 
             if (!fondoText) {
