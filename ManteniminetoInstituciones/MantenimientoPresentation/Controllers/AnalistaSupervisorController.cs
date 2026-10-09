@@ -7,13 +7,16 @@ namespace MantenimientoPresentation.Controllers
     public class AnalistaSupervisorController : Controller
     {
         private readonly IAnalistaSupervisorService _service;
+        private readonly ICurrentUserService _currentUserService;
         private readonly ILogger<AnalistaSupervisorController> _logger;
 
         public AnalistaSupervisorController(
             IAnalistaSupervisorService service,
+            ICurrentUserService currentUserService,
             ILogger<AnalistaSupervisorController> logger)
         {
             _service = service;
+            _currentUserService = currentUserService;
             _logger = logger;
         }
 
@@ -56,11 +59,14 @@ namespace MantenimientoPresentation.Controllers
 
             try
             {
+                dto.Usuario = _currentUserService.GetUsername();
+
                 await _service.AsignarAsync(dto);
                 return Json(new { success = true, message = "Supervisor asignado exitosamente." });
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error al asignar supervisor al analista.");
                 return Json(new { success = false, message = ex.Message });
             }
         }
@@ -79,11 +85,14 @@ namespace MantenimientoPresentation.Controllers
 
             try
             {
+                dto.Usuario = _currentUserService.GetUsername();
+
                 await _service.ReasignarAsync(dto);
                 return Json(new { success = true, message = "Supervisor reasignado exitosamente." });
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error al reasignar supervisor.");
                 return Json(new { success = false, message = ex.Message });
             }
         }
@@ -98,14 +107,16 @@ namespace MantenimientoPresentation.Controllers
 
             try
             {
+                dto.Usuario = _currentUserService.GetUsername();
+
                 await _service.DesvincularAsync(dto);
                 return Json(new { success = true, message = "Relación eliminada exitosamente." });
             }
             catch (Exception ex)
             {
+                _logger.LogError(ex, "Error al desvincular analista.");
                 return Json(new { success = false, message = ex.Message });
             }
         }
-
     }
 }

@@ -1,10 +1,9 @@
-﻿
-
+﻿using Mantenimiento.Core.Application.DTOs.Auditoria;
 using Mantenimiento.Core.Domain.Entities;
 
 namespace Mantenimiento.Core.Application.DTOs.Fondos
 {
-    public record FondoDto
+    public record FondoDto : AuditableDto
     {
         public int Id { get; set; }
         public int IdInstitucion { get; set; }
