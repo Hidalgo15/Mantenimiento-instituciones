@@ -48,14 +48,16 @@
                             <td class="px-3 text-center">
                                 @if (tieneSupervisor)
                                 {
-                                    <button class="btn btn-sm btn-outline-primary rounded-pill px-3 me-1"
-                                            onclick="abrirModalAsignacion('@item.DespachoAnalista', '@item.NombreAnalista', '@item.DespachoSupervisor', true)">
-                                        <i class="bi bi-arrow-repeat me-1"></i> Cambiar
-                                    </button>
-                                    <button class="btn btn-sm btn-outline-danger rounded-pill px-3"
-                                            onclick="desvincularAnalista('@item.DespachoAnalista', '@item.NombreAnalista')">
-                                        <i class="bi bi-person-x me-1"></i> Desvincular
-                                    </button>
+                                    <div class="d-inline-flex flex-wrap justify-content-center gap-2">
+                                        <button class="btn btn-sm btn-outline-primary rounded-pill px-3"
+                                                onclick="abrirModalAsignacion('@item.DespachoAnalista', '@item.NombreAnalista', '@item.DespachoSupervisor', true)">
+                                            <i class="bi bi-arrow-repeat me-1"></i> Cambiar
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger rounded-pill px-3"
+                                                onclick="desvincularAnalista('@item.DespachoAnalista', '@item.NombreAnalista')">
+                                            <i class="bi bi-person-x me-1"></i> Desvincular
+                                        </button>
+                                    </div>
                                 }
                                 else
                                 {
