@@ -18,10 +18,14 @@ namespace Mantenimiento.Infraestructure.Persistence
         public DbSet<AnalistaSupervisorConsulta> AnalistaSupervisorConsultas { get; set; }
         public DbSet<SupervisorOption> SupervisorOptions { get; set; }
         public DbSet<CategoriaTramite> CategoriasTramite { get; set; }
-
         public DbSet<FondosEspeciales> FondosEspeciales { get; set; }
+        public DbSet<TramiteContrato> TipoTramiteContratos { get; set; }
 
-        public DbSet<TipoTramiteContrato> TipoTramiteContratos { get; set; }
+        public DbSet<CuentaDbo> TipoCuentaDbo { get; set; }
+        public DbSet<CuentaCt> TipoCuentaCt { get; set; }
+        public DbSet<TipoTramitePago> TipoTramitePago { get; set; }
+
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -186,12 +190,52 @@ namespace Mantenimiento.Infraestructure.Persistence
 
             #region TipoTramiteContrato
             // Mapeo Tabla TipoTramiteContrato
-            modelBuilder.Entity<TipoTramiteContrato>(entity =>
+            modelBuilder.Entity<TramiteContrato>(entity =>
             {
                 entity.HasKey(e => e.Id);
                 entity.ToTable("tipo_tramite_contrato", "dbo");
                 entity.Property(e => e.Id).HasColumnName("id");
                 entity.Property(e => e.TipoTramite).HasColumnName("tipo_tramite");
+            });
+            #endregion
+
+
+            #region dbo.cuenta
+
+            modelBuilder.Entity<CuentaDbo>(entity =>
+            {
+                entity.HasKey(e => e.IdCuenta);
+                entity.ToTable("cuentas", "dbo");
+                entity.Property(e => e.IdCuenta).HasColumnName("id_cuenta");
+                entity.Property(e => e.CodigoCuenta).HasColumnName("codigo_cuenta");
+                entity.Property(e => e.DescripcionCuenta).HasColumnName("descripcion_cuenta");
+                entity.Property(e => e.TipoTramiteId).HasColumnName("tipo_tramite");
+
+                // Ignorar la propiedad auxiliar que viene del SP / JOIN
+                entity.Ignore(e => e.TipoTramiteNombre);
+            });
+
+            #endregion
+
+            #region ct.cuenta
+            modelBuilder.Entity<CuentaCt>(entity =>
+            {
+                entity.HasKey(e => e.CuentaID);
+                entity.ToTable("cuentas", "ct");
+                entity.Property(e => e.CuentaID).HasColumnName("CuentaID");
+                entity.Property(e => e.IdCuenta).HasColumnName("id_cuenta");
+                entity.Property(e => e.CodigoCuenta).HasColumnName("codigo_cuenta");
+                entity.Property(e => e.DescripcionCuenta).HasColumnName("descripcion_cuenta");
+            });
+            #endregion
+
+            #region TipoTramitePago
+            modelBuilder.Entity<TipoTramitePago>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.ToTable("tipo_tramite_pago", "dbo"); // Corregido a la tabla real dbo.tipo_tramite_pago
+                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.Tipo).HasColumnName("tipo");
             });
             #endregion
         }

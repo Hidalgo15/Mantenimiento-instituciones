@@ -6,7 +6,7 @@ namespace Mantenimiento.Core.Domain.RepositoryInterfaces
 {
     public interface ITipoTramiteRepository
     {
-        Task <List<TipoTramiteContrato>> GetAllTipoTramiteAsync();
-        Task<TipoTramiteContrato> GetTipoTramiteByIdAsync(int id);
+        Task <List<TramiteContrato>> GetAllTipoTramiteAsync();
+        Task<TramiteContrato> GetTipoTramiteByIdAsync(int id);
     }
 }

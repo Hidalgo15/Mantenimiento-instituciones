@@ -49,7 +49,7 @@ namespace Mantenimiento.Core.Application.Services
 
         public async Task CrearFondoEspecialAsync(CrearFondoDto dto)
         {
-            int tipoTramiteId = dto.TipoTramiteContrato?.Id ?? 0;
+            int tipoTramiteId = dto.tipoTramiteContrato?.Id ?? 0;
             ValidarFondo(dto.Fondo);
 
             if (dto.IdInstitucion <= 0)
@@ -60,9 +60,9 @@ namespace Mantenimiento.Core.Application.Services
             if (tipoTramiteId > 0)
             {
                 var tipoTramiteDto = await _tipoTramiteService.ObtenerPorIdAsync(tipoTramiteId);
-                if (tipoTramiteDto != null && !string.IsNullOrWhiteSpace(tipoTramiteDto.TipoTramite))
+                if (tipoTramiteDto != null && !string.IsNullOrWhiteSpace(tipoTramiteDto.tipoTramiteContrato))
                 {
-                    tipoTramiteNombre = tipoTramiteDto.TipoTramite;
+                    tipoTramiteNombre = tipoTramiteDto.tipoTramiteContrato;
                 }
             }
 
@@ -89,9 +89,9 @@ namespace Mantenimiento.Core.Application.Services
             if (tipoTramiteId > 0)
             {
                 var tipoTramiteDto = await _tipoTramiteService.ObtenerPorIdAsync(tipoTramiteId);
-                if (tipoTramiteDto != null && !string.IsNullOrWhiteSpace(tipoTramiteDto.TipoTramite))
+                if (tipoTramiteDto != null && !string.IsNullOrWhiteSpace(tipoTramiteDto.tipoTramiteContrato))
                 {
-                    tipoTramiteNombre = tipoTramiteDto.TipoTramite;
+                    tipoTramiteNombre = tipoTramiteDto.tipoTramiteContrato;
                 }
             }
 
@@ -126,7 +126,7 @@ namespace Mantenimiento.Core.Application.Services
             Fondo = f.Fondo,
             Descripcion = f.Descripcion,
             Estructura = f.Estructura,
-            TipoTramiteContrato = new TipoTramiteContrato
+            TipoTramiteContrato = new tipoTramiteContrato
             {
                 TipoTramite = f.TipoTramite ?? string.Empty
             }
