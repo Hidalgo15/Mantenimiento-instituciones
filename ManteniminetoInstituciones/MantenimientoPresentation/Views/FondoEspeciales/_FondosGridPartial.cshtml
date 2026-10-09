@@ -6,7 +6,7 @@
     <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="bg-light text-dark border-bottom">
+                <thead class="bg-light text-secondary border-bottom small text-uppercase fw-bold">
                     <tr>
                         @* <th class="py-3 px-3">ID</th> *@
                         <th class="py-3 px-3">Fondo</th>
@@ -16,27 +16,28 @@
                         <th class="py-3 px-3 text-center">Acciones</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="border-top-0">
                     @foreach (var item in Model)
                     {
+                        bool esPendiente = string.IsNullOrEmpty(item.TipoTramiteContrato?.TipoTramite) || item.TipoTramiteContrato?.TipoTramite == "Pendiente";
                         <tr>
                             @* <td class="px-3 fw-bold text-secondary">@item.Id</td> *@
                             <td class="px-3 fw-bold text-dark">
-                                <span class="badge bg-light text-dark border">@item.Fondo</span>
+                                <span class="badge bg-light text-dark border rounded-pill px-3 py-1">@item.Fondo</span>
                             </td>
-                            <td class="px-3">@(string.IsNullOrWhiteSpace(item.Estructura) ? "-" : item.Estructura)</td>
-                            <td class="px-3">@(string.IsNullOrWhiteSpace(item.Descripcion) ? "-" : item.Descripcion)</td>
+                            <td class="px-3 text-secondary">@(string.IsNullOrWhiteSpace(item.Estructura) ? "-" : item.Estructura)</td>
+                            <td class="px-3 text-dark">@(string.IsNullOrWhiteSpace(item.Descripcion) ? "-" : item.Descripcion)</td>
                             <td class="px-3">
-                                <span class="badge @(string.IsNullOrEmpty(item.TipoTramiteContrato?.TipoTramite) || item.TipoTramiteContrato?.TipoTramite == "Pendiente" ? "bg-warning text-dark" : "bg-info text-dark")">
-                                    @(string.IsNullOrEmpty(item.TipoTramiteContrato?.TipoTramite) ? "Pendiente" : item.TipoTramiteContrato.TipoTramite)
+                                <span class="badge @(esPendiente ? "bg-secondary-subtle text-secondary border border-secondary-subtle" : "bg-primary-subtle text-primary border border-primary-subtle") rounded-pill px-3 py-1 fw-medium">
+                                    @(esPendiente ? "Pendiente" : item.TipoTramiteContrato.TipoTramite)
                                 </span>
                             </td>
                             <td class="px-3 text-center">
-                                <button class="btn btn-sm btn-outline-primary rounded-2 me-1" onclick="abrirModalEditar(@item.Id)">
-                                    <i class="bi bi-pencil-square"></i> Editar
+                                <button class="btn btn-sm btn-outline-primary rounded-pill px-3 me-1" onclick="abrirModalEditar(@item.Id)">
+                                    <i class="bi bi-pencil-square me-1"></i> Editar
                                 </button>
-                                <button class="btn btn-sm btn-outline-danger rounded-2" onclick="eliminarFondo(@item.Id)">
-                                    <i class="bi bi-trash"></i> Eliminar
+                                <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="eliminarFondo(@item.Id)">
+                                    <i class="bi bi-trash me-1"></i> Eliminar
                                 </button>
                             </td>
                         </tr>
@@ -48,8 +49,8 @@
 }
 else
 {
-    <div class="alert alert-warning border-0 shadow-sm text-center py-4 rounded-3 mb-0">
-        <i class="bi bi-exclamation-triangle fs-3 text-warning d-block mb-2"></i>
-        <span class="fw-semibold">No se encontraron fondos especiales registrados.</span>
+    <div class="alert alert-secondary border-0 shadow-sm text-center py-5 rounded-3 mb-0" style="background-color: #f8fafc;">
+        <i class="bi bi-folder-x fs-2 text-secondary d-block mb-2"></i>
+        <span class="fw-semibold text-secondary">No se encontraron fondos especiales registrados.</span>
     </div>
 }
