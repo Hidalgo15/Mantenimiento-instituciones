@@ -79,11 +79,16 @@
             <div class="modal-body p-4">
                 <form id="formCuenta">
                     <input type="hidden" id="txtId" value="0" />
-                    <input type="hidden" id="txtInsCodigo" />
 
                     <div class="mb-3">
-                        <label class="form-label fw-bold text-dark">Institución</label>
-                        <input type="text" id="txtInstitucion" class="form-control bg-light" readonly />
+                        <label for="selectInstitucionCuenta" class="form-label fw-bold text-dark">Institución</label>
+                        <select id="selectInstitucionCuenta" class="form-select" required>
+                            <option value="">-- Seleccione una institución --</option>
+                            @foreach (var inst in instituciones)
+                            {
+                                <option value="@inst.Estructura">@inst.UnidadEjecutora</option>
+                            }
+                        </select>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold text-dark">Cuenta Banco</label>
@@ -152,12 +157,11 @@
         }
 
         function abrirModalCrear() {
-            const select = document.getElementById('selectInstitucion');
-
+            const institucionSelect = document.getElementById('selectInstitucionCuenta');
             document.getElementById('modalCuentaTitle').innerHTML = '<i class="bi bi-plus-circle me-2"></i> Agregar Cuenta Institucional';
             document.getElementById('txtId').value = '0';
-            document.getElementById('txtInsCodigo').value = select.value;
-            document.getElementById('txtInstitucion').value = select.options[select.selectedIndex].text;
+            institucionSelect.value = document.getElementById('selectInstitucion').value;
+            institucionSelect.disabled = true;
             document.getElementById('txtCtaCtaBanco').value = '';
             document.getElementById('txtCtaDescripcion').value = '';
 
@@ -172,8 +176,9 @@
                         const cuenta = res.data;
                         document.getElementById('modalCuentaTitle').innerHTML = '<i class="bi bi-pencil-square me-2"></i> Editar Cuenta Institucional';
                         document.getElementById('txtId').value = cuenta.id;
-                        document.getElementById('txtInsCodigo').value = cuenta.insCodigo;
-                        document.getElementById('txtInstitucion').value = cuenta.institucion;
+                        const institucionSelect = document.getElementById('selectInstitucionCuenta');
+                        institucionSelect.value = cuenta.insCodigo;
+                        institucionSelect.disabled = false;
                         document.getElementById('txtCtaCtaBanco').value = cuenta.ctaCtaBanco;
                         document.getElementById('txtCtaDescripcion').value = cuenta.ctaDescripcion;
 
@@ -187,11 +192,18 @@
         function guardarCuenta() {
             const id = parseInt(document.getElementById('txtId').value);
             const esEdicion = id > 0;
+            const institucionSelect = document.getElementById('selectInstitucionCuenta');
+            const institucionSeleccionada = institucionSelect.selectedOptions[0];
+
+            if (!institucionSelect.value || !institucionSeleccionada) {
+                alert('Por favor seleccione una Institución válida.');
+                return;
+            }
 
             const dto = {
                 id: id,
-                insCodigo: document.getElementById('txtInsCodigo').value,
-                institucion: document.getElementById('txtInstitucion').value,
+                insCodigo: institucionSelect.value,
+                institucion: institucionSeleccionada.textContent.trim(),
                 ctaCtaBanco: document.getElementById('txtCtaCtaBanco').value,
                 ctaDescripcion: document.getElementById('txtCtaDescripcion').value
             };
@@ -207,6 +219,9 @@
                 .then(data => {
                     if (data.success) {
                         modalCuentaBs.hide();
+                        if (esEdicion) {
+                            document.getElementById('selectInstitucion').value = dto.insCodigo;
+                        }
                         cargarGridCuentas();
                     } else {
                         alert('Error: ' + data.message);
