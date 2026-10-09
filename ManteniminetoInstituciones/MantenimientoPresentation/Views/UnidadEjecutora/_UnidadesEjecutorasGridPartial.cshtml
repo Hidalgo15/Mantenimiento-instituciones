@@ -47,12 +47,14 @@
                                 }
                             </td>
                             <td class="px-3 text-center">
-                                <button class="btn btn-sm btn-outline-primary rounded-pill px-2 me-1" onclick="abrirModalEditar(@item.Id)" title="Editar">
-                                    <i class="bi bi-pencil-square"></i>
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger rounded-pill px-2" onclick="eliminarUnidad(@item.Id)" title="Eliminar">
-                                    <i class="bi bi-trash"></i>
-                                </button>
+                                <div class="d-inline-flex flex-wrap justify-content-center gap-2">
+                                    <button class="btn btn-sm btn-outline-primary rounded-pill px-2" onclick="abrirModalEditar(@item.Id)" title="Editar">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger rounded-pill px-2" onclick="eliminarUnidad(@item.Id)" title="Eliminar">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     }

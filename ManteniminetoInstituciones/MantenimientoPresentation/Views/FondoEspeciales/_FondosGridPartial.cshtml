@@ -33,12 +33,14 @@
                                 </span>
                             </td>
                             <td class="px-3 text-center">
-                                <button class="btn btn-sm btn-outline-primary rounded-pill px-3 me-1" onclick="abrirModalEditar(@item.Id)">
-                                    <i class="bi bi-pencil-square me-1"></i> Editar
-                                </button>
-                                <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="eliminarFondo(@item.Id)">
-                                    <i class="bi bi-trash me-1"></i> Eliminar
-                                </button>
+                                <div class="d-inline-flex flex-wrap justify-content-center gap-2">
+                                    <button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="abrirModalEditar(@item.Id)">
+                                        <i class="bi bi-pencil-square me-1"></i> Editar
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="eliminarFondo(@item.Id)">
+                                        <i class="bi bi-trash me-1"></i> Eliminar
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     }
