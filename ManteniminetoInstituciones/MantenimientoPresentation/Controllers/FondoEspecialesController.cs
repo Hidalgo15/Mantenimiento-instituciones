@@ -30,7 +30,9 @@ namespace MantenimientoPresentation.Controllers
             // Carga los tipos de trámite desde el nuevo ITipoTramiteService
             var tiposTramite = await _tipoTramiteService.ObtenerTiposTramiteAsync();
             ViewBag.TiposTramite = tiposTramite;
-            ViewBag.Instituciones = await _institucionService.ObtenerInstitucionesSelectorAsync();
+            //  ViewBag.Instituciones = await _institucionService.ObtenerInstitucionesSelectorAsync();
+            var instituciones = await _institucionService.ObtenerInstitucionesSelectorAsync();
+            ViewBag.Instituciones = instituciones.OrderBy(i => i.UnidadEjecutora).ToList(); // Ordena alfabéticamente las instituciones
             return View();
         }
 
