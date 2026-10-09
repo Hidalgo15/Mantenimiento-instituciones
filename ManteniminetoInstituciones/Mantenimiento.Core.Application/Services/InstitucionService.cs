@@ -25,6 +25,7 @@ namespace Mantenimiento.Core.Application.Services
                     UnidadEjecutora = institucion.UnidadEjecutora
                 })
                 .DistinctBy(institucion => institucion.Estructura)
+                .OrderBy(x => x.UnidadEjecutora) // <-- ORDENAR ALFABÉTICAMENTE POR NOMBRE
                 .ToList();
         }
     }
