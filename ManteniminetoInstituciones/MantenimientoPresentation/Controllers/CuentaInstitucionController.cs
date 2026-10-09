@@ -7,16 +7,20 @@ namespace MantenimientoPresentation.Controllers
     public class CuentaInstitucionController : Controller
     {
         private readonly ICuentaInstitucionService _service;
+        private readonly IInstitucionService _institucionService;
 
-        public CuentaInstitucionController(ICuentaInstitucionService service)
+        public CuentaInstitucionController(
+            ICuentaInstitucionService service,
+            IInstitucionService institucionService)
         {
             _service = service;
+            _institucionService = institucionService;
         }
 
         [HttpGet]
         public async Task<IActionResult> Index()
         {
-            ViewBag.Instituciones = await _service.ObtenerInstitucionesSelectorAsync();
+            ViewBag.Instituciones = await _institucionService.ObtenerInstitucionesSelectorAsync();
             return View();
         }
 

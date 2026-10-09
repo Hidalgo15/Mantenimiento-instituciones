@@ -1,6 +1,5 @@
-﻿using Mantenimiento.Core.Application.DTOs.Fondos;
+using Mantenimiento.Core.Application.DTOs.Fondos;
 using Mantenimiento.Core.Application.InterfaceServices;
-using Mantenimiento.Core.Application.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MantenimientoPresentation.Controllers
@@ -12,16 +11,16 @@ namespace MantenimientoPresentation.Controllers
 
         private readonly IFondoEspecialesService _fondoService;
         private readonly ITipoTramiteService _tipoTramiteService;
-        private readonly IUnidadEjecutoraService _unidadEjecutoraService; // 1. Inyectar el servicio
+        private readonly IInstitucionService _institucionService;
 
         public FondoEspecialesController(
             IFondoEspecialesService fondoService,
             ITipoTramiteService tipoTramiteService,
-            IUnidadEjecutoraService unidadEjecutoraService) // 1. Inyectar el servicio)
+            IInstitucionService institucionService)
         {
             _fondoService = fondoService;
             _tipoTramiteService = tipoTramiteService;
-            _unidadEjecutoraService = unidadEjecutoraService;
+            _institucionService = institucionService;
         }
 
         [HttpGet("")]
@@ -31,15 +30,14 @@ namespace MantenimientoPresentation.Controllers
             // Carga los tipos de trámite desde el nuevo ITipoTramiteService
             var tiposTramite = await _tipoTramiteService.ObtenerTiposTramiteAsync();
             ViewBag.TiposTramite = tiposTramite;
-            var unidadejecutora = await _unidadEjecutoraService.ObtenerAsync();
-            ViewBag.UnidadEjecutora = unidadejecutora;
+            ViewBag.Instituciones = await _institucionService.ObtenerInstitucionesSelectorAsync();
             return View();
         }
 
         [HttpGet]
-        public async Task<IActionResult> ObtenerGrid(string? descripcion = null, string? tipoTramite = null)
+        public async Task<IActionResult> ObtenerGrid(string? estructura = null, string? tipoTramite = null)
         {
-            var fondos = await _fondoService.ObtenerFondosEspecialesAsync(descripcion, tipoTramite);
+            var fondos = await _fondoService.ObtenerFondosEspecialesAsync(estructura, tipoTramite);
             return PartialView("_FondosGridPartial", fondos);
         }
 
