@@ -23,6 +23,7 @@
         </div>
     </div>
 
+    <!-- FILTROS DE BÚSQUEDA -->
     <div class="card border-0 shadow-sm rounded-3 mb-4">
         <div class="card-body p-3 bg-white rounded-3">
             <div class="row g-2 align-items-center">
@@ -64,6 +65,7 @@
     </div>
 </div>
 
+<!-- MODAL CREAR / EDITAR FONDO ESPECIAL -->
 <div class="modal fade" id="modalFondo" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow rounded-3">
@@ -96,10 +98,16 @@
                         </select>
                     </div>
 
+                    <!-- Campo manual para la Descripción -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark">Descripción</label>
+                        <textarea id="txtDescripcion" class="form-control" rows="2" placeholder="Ingrese la descripción del fondo..."></textarea>
+                    </div>
+
                     <div class="mb-3">
                         <label for="selectTipoTramite" class="form-label fw-bold text-dark">Tipo de Trámite</label>
                         <select id="selectTipoTramite" class="form-select">
-                            <option value="0">-- Seleccione un Tipo de Trámite --</option>
+                            <option value="0">-- Seleccione un Tipo de Trámite (Opcional - Por defecto Pendiente) --</option>
                             @foreach (var tramite in tiposTramite)
                             {
                                 <option value="@tramite.Id">@tramite.TipoTramite</option>
@@ -165,6 +173,7 @@
             document.getElementById('txtId').value = '0';
             document.getElementById('txtFondo').value = '';
             document.getElementById('selectInstitucion').value = '';
+            document.getElementById('txtDescripcion').value = '';
             document.getElementById('selectTipoTramite').value = '0';
 
             modalFondoBs.show();
@@ -180,6 +189,7 @@
                         document.getElementById('txtId').value = data.id;
                         document.getElementById('txtFondo').value = data.fondo || '';
                         document.getElementById('selectInstitucion').value = data.estructura || '';
+                        document.getElementById('txtDescripcion').value = data.descripcion || '';
                         document.getElementById('selectTipoTramite').value = data.tipoTramiteContrato?.id || '0';
 
                         modalFondoBs.show();
@@ -192,9 +202,10 @@
                 });
         }
 
-        function guardarFondo() {
+   function guardarFondo() {
             const id = parseInt(document.getElementById('txtId').value);
             const fondoText = document.getElementById('txtFondo').value.trim();
+            const descripcionText = document.getElementById('txtDescripcion').value.trim();
             const institucionSeleccionada = document.getElementById('selectInstitucion').selectedOptions[0];
             const idInstitucion = parseInt(institucionSeleccionada?.dataset.institucionId) || 0;
             const tipoTramiteId = parseInt(document.getElementById('selectTipoTramite').value) || 0;
@@ -209,15 +220,11 @@
                 return;
             }
 
-            if (tipoTramiteId <= 0) {
-                alert('Por favor seleccione un Tipo de Trámite válido.');
-                return;
-            }
-
             const dto = {
                 id: id,
                 idInstitucion: idInstitucion,
                 fondo: fondoText,
+                descripcion: descripcionText,
                 tipoTramiteContrato: {
                     id: tipoTramiteId,
                     tipoTramite: ''
@@ -235,7 +242,8 @@
             .then(data => {
                 if (data.success) {
                     modalFondoBs.hide();
-                    cargarGridFondos();
+                    // RECARGAR MANTENIENDO LOS FILTROS SELECCIONADOS EN PANTALLA
+                    filtrarTabla(); 
                 } else {
                     alert('Error: ' + data.message);
                 }
@@ -252,7 +260,8 @@
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        cargarGridFondos();
+                        // RECARGAR MANTENIENDO LOS FILTROS SELECCIONADOS EN PANTALLA
+                        filtrarTabla(); 
                     } else {
                         alert('Error al eliminar: ' + data.message);
                     }
