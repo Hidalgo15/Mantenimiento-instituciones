@@ -22,11 +22,6 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
             return cuenta ?? throw new KeyNotFoundException($"No se encontró la cuenta de institución con el ID {id}.");
         }
 
-        public async Task<List<Institucion>> ObtenerInstitucionesAsync()
-        {
-            return await _context.Instituciones.AsNoTracking().ToListAsync();
-        }
-
         public async Task<List<CuentaInstitucion>> ObtenerCuentasPorEstructuraAsync(string insCodigo)
         {
             var param = new SqlParameter("@ins_codigo", insCodigo ?? (object)DBNull.Value);

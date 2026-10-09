@@ -19,15 +19,17 @@ namespace Mantenimiento.Core.Application.Services
             _tipoTramiteService = tipoTramiteService;
         }
 
-        public async Task<List<FondoDto>> ObtenerFondosEspecialesAsync(string? descripcion = null, string? tipoTramite = null)
+        public async Task<List<FondoDto>> ObtenerFondosEspecialesAsync(string? estructura = null, string? tipoTramite = null)
         {
             var lista = await _fondoRepo.GetAllFondosEspecialesAsync();
             var query = lista.AsEnumerable();
 
-            if (!string.IsNullOrWhiteSpace(descripcion))
+            if (!string.IsNullOrWhiteSpace(estructura))
             {
-                query = query.Where(f => f.Descripcion != null &&
-                    f.Descripcion.Contains(descripcion, StringComparison.OrdinalIgnoreCase));
+                query = query.Where(f => string.Equals(
+                    f.Estructura,
+                    estructura,
+                    StringComparison.OrdinalIgnoreCase));
             }
 
             if (!string.IsNullOrWhiteSpace(tipoTramite))
@@ -120,4 +122,3 @@ namespace Mantenimiento.Core.Application.Services
     }
 
 }
-
