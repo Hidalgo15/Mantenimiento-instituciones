@@ -61,12 +61,12 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
         {
             var pIdInstitucion = new SqlParameter("@id_institucion", idInstitucion);
             var pFondo = new SqlParameter("@fondo", (object?)fondoEspecial.Fondo ?? DBNull.Value);
+            var pDescripcion = new SqlParameter("@descripcion", (object?)fondoEspecial.Descripcion ?? DBNull.Value);
             var pTipoTramite = new SqlParameter("@tipo_tramite", (object?)fondoEspecial.TipoTramite ?? DBNull.Value);
 
-            // USAR _context.Database.ExecuteSqlRawAsync
             await _context.Database.ExecuteSqlRawAsync(
-                "EXEC [dbo].[sp_FondoEspeciales_Insertar] @id_institucion, @fondo, @tipo_tramite",
-                pIdInstitucion, pFondo, pTipoTramite);
+                "EXEC [dbo].[sp_FondoEspeciales_Insertar] @id_institucion, @fondo, @descripcion, @tipo_tramite",
+                pIdInstitucion, pFondo, pDescripcion, pTipoTramite);
 
             return fondoEspecial;
         }
@@ -76,12 +76,12 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
             var pId = new SqlParameter("@id", fondoEspecial.Id);
             var pIdInstitucion = new SqlParameter("@id_institucion", idInstitucion);
             var pFondo = new SqlParameter("@fondo", (object?)fondoEspecial.Fondo ?? DBNull.Value);
+            var pDescripcion = new SqlParameter("@descripcion", (object?)fondoEspecial.Descripcion ?? DBNull.Value);
             var pTipoTramite = new SqlParameter("@tipo_tramite", (object?)fondoEspecial.TipoTramite ?? DBNull.Value);
 
-            // USAR _context.Database.ExecuteSqlRawAsync
             await _context.Database.ExecuteSqlRawAsync(
-                "EXEC [dbo].[sp_FondoEspeciales_Actualizar] @id, @id_institucion, @fondo, @tipo_tramite",
-                pId, pIdInstitucion, pFondo, pTipoTramite);
+                "EXEC [dbo].[sp_FondoEspeciales_Actualizar] @id, @id_institucion, @fondo, @descripcion, @tipo_tramite",
+                pId, pIdInstitucion, pFondo, pDescripcion, pTipoTramite);
 
             return fondoEspecial;
         }
