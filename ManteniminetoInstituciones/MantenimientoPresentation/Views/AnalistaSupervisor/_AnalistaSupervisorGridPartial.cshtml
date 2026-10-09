@@ -6,7 +6,7 @@
     <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
         <div class="table-responsive">
             <table class="table table-hover align-middle mb-0">
-                <thead class="bg-light text-dark border-bottom">
+                <thead class="bg-light text-secondary border-bottom small text-uppercase fw-bold">
                     <tr>
                         <th class="py-3 px-3">Despacho Analista</th>
                         <th class="py-3 px-3">Analista</th>
@@ -16,25 +16,25 @@
                         <th class="py-3 px-3 text-center">Acciones de Relación</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="border-top-0">
                     @foreach (var item in Model)
                     {
                         bool tieneSupervisor = !string.IsNullOrWhiteSpace(item.DespachoSupervisor);
                         <tr>
                             <td class="px-3">
-                                <span class="badge bg-light text-dark border">@item.DespachoAnalista</span>
+                                <span class="badge bg-light text-dark border rounded-pill px-3 py-1">@item.DespachoAnalista</span>
                             </td>
                             <td class="px-3 fw-bold text-dark">@item.NombreAnalista</td>
                             <td class="px-3 text-center">
                                 @if (string.Equals(item.EstadoAnalista, "Asignado", StringComparison.OrdinalIgnoreCase))
                                 {
-                                    <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1">
-                                        <i class="bi bi-check-circle me-1"></i> @item.EstadoAnalista
+                                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1 fw-semibold">
+                                        <i class="bi bi-check-circle-fill me-1"></i> @item.EstadoAnalista
                                     </span>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle px-2 py-1">
+                                    <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle rounded-pill px-3 py-1 fw-medium">
                                         @item.EstadoAnalista
                                     </span>
                                 }
@@ -48,18 +48,18 @@
                             <td class="px-3 text-center">
                                 @if (tieneSupervisor)
                                 {
-                                    <button class="btn btn-sm btn-outline-primary rounded-2 me-1"
+                                    <button class="btn btn-sm btn-outline-primary rounded-pill px-3 me-1"
                                             onclick="abrirModalAsignacion('@item.DespachoAnalista', '@item.NombreAnalista', '@item.DespachoSupervisor', true)">
-                                        <i class="bi bi-arrow-repeat"></i> Cambiar
+                                        <i class="bi bi-arrow-repeat me-1"></i> Cambiar
                                     </button>
-                                    <button class="btn btn-sm btn-outline-danger rounded-2"
+                                    <button class="btn btn-sm btn-outline-danger rounded-pill px-3"
                                             onclick="desvincularAnalista('@item.DespachoAnalista', '@item.NombreAnalista')">
-                                        <i class="bi bi-person-x"></i> Desvincular
+                                        <i class="bi bi-person-x me-1"></i> Desvincular
                                     </button>
                                 }
                                 else
                                 {
-                                    <button class="btn btn-sm btn-success rounded-2"
+                                    <button class="btn btn-sm btn-cgr-primary rounded-pill px-3"
                                             onclick="abrirModalAsignacion('@item.DespachoAnalista', '@item.NombreAnalista', '', false)">
                                         <i class="bi bi-person-plus-fill me-1"></i> Asignar
                                     </button>
@@ -78,23 +78,22 @@ else
     var estadoAnalistaFiltro = ViewData["EstadoAnalista"] as string;
     var supervisorFiltro = ViewData["DespachoSupervisor"] as string;
 
-    <div class="alert alert-warning border-0 shadow-sm text-center py-4 rounded-3 mb-0">
-        <i class="bi bi-exclamation-triangle fs-3 text-warning d-block mb-2"></i>
+    <div class="alert alert-secondary border-0 shadow-sm text-center py-5 rounded-3 mb-0" style="background-color: #f8fafc;">
+        <i class="bi bi-search fs-2 text-secondary d-block mb-2"></i>
         @if (!string.IsNullOrWhiteSpace(supervisorFiltro))
         {
-            if (string.IsNullOrWhiteSpace(nombreAnalistaFiltro)
-                && string.IsNullOrWhiteSpace(estadoAnalistaFiltro))
+            if (string.IsNullOrWhiteSpace(nombreAnalistaFiltro) && string.IsNullOrWhiteSpace(estadoAnalistaFiltro))
             {
-                <span class="fw-semibold">El supervisor seleccionado no tiene analistas asignados.</span>
+                <span class="fw-semibold text-secondary">El supervisor seleccionado no tiene analistas asignados.</span>
             }
             else
             {
-                <span class="fw-semibold">No hay analistas que coincidan con los criterios seleccionados para este supervisor.</span>
+                <span class="fw-semibold text-secondary">No hay analistas que coincidan con los criterios seleccionados para este supervisor.</span>
             }
         }
         else
         {
-            <span class="fw-semibold">No se encontraron analistas que coincidan con los criterios seleccionados.</span>
+            <span class="fw-semibold text-secondary">No se encontraron analistas que coincidan con los criterios seleccionados.</span>
         }
     </div>
 }

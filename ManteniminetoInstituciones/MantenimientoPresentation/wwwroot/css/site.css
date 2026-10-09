@@ -18,16 +18,32 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    background-color: #f8fafc;
+    color: #1e293b;
+}
+
+/* ==========================================================================
+   VARIABLES DE DISEÑO INSTITUCIONAL (CGR)
+   ========================================================================== */
+:root {
+    --cgr-primary: #0d5493;
+    --cgr-primary-hover: #093c69;
+    --cgr-primary-subtle: #ebf3fa;
+    --cgr-border-color: #e2e8f0;
+    --cgr-text-muted: #64748b;
+    --cgr-bg-surface: #f8fafc;
 }
 
 /* NAVBAR Y ESTILOS CGR */
 .style-cgr-navbar {
-    background-color: #0d5493 !important;
+    background-color: var(--cgr-primary) !important;
 }
 
-/* BOTONES PERSONALIZADOS */
+/* ==========================================================================
+   BOTONES PERSONALIZADOS
+   ========================================================================== */
 .btn-cgr-primary {
-    background-color: #0d5493;
+    background-color: var(--cgr-primary);
     color: #ffffff;
     border: none;
     font-weight: 600;
@@ -35,8 +51,9 @@ body {
 }
 
     .btn-cgr-primary:hover:not(:disabled) {
-        background-color: #093c69;
+        background-color: var(--cgr-primary-hover);
         color: #ffffff;
+        box-shadow: 0 4px 12px rgba(13, 84, 147, 0.2);
     }
 
     .btn-cgr-primary:disabled {
@@ -44,8 +61,74 @@ body {
         opacity: 0.65;
     }
 
-/* ENFOCADO DE INPUTS */
-.form-control:focus, .form-select:focus {
+/* Botones redondeados modernos */
+.btn-rounded,
+.btn-pill {
+    border-radius: 50rem !important;
+}
+
+.btn-outline-primary {
     border-color: #0d5493;
-    box-shadow: 0 0 0 0.25rem rgba(13, 84, 147, 0.25);
+    color: #0d5493;
+}
+
+    .btn-outline-primary:hover {
+        background-color: #0d5493;
+        border-color: #0d5493;
+        color: #ffffff;
+    }
+
+/* ==========================================================================
+   ENFOCADO E INPUTS
+   ========================================================================== */
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--cgr-primary);
+    box-shadow: 0 0 0 0.25rem rgba(13, 84, 147, 0.15);
+}
+
+.rounded-start-pill {
+    border-top-left-radius: 50rem !important;
+    border-bottom-left-radius: 50rem !important;
+}
+
+.rounded-end-pill {
+    border-top-right-radius: 50rem !important;
+    border-bottom-right-radius: 50rem !important;
+}
+
+/* ==========================================================================
+   BADGES Y COMPONENTES NEUTROS E INSTITUCIONALES (SIN AMARILLOS)
+   ========================================================================== */
+/* Badges institucionales suaves */
+.bg-primary-subtle {
+    background-color: #e2edf8 !important;
+    color: #0d5493 !important;
+}
+
+.bg-secondary-subtle {
+    background-color: #f1f5f9 !important;
+    color: #475569 !important;
+}
+
+/* Reemplazo global para contenedores y alertas neutras */
+.alert-secondary,
+.alert-institutional {
+    background-color: var(--cgr-bg-surface) !important;
+    border: 1px solid var(--cgr-border-color) !important;
+    color: var(--cgr-text-muted) !important;
+    border-radius: 0.75rem;
+}
+
+/* ==========================================================================
+   TARJETAS Y TABLAS
+   ========================================================================== */
+.card {
+    border-color: var(--cgr-border-color);
+}
+
+.table thead th {
+    font-size: 0.8125rem;
+    letter-spacing: 0.05em;
+    color: #475569;
 }

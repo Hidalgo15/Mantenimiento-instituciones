@@ -4,14 +4,14 @@
     var supervisores = ViewBag.Supervisores as List<SupervisorOptionDto> ?? new List<SupervisorOptionDto>();
 }
 
-<div class="container-fluid py-2">
-    <!-- CABECERA SUPERIOR ALINEADA -->
+<div class="container-fluid py-3">
+    <!-- CABECERA SUPERIOR -->
     <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
         <div>
             <h4 class="fw-bold mb-0 text-dark">Gestión de Relaciones: Analista - Supervisor</h4>
             <small class="text-muted">Administre las vinculaciones y asignaciones jerárquicas del personal</small>
         </div>
-        <span class="badge text-white py-2 px-3 fs-6" style="background-color: #0d5493;">
+        <span class="badge text-white py-2 px-3 fs-6 rounded-pill" style="background-color: #0d5493;">
             <i class="bi bi-people-fill me-1"></i> Personal
         </span>
     </div>
@@ -20,39 +20,36 @@
     <div class="card border-0 shadow-sm rounded-3 mb-4">
         <div class="card-body p-4">
             <div class="row align-items-end g-3">
-                <!-- BUSCAR POR NOMBRE ANALISTA -->
                 <div class="col-md-4">
                     <label for="txtNombreAnalista" class="form-label fw-bold text-dark mb-2">
-                        <i class="bi bi-search me-1 text-primary"></i> Nombre del Analista
+                        <i class="bi bi-search me-1" style="color: #0d5493;"></i> Nombre del Analista
                     </label>
                     <div class="input-group">
-                        <input type="text" id="txtNombreAnalista" class="form-control rounded-start-3 border-secondary-subtle"
+                        <input type="text" id="txtNombreAnalista" class="form-control rounded-start-pill border-secondary-subtle"
                                placeholder="Ej: Carmen Lugo" onkeypress="if(event.key === 'Enter') cargarGrid()" />
-                        <button type="button" class="btn btn-outline-secondary rounded-end-3"
-                                onclick="limpiarBusquedaAnalista()" title="Limpiar búsqueda" aria-label="Limpiar búsqueda por nombre">
+                        <button type="button" class="btn btn-outline-secondary rounded-end-pill px-3"
+                                onclick="limpiarBusquedaAnalista()" title="Limpiar búsqueda">
                             <i class="bi bi-x-lg"></i>
                         </button>
                     </div>
                 </div>
 
-                <!-- FILTRO ESTADO ANALISTA -->
                 <div class="col-md-3">
                     <label for="selectEstadoAnalista" class="form-label fw-bold text-dark mb-2">
-                        <i class="bi bi-funnel me-1 text-primary"></i> Estado
+                        <i class="bi bi-funnel me-1" style="color: #0d5493;"></i> Estado
                     </label>
-                    <select id="selectEstadoAnalista" class="form-select rounded-3 border-secondary-subtle" onchange="cargarGrid()">
+                    <select id="selectEstadoAnalista" class="form-select rounded-pill border-secondary-subtle" onchange="cargarGrid()">
                         <option value="">-- Todos los estados --</option>
                         <option value="Asignado">Asignado</option>
                         <option value="Pendiente de asignacion">Pendiente de asignación</option>
                     </select>
                 </div>
 
-                <!-- FILTRO DESPACHO SUPERVISOR -->
                 <div class="col-md-3">
                     <label for="selectSupervisorFiltro" class="form-label fw-bold text-dark mb-2">
-                        <i class="bi bi-person-badge me-1 text-primary"></i> Supervisor
+                        <i class="bi bi-person-badge me-1" style="color: #0d5493;"></i> Supervisor
                     </label>
-                    <select id="selectSupervisorFiltro" class="form-select rounded-3 border-secondary-subtle" onchange="cargarGrid()">
+                    <select id="selectSupervisorFiltro" class="form-select rounded-pill border-secondary-subtle" onchange="cargarGrid()">
                         <option value="">-- Todos los supervisores --</option>
                         @foreach (var sup in supervisores)
                         {
@@ -61,13 +58,12 @@
                     </select>
                 </div>
 
-                <!-- BOTÓN BUSCAR -->
                 <div class="col-md-2 text-end">
-                    <button type="button" class="btn btn-cgr-primary w-100 rounded-3 mb-2" onclick="cargarGrid()">
+                    <button type="button" class="btn btn-cgr-primary w-100 rounded-pill mb-2" onclick="cargarGrid()">
                         <i class="bi bi-filter me-1"></i> Filtrar
                     </button>
-                    <button type="button" class="btn btn-outline-secondary w-100 rounded-3" onclick="limpiarFiltros()">
-                        <i class="bi bi-arrow-counterclockwise me-1"></i> Limpiar filtros
+                    <button type="button" class="btn btn-outline-secondary w-100 rounded-pill" onclick="limpiarFiltros()">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> Limpiar
                     </button>
                 </div>
             </div>
@@ -77,7 +73,7 @@
     <!-- CONTENEDOR DEL GRID -->
     <div id="contenedorGrid">
         <div class="text-center py-5 bg-white rounded-3 border shadow-sm">
-            <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+            <div class="spinner-border text-primary mb-3" style="width: 2.5rem; height: 2.5rem;" role="status"></div>
             <p class="text-muted mb-0 fw-semibold">Cargando relaciones de analistas...</p>
         </div>
     </div>
@@ -86,8 +82,8 @@
 <!-- MODAL ASIGNAR / REASIGNAR SUPERVISOR -->
 <div class="modal fade" id="modalAsignacion" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow rounded-3">
-            <div class="modal-header text-white" style="background-color: #0d5493;">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header text-white px-4 py-3" style="background-color: #0d5493;">
                 <h5 class="modal-title fw-bold" id="modalAsignacionTitle">
                     <i class="bi bi-person-plus-fill me-2"></i> Asignar Supervisor
                 </h5>
@@ -97,19 +93,17 @@
                 <form id="formAsignacion">
                     <input type="hidden" id="hdnEsReasignacion" value="false" />
 
-                    <!-- ANALISTA (SOLO LECTURA) -->
                     <div class="mb-3">
                         <label class="form-label fw-bold text-dark">Analista</label>
-                        <input type="text" id="txtAnalistaModal" class="form-control bg-light" readonly />
+                        <input type="text" id="txtAnalistaModal" class="form-control bg-light rounded-3" readonly />
                         <input type="hidden" id="hdnDespachoAnalista" />
                     </div>
 
-                    <!-- SELECT SUPERVISOR -->
                     <div class="mb-3">
                         <label for="selectSupervisorModal" class="form-label fw-bold text-dark">Seleccionar Supervisor</label>
                         <div class="input-group">
-                            <span class="input-group-text bg-light"><i class="bi bi-person-badge-fill"></i></span>
-                            <select id="selectSupervisorModal" class="form-select" required>
+                            <span class="input-group-text bg-light border-end-0 rounded-start-3"><i class="bi bi-person-badge-fill text-muted"></i></span>
+                            <select id="selectSupervisorModal" class="form-select rounded-end-3" required>
                                 <option value="">-- Seleccione un supervisor --</option>
                                 @foreach (var sup in supervisores)
                                 {
@@ -120,9 +114,9 @@
                     </div>
                 </form>
             </div>
-            <div class="modal-footer bg-light border-top-0 rounded-bottom-3">
-                <button type="button" class="btn btn-outline-secondary px-4 rounded-3" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-cgr-primary px-4 rounded-3" onclick="guardarAsignacion()">
+            <div class="modal-footer bg-light border-top-0 px-4 py-3">
+                <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-cgr-primary px-4 rounded-pill" onclick="guardarAsignacion()">
                     <i class="bi bi-check-circle me-1"></i> Guardar Relación
                 </button>
             </div>
@@ -146,10 +140,10 @@
 
             const contenedor = document.getElementById('contenedorGrid');
             contenedor.innerHTML = `
-                        <div class="text-center py-5 bg-white rounded-3 border shadow-sm">
-                            <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
-                            <p class="text-muted mb-0 fw-semibold">Cargando datos...</p>
-                        </div>`;
+                <div class="text-center py-5 bg-white rounded-3 border shadow-sm">
+                    <div class="spinner-border text-secondary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+                    <p class="text-muted mb-0 fw-semibold">Cargando datos...</p>
+                </div>`;
 
             const queryParams = new URLSearchParams({
                 nombreAnalista: nombreAnalista,
