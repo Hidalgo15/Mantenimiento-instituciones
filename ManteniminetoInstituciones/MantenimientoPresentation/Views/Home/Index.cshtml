@@ -20,7 +20,7 @@
     </div>
 
     <div class="row g-4">
-        <!-- COLUMNA IZQUIERDA: MENÚ ESTRUCTURA INSTITUCIONAL -->
+        <!-- COLUMNA IZQUIERDA: MENÚ ESTRUCTURA INSTITUCIONAL (UNIFORME EN TONO SUAVE) -->
         <div class="col-12 col-lg-7">
             <div class="d-flex align-items-center justify-content-between mb-3">
                 <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
@@ -75,7 +75,7 @@
                                 <a asp-controller="Capitulo" asp-action="Index" class="menu-subitem-link text-decoration-none">
                                     <div class="menu-subitem p-3 bg-white rounded-3 border d-flex align-items-center justify-content-between transition-all">
                                         <div class="d-flex align-items-center gap-3">
-                                            <div class="sub-icon-shape bg-primary-subtle text-primary rounded-3">
+                                            <div class="sub-icon-shape icon-subtle-blue rounded-3">
                                                 <i class="bi bi-bookmark-check-fill fs-5"></i>
                                             </div>
                                             <div>
@@ -93,7 +93,7 @@
                                 <a asp-controller="SubCapitulo" asp-action="Index" class="menu-subitem-link text-decoration-none">
                                     <div class="menu-subitem p-3 bg-white rounded-3 border d-flex align-items-center justify-content-between transition-all">
                                         <div class="d-flex align-items-center gap-3">
-                                            <div class="sub-icon-shape bg-info-subtle text-info-emphasis rounded-3">
+                                            <div class="sub-icon-shape icon-subtle-blue rounded-3">
                                                 <i class="bi bi-diagram-2-fill fs-5"></i>
                                             </div>
                                             <div>
@@ -111,7 +111,7 @@
                                 <a asp-controller="Daf" asp-action="Index" class="menu-subitem-link text-decoration-none">
                                     <div class="menu-subitem p-3 bg-white rounded-3 border d-flex align-items-center justify-content-between transition-all">
                                         <div class="d-flex align-items-center gap-3">
-                                            <div class="sub-icon-shape bg-warning-subtle text-warning-emphasis rounded-3">
+                                            <div class="sub-icon-shape icon-subtle-blue rounded-3">
                                                 <i class="bi bi-building-fill fs-5"></i>
                                             </div>
                                             <div>
@@ -129,7 +129,7 @@
                                 <a asp-controller="UnidadEjecutora" asp-action="Index" class="menu-subitem-link text-decoration-none">
                                     <div class="menu-subitem p-3 bg-white rounded-3 border d-flex align-items-center justify-content-between transition-all">
                                         <div class="d-flex align-items-center gap-3">
-                                            <div class="sub-icon-shape bg-success-subtle text-success-emphasis rounded-3">
+                                            <div class="sub-icon-shape icon-subtle-blue rounded-3">
                                                 <i class="bi bi-gear-wide-connected fs-5"></i>
                                             </div>
                                             <div>
@@ -151,7 +151,7 @@
             </div>
         </div>
 
-        <!-- COLUMNA DERECHA: OTROS CATÁLOGOS -->
+        <!-- COLUMNA DERECHA: OTROS CATÁLOGOS (TARJETAS SÓLIDAS COMO ANTES) -->
         <div class="col-12 col-lg-5">
             <div class="d-flex align-items-center justify-content-between mb-3">
                 <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
@@ -168,7 +168,7 @@
                     <div class="card module-card border-0 shadow-sm rounded-4 p-3 transition-all">
                         <div class="card-body p-0 d-flex align-items-center justify-content-between">
                             <div class="d-flex align-items-center gap-3">
-                                <div class="icon-shape bg-primary text-white rounded-3 shadow-sm">
+                                <div class="icon-shape bg-navy text-white rounded-3 shadow-sm">
                                     <i class="bi bi-bank fs-5"></i>
                                 </div>
                                 <div>
@@ -203,13 +203,12 @@
                     </div>
                 </a>
 
-
                 <!-- Fondos Especiales -->
                 <a asp-controller="FondoEspeciales" asp-action="Index" class="text-decoration-none">
                     <div class="card module-card border-0 shadow-sm rounded-4 p-3 transition-all">
                         <div class="card-body p-0 d-flex align-items-center justify-content-between">
                             <div class="d-flex align-items-center gap-3">
-                                <div class="icon-shape bg-info text-white rounded-3 shadow-sm">
+                                <div class="icon-shape bg-deep-teal text-white rounded-3 shadow-sm">
                                     <i class="bi bi-wallet2 fs-5"></i>
                                 </div>
                                 <div>
@@ -260,6 +259,25 @@
         pointer-events: none;
     }
 
+    /* Colores Sólidos para Otros Catálogos */
+    .bg-navy {
+        background-color: var(--brand-navy);
+    }
+
+    .bg-dark {
+        background-color: #212529 !important;
+    }
+
+    .bg-deep-teal {
+        background-color: #0d9488;
+    }
+
+    /* Estilo Suave Uniforme para el Árbol de Estructura */
+    .icon-subtle-blue {
+        background-color: #eff6ff;
+        color: #2563eb;
+    }
+
     /* Icon wrappers */
     .section-icon-wrapper {
         display: inline-flex;
@@ -287,10 +305,6 @@
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
-    }
-
-    .bg-navy {
-        background-color: var(--brand-navy);
     }
 
     /* Acordeón Personalizado */

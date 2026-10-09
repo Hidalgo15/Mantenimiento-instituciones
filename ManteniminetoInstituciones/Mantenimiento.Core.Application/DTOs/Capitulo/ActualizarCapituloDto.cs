@@ -1,6 +1,8 @@
-﻿namespace Mantenimiento.Core.Application.DTOs.Capitulo
+﻿using Mantenimiento.Core.Application.DTOs.Auditoria;
+
+namespace Mantenimiento.Core.Application.DTOs.Capitulo
 {
-    public record ActualizarCapituloDto
+    public record ActualizarCapituloDto : AuditableDto
     {
         public int Id { get; set; }
         public string CodigoCapitulo { get; set; } = string.Empty;
