@@ -1,6 +1,4 @@
-﻿
-
-namespace Mantenimiento.Core.Application.DTOs.TipoTramite
+﻿namespace Mantenimiento.Core.Application.DTOs.TipoTramite
 {
     public record TipoTramiteDto
     {
