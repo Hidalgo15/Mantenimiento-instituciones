@@ -1,0 +1,212 @@
+﻿@using Mantenimiento.Core.Application.DTOs.CuentaRequisito
+@{
+    ViewData["Title"] = "Requisitos por Cuenta";
+    var cuentas = ViewBag.Cuentas as List<CuentaCatalogoDto> ?? new List<CuentaCatalogoDto>();
+    var requisitos = ViewBag.Requisitos as List<RequisitoCatalogoDto> ?? new List<RequisitoCatalogoDto>();
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h4 class="fw-bold mb-0 text-dark">Gestión de Requisitos por Cuenta</h4>
+            <small class="text-muted">Asigne y configure los requisitos obligatorios asociados a cada cuenta contable</small>
+        </div>
+        <button type="button" class="btn btn-cgr-primary rounded-pill px-4" onclick="abrirModalCrear()">
+            <i class="bi bi-plus-circle me-1"></i> Nueva Relación
+        </button>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-body p-4">
+            <div class="row align-items-end g-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold text-dark mb-2">Cuenta</label>
+                    <select id="filtroIdCuenta" class="form-select rounded-pill" onchange="cargarGrid()">
+                        <option value="">-- Todas las cuentas --</option>
+                        @foreach (var c in cuentas)
+                        {
+                            <option value="@c.IdCuenta">@c.CodigoCuenta - @c.DescripcionCuenta</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold text-dark mb-2">Requisito</label>
+                    <select id="filtroIdRequisito" class="form-select rounded-pill" onchange="cargarGrid()">
+                        <option value="">-- Todos los requisitos --</option>
+                        @foreach (var r in requisitos)
+                        {
+                            <option value="@r.IdRequisitos">@r.Requisitos</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label fw-bold text-dark mb-2">Estado</label>
+                    <select id="filtroEstado" class="form-select rounded-pill" onchange="cargarGrid()">
+                        <option value="">-- Todos --</option>
+                        <option value="true">Activo</option>
+                        <option value="false">Inactivo</option>
+                    </select>
+                </div>
+                <div class="col-md-2 text-end">
+                    <button type="button" class="btn btn-outline-secondary w-100 rounded-pill" onclick="limpiarFiltros()">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> Limpiar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="contenedorGrid">
+        <div class="text-center py-5 bg-white rounded-3 border shadow-sm">
+            <div class="spinner-border text-primary mb-3" role="status"></div>
+            <p class="text-muted mb-0 fw-semibold">Cargando relaciones...</p>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Registro / Edición -->
+<div class="modal fade" id="modalMantenimiento" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header text-white px-4 py-3" style="background-color: #0d5493;">
+                <h5 class="modal-title fw-bold" id="modalTitle">Asignar Requisito</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="formMantenimiento">
+                    <input type="hidden" id="hdnCuentaRequisitosID" value="0" />
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark">Cuenta</label>
+                        <select id="modalIdCuenta" class="form-select rounded-3" required>
+                            <option value="">-- Seleccione una cuenta --</option>
+                            @foreach (var c in cuentas)
+                            {
+                                <option value="@c.IdCuenta">@c.CodigoCuenta - @c.DescripcionCuenta</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark">Requisito</label>
+                        <select id="modalIdRequisito" class="form-select rounded-3" required>
+                            <option value="">-- Seleccione un requisito --</option>
+                            @foreach (var r in requisitos)
+                            {
+                                <option value="@r.IdRequisitos">@r.Requisitos</option>
+                            }
+                        </select>
+                    </div>
+
+                    <!-- Cambiado a formato Switch -->
+                    <div class="mb-3">
+                        <div class="form-check form-switch mt-2">
+                            <input class="form-check-input" type="checkbox" id="modalEstado" checked role="switch">
+                            <label class="form-check-label fw-bold text-dark" for="modalEstado">Estado Activo</label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light border-top-0 px-4 py-3">
+                <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-cgr-primary px-4 rounded-pill" onclick="guardarRelacion()">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let modalBs;
+        document.addEventListener('DOMContentLoaded', () => {
+            modalBs = new bootstrap.Modal(document.getElementById('modalMantenimiento'));
+            cargarGrid();
+        });
+
+        function cargarGrid() {
+            const idCuenta = document.getElementById('filtroIdCuenta').value;
+            const idRequisito = document.getElementById('filtroIdRequisito').value;
+            const estado = document.getElementById('filtroEstado').value;
+
+            const params = new URLSearchParams({ idCuenta, idRequisito, estado });
+
+            fetch(`/CuentaRequisito/ObtenerGrid?${params.toString()}`)
+                .then(res => res.text())
+                .then(html => document.getElementById('contenedorGrid').innerHTML = html);
+        }
+
+        function limpiarFiltros() {
+            document.getElementById('filtroIdCuenta').value = '';
+            document.getElementById('filtroIdRequisito').value = '';
+            document.getElementById('filtroEstado').value = '';
+            cargarGrid();
+        }
+
+        function abrirModalCrear() {
+            document.getElementById('hdnCuentaRequisitosID').value = '0';
+            document.getElementById('modalIdCuenta').value = '';
+            document.getElementById('modalIdRequisito').value = '';
+            document.getElementById('modalEstado').checked = true;
+            document.getElementById('modalTitle').innerText = 'Asignar Requisito a Cuenta';
+            modalBs.show();
+        }
+
+        function abrirModalEditar(id, idCuenta, idRequisito, estado) {
+            document.getElementById('hdnCuentaRequisitosID').value = id;
+            document.getElementById('modalIdCuenta').value = idCuenta;
+            document.getElementById('modalIdRequisito').value = idRequisito;
+            document.getElementById('modalEstado').checked = estado;
+            document.getElementById('modalTitle').innerText = 'Editar Relación';
+            modalBs.show();
+        }
+
+        function guardarRelacion() {
+            const id = parseInt(document.getElementById('hdnCuentaRequisitosID').value);
+            const idCuenta = parseFloat(document.getElementById('modalIdCuenta').value);
+            const idRequisito = parseInt(document.getElementById('modalIdRequisito').value);
+            const estado = document.getElementById('modalEstado').checked;
+
+            if (!idCuenta || !idRequisito) {
+                alert('Debe completar todos los campos requeridos.');
+                return;
+            }
+
+            const url = id === 0 ? '/CuentaRequisito/Guardar' : '/CuentaRequisito/Actualizar';
+            const dto = id === 0 ? { idCuenta, idRequisito, estado } : { cuentaRequisitosID: id, idCuenta, idRequisito, estado };
+
+            fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dto)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    modalBs.hide();
+                    cargarGrid();
+                } else {
+                    alert(data.message);
+                }
+            });
+        }
+
+        function eliminarRelacion(id) {
+            if (!confirm('¿Está seguro de eliminar esta relación?')) return;
+
+            fetch('/CuentaRequisito/Eliminar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(id)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    cargarGrid();
+                } else {
+                    alert(data.message);
+                }
+            });
+        }
+    </script>
+}
