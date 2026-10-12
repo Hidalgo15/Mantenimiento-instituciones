@@ -1,4 +1,4 @@
-﻿using Mantenimiento.Core.Application.DTOs.Cuenta;
+﻿using Mantenimiento.Core.Application.DTOs.Cuenta.DboCuentasDTO;
 using Mantenimiento.Core.Application.DTOs.CuentaInstitucion;
 using Mantenimiento.Core.Application.InterfaceServices;
 using Mantenimiento.Core.Domain.Entities;
@@ -72,13 +72,7 @@ namespace Mantenimiento.Core.Application.Services
 
         private static CuentaDto MapToDto(CuentaDbo c) => new()
         {
-            //    IdCuenta = c.IdCuenta,
-            //    CodigoCuenta = c.CodigoCuenta,
-            //    DescripcionCuenta = c.DescripcionCuenta,
-            //    TipoTramite = c.TipoTramiteId,
-            //    TipoTramiteNombre = !string.IsNullOrWhiteSpace(c.TipoTramiteNombre)
-            //? c.TipoTramiteNombre.Trim()
-            //: string.Empty
+           
             IdCuenta = c.IdCuenta,
             CodigoCuenta = c.CodigoCuenta,
             DescripcionCuenta = c.DescripcionCuenta,
