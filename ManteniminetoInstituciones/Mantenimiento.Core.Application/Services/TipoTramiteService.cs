@@ -22,7 +22,7 @@ namespace Mantenimiento.Core.Application.Services
             return entidades.Select(e => new TipoTramiteDto
             {
                 Id = e.Id,
-                TipoTramite = e.TipoTramite
+                Tipo = e.TipoTramite
             }).ToList();
         }
 
@@ -36,7 +36,7 @@ namespace Mantenimiento.Core.Application.Services
             return new TipoTramiteDto
             {
                 Id = entidad.Id,
-                TipoTramite = entidad.TipoTramite
+                Tipo = entidad.TipoTramite
             };
         }
     }

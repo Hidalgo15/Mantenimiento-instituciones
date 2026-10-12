@@ -48,6 +48,14 @@ namespace MantenimientoPresentation
             builder.Services.AddScoped<ITipoTramiteService, TipoTramiteService>();
             builder.Services.AddScoped<ITipoTramiteRepository, TipoTramiteContratoRepository>();
             builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+            builder.Services.AddScoped<ICuentaMapeoRepository, CuentaMapeoRepository>();
+            builder.Services.AddScoped<ICuentaMapeoService, CuentaMapeoService>();
+
+            // Repositorios
+            builder.Services.AddScoped<ITipoTramitePagoRepository, TipoTramitePagoRepository>();
+
+            // Servicios
+            builder.Services.AddScoped<ITipoTramitePagoService, TipoTramitePagoService>();
 
             var app = builder.Build();
 
