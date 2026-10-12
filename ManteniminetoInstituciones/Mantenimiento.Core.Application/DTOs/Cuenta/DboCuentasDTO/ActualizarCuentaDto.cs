@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Mantenimiento.Core.Application.DTOs.Cuenta
+namespace Mantenimiento.Core.Application.DTOs.Cuenta.DboCuentasDTO
 {
     public record ActualizarCuentaDto
     {
