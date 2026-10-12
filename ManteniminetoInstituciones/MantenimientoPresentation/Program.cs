@@ -52,6 +52,8 @@ namespace MantenimientoPresentation
             builder.Services.AddScoped<ICuentaMapeoService, CuentaMapeoService>();
             builder.Services.AddScoped<ICuentaCtRepository, CuentaCtRepository>();
             builder.Services.AddScoped<ICuentaCtService, CuentaCtService>();
+            builder.Services.AddScoped<ICuentaRequisitoRepository, CuentaRequisitoRepository>();
+            builder.Services.AddScoped<ICuentaRequisitoService, CuentaRequisitoService>();
 
 
             // Repositorios

@@ -81,7 +81,10 @@
 
                     <div class="mb-3">
                         <label for="txtCodigoCuenta" class="form-label fw-bold text-dark">Código de Cuenta</label>
-                        <input type="text" id="txtCodigoCuenta" class="form-control rounded-3" required placeholder="Ej. 1.0.0.0.01" />
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0 rounded-start-3"><i class="bi bi-hash text-muted"></i></span>
+                            <input type="text" id="txtCodigoCuenta" class="form-control rounded-end-3" required placeholder="Ej. 1.0.0.0.01" />
+                        </div>
                     </div>
 
                     <div class="mb-3">
@@ -117,7 +120,7 @@
                 .then(res => res.text())
                 .then(html => { contenedor.innerHTML = html; })
                 .catch(err => {
-                    contenedor.innerHTML = `<div class="alert alert-danger text-center py-3">Error al cargar la información.</div>`;
+                    contenedor.innerHTML = `<div class="alert alert-danger text-center py-3 rounded-3">Error al cargar la información.</div>`;
                 });
         }
 

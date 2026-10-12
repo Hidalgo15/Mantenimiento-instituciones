@@ -20,10 +20,14 @@ namespace Mantenimiento.Infraestructure.Persistence
         public DbSet<CategoriaTramite> CategoriasTramite { get; set; }
         public DbSet<FondosEspeciales> FondosEspeciales { get; set; }
         public DbSet<TramiteContrato> TipoTramiteContratos { get; set; }
-
         public DbSet<CuentaDbo> TipoCuentaDbo { get; set; }
         public DbSet<CuentaCt> TipoCuentaCt { get; set; }
         public DbSet<TipoTramitePago> TipoTramitePago { get; set; }
+        public DbSet<CuentaRequisito> CuentaRequisitos { get; set; }
+        public DbSet<CuentaRequisitoConsulta> CuentaRequisitoConsultas { get; set; }
+        public DbSet<ResultadoOperacion> ResultadoOperaciones { get; set; }
+        public DbSet<CuentaCatalogo> CuentaCatalogos { get; set; }
+        public DbSet<RequisitoCatalogo> RequisitoCatalogos { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -108,7 +112,7 @@ namespace Mantenimiento.Infraestructure.Persistence
 
             #endregion
 
-            #region SubCapitul
+            #region SubCapitulo
             // Mapeo Tabla SubCapitulo
             modelBuilder.Entity<SubCapitulo>(entity =>
             {
@@ -166,7 +170,7 @@ namespace Mantenimiento.Infraestructure.Persistence
             // Mapeo Tabla FondosEspeciales
             modelBuilder.Entity<FondosEspeciales>(entity =>
             {
-             
+
                 entity.HasKey(e => e.Id);
                 entity.ToTable("Fondo_especiales", "dbo");
 
@@ -233,9 +237,58 @@ namespace Mantenimiento.Infraestructure.Persistence
             modelBuilder.Entity<TipoTramitePago>(entity =>
             {
                 entity.HasKey(e => e.Id);
-                entity.ToTable("tipo_tramite_pago", "dbo"); // Corregido a la tabla real dbo.tipo_tramite_pago
+                entity.ToTable("tipo_tramite_pago", "dbo");
                 entity.Property(e => e.Id).HasColumnName("id");
                 entity.Property(e => e.Tipo).HasColumnName("tipo");
+            });
+            #endregion
+
+            #region CuentaRequisito (Mapeo de tabla, resultado de SP y catálogos)
+
+            // Mapeo de la tabla física relacional
+            modelBuilder.Entity<CuentaRequisito>(entity =>
+            {
+                entity.HasKey(e => e.CuentaRequisitosID);
+                entity.ToTable("relacion_cuenta_requisitos", "ct");
+                entity.Property(e => e.CuentaRequisitosID).HasColumnName("CuentaRequisitosID");
+                entity.Property(e => e.IdCuenta).HasColumnName("id_cuenta");
+                entity.Property(e => e.IdRequisito).HasColumnName("id_requisito");
+                entity.Property(e => e.Estado).HasColumnName("estado");
+            });
+
+            // Entidad sin llave para capturar el resultado de los SPs de acción (Asignar, Actualizar, Eliminar)
+            modelBuilder.Entity<ResultadoOperacion>().HasNoKey();
+
+            // Entidad sin llave para el catálogo de cuentas de dropdown
+            modelBuilder.Entity<CuentaCatalogo>(entity =>
+            {
+                entity.HasNoKey();
+                entity.Property(e => e.IdCuenta).HasColumnName("id_cuenta");
+                entity.Property(e => e.CodigoCuenta).HasColumnName("codigo_cuenta");
+                entity.Property(e => e.DescripcionCuenta).HasColumnName("descripcion_cuenta");
+            });
+
+            // Entidad sin llave para el catálogo de requisitos de dropdown
+            modelBuilder.Entity<RequisitoCatalogo>(entity =>
+            {
+                entity.HasNoKey();
+                entity.Property(e => e.IdRequisitos).HasColumnName("id_requisitos");
+                entity.Property(e => e.Requisitos).HasColumnName("REQUISITOS");
+            });
+
+            #endregion
+
+            #region CuentaRequisitoConsulta
+            modelBuilder.Entity<CuentaRequisitoConsulta>(entity =>
+            {
+                entity.HasNoKey();
+                entity.Property(e => e.CuentaRequisitosID).HasColumnName("CuentaRequisitosID");
+                entity.Property(e => e.IdCuenta).HasColumnName("id_cuenta");
+                entity.Property(e => e.CodigoCuenta).HasColumnName("codigo_cuenta");
+                entity.Property(e => e.DescripcionCuenta).HasColumnName("descripcion_cuenta");
+                entity.Property(e => e.IdRequisito).HasColumnName("id_requisito");
+                entity.Property(e => e.DescripcionRequisito).HasColumnName("descripcion_requisito");
+                entity.Property(e => e.Estado).HasColumnName("estado");
             });
             #endregion
         }
