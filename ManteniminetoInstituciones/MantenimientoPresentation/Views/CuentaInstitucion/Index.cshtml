@@ -1,17 +1,18 @@
-﻿﻿@using Mantenimiento.Core.Application.DTOs.CuentaInstitucion
+﻿@using Mantenimiento.Core.Application.DTOs.CuentaInstitucion
 @using Mantenimiento.Core.Application.DTOs.Institucion
 @{
     ViewData["Title"] = "Gestión de Cuentas";
     var instituciones = ViewBag.Instituciones as List<InstitucionSeleccionDto> ?? new List<InstitucionSeleccionDto>();
 }
 
-<div class="container-fluid py-2">
+<div class="container-fluid py-3">
+    <!-- CABECERA SUPERIOR -->
     <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
         <div>
             <h4 class="fw-bold mb-0 text-dark">Gestión de Cuentas por Institución</h4>
             <small class="text-muted">Administre y consulte las cuentas bancarias institucionales</small>
         </div>
-        <span class="badge text-white py-2 px-3 fs-6" style="background-color: #0d5493;">
+        <span class="badge text-white py-2 px-3 fs-6 rounded-pill" style="background-color: #0d5493;">
             <i class="bi bi-building me-1"></i> Institucional
         </span>
     </div>
@@ -22,14 +23,14 @@
             <div class="row align-items-end g-3">
                 <div class="col-md-8">
                     <label for="selectInstitucion" class="form-label fw-bold text-dark mb-2">
-                        <i class="bi bi-search me-1 text-primary"></i> Seleccionar Institución
+                        <i class="bi bi-search me-1" style="color: #0d5493;"></i> Seleccionar Institución
                     </label>
                     <div class="position-relative mb-2">
                         <div class="input-group">
-                            <input type="text" id="txtBuscarInstitucion" class="form-control rounded-start-3 border-secondary-subtle"
+                            <input type="text" id="txtBuscarInstitucion" class="form-control rounded-start-pill border-secondary-subtle"
                                    placeholder="Buscar institución por nombre o código..." aria-label="Buscar institución"
                                    oninput="filtrarOpcionesSelect(this, 'selectInstitucion', 'resultadosBusquedaInstitucion')" />
-                            <button type="button" class="btn btn-outline-secondary rounded-end-3"
+                            <button type="button" class="btn btn-outline-secondary rounded-end-pill px-3"
                                     onclick="limpiarBusquedaSelect('txtBuscarInstitucion', 'selectInstitucion', 'resultadosBusquedaInstitucion')"
                                     title="Limpiar búsqueda" aria-label="Limpiar búsqueda de institución">
                                 <i class="bi bi-x-lg"></i>
@@ -38,7 +39,7 @@
                         <div id="resultadosBusquedaInstitucion" class="list-group position-absolute top-100 start-0 w-100 shadow d-none"
                              style="z-index: 1050; max-height: 18rem; overflow-y: auto;" role="listbox"></div>
                     </div>
-                    <select id="selectInstitucion" class="form-select form-select-lg rounded-3 fs-6 border-secondary-subtle" onchange="cargarGridCuentas()">
+                    <select id="selectInstitucion" class="form-select form-select-lg rounded-pill fs-6 border-secondary-subtle" onchange="cargarGridCuentas()">
                         <option value="">-- Seleccione una institución --</option>
                         @foreach (var inst in instituciones)
                         {
@@ -47,8 +48,7 @@
                     </select>
                 </div>
                 <div class="col-md-4 text-end">
-                    <!-- Oculto inicialmente con d-none -->
-                    <button type="button" class="btn btn-cgr-primary btn-lg w-100 rounded-3 d-none" onclick="abrirModalCrear()" id="btnNuevaCuenta">
+                    <button type="button" class="btn btn-cgr-primary btn-lg w-100 rounded-pill d-none" onclick="abrirModalCrear()" id="btnNuevaCuenta">
                         <i class="bi bi-plus-circle me-2"></i> Nueva Cuenta
                     </button>
                 </div>
@@ -58,8 +58,8 @@
 
     <!-- CONTENEDOR DEL GRID -->
     <div id="contenedorGrid">
-        <div class="alert alert-light border shadow-sm text-center py-5 rounded-3">
-            <i class="bi bi-info-circle text-primary fs-1 d-block mb-2"></i>
+        <div class="alert alert-secondary border-0 shadow-sm text-center py-5 rounded-3 mb-0" style="background-color: #f8fafc;">
+            <i class="bi bi-info-circle fs-2 text-primary d-block mb-2"></i>
             <h6 class="fw-bold text-dark">Ninguna institución seleccionada</h6>
             <p class="text-muted small mb-0">Seleccione una institución del menú desplegable para cargar sus cuentas asociadas.</p>
         </div>
@@ -69,8 +69,8 @@
 <!-- MODAL CREAR / EDITAR CUENTA -->
 <div class="modal fade" id="modalCuenta" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow rounded-3">
-            <div class="modal-header text-white" style="background-color: #0d5493;">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header text-white px-4 py-3" style="background-color: #0d5493;">
                 <h5 class="modal-title fw-bold" id="modalCuentaTitle">
                     <i class="bi bi-bank me-2"></i> Agregar Cuenta Institucional
                 </h5>
@@ -82,7 +82,7 @@
 
                     <div class="mb-3">
                         <label for="selectInstitucionCuenta" class="form-label fw-bold text-dark">Institución</label>
-                        <select id="selectInstitucionCuenta" class="form-select" required>
+                        <select id="selectInstitucionCuenta" class="form-select rounded-3" required>
                             <option value="">-- Seleccione una institución --</option>
                             @foreach (var inst in instituciones)
                             {
@@ -93,19 +93,19 @@
                     <div class="mb-3">
                         <label class="form-label fw-bold text-dark">Cuenta Banco</label>
                         <div class="input-group">
-                            <span class="input-group-text bg-light"><i class="bi bi-credit-card-2-front"></i></span>
-                            <input type="text" id="txtCtaCtaBanco" class="form-control" required maxlength="50" placeholder="Ej: 010-249669-2" />
+                            <span class="input-group-text bg-light border-end-0 rounded-start-3"><i class="bi bi-credit-card-2-front text-muted"></i></span>
+                            <input type="text" id="txtCtaCtaBanco" class="form-control rounded-end-3" required maxlength="50" placeholder="Ej: 010-249669-2" />
                         </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold text-dark">Descripción de Cuenta</label>
-                        <input type="text" id="txtCtaDescripcion" class="form-control" required maxlength="255" placeholder="Ej: Erogaciones Inmediatas" />
+                        <input type="text" id="txtCtaDescripcion" class="form-control rounded-3" required maxlength="255" placeholder="Ej: Erogaciones Inmediatas" />
                     </div>
                 </form>
             </div>
-            <div class="modal-footer bg-light border-top-0 rounded-bottom-3">
-                <button type="button" class="btn btn-outline-secondary px-4 rounded-3" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-cgr-primary px-4 rounded-3" onclick="guardarCuenta()">
+            <div class="modal-footer bg-light border-top-0 px-4 py-3">
+                <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-cgr-primary px-4 rounded-pill" onclick="guardarCuenta()">
                     <i class="bi bi-check-circle me-1"></i> Guardar
                 </button>
             </div>
@@ -126,28 +126,26 @@
             const btnNueva = document.getElementById('btnNuevaCuenta');
             const contenedor = document.getElementById('contenedorGrid');
 
-            // Si no hay opción seleccionada, ocultar el botón Nueva Cuenta
             if (!insCodigo) {
                 btnNueva.classList.add('d-none');
                 btnNueva.classList.remove('d-inline-block');
                 contenedor.innerHTML = `
-                            <div class="alert alert-light border shadow-sm text-center py-5 rounded-3">
-                                <i class="bi bi-info-circle text-primary fs-1 d-block mb-2"></i>
-                                <h6 class="fw-bold text-dark">Ninguna institución seleccionada</h6>
-                                <p class="text-muted small mb-0">Seleccione una institución del menú desplegable para cargar sus cuentas asociadas.</p>
-                            </div>`;
+                    <div class="alert alert-secondary border-0 shadow-sm text-center py-5 rounded-3 mb-0" style="background-color: #f8fafc;">
+                        <i class="bi bi-info-circle fs-2 text-primary d-block mb-2"></i>
+                        <h6 class="fw-bold text-dark">Ninguna institución seleccionada</h6>
+                        <p class="text-muted small mb-0">Seleccione una institución del menú desplegable para cargar sus cuentas asociadas.</p>
+                    </div>`;
                 return;
             }
 
-            // Si se selecciona una opción válida, mostrar el botón Nueva Cuenta
             btnNueva.classList.remove('d-none');
             btnNueva.classList.add('d-inline-block');
 
             contenedor.innerHTML = `
-                        <div class="text-center py-5 bg-white rounded-3 border shadow-sm">
-                            <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
-                            <p class="text-muted mb-0 fw-semibold">Cargando registros...</p>
-                        </div>`;
+                <div class="text-center py-5 bg-white rounded-3 border shadow-sm">
+                    <div class="spinner-border text-primary mb-3" style="width: 2.5rem; height: 2.5rem;" role="status"></div>
+                    <p class="text-muted mb-0 fw-semibold">Cargando registros...</p>
+                </div>`;
 
             fetch(`/CuentaInstitucion/ObtenerCuentasGrid?insCodigo=${encodeURIComponent(insCodigo)}`)
                 .then(res => res.text())

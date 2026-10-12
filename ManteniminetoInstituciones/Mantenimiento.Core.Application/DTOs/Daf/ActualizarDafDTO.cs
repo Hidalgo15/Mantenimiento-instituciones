@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Mantenimiento.Core.Application.DTOs.Auditoria;
 
 namespace Mantenimiento.Core.Application.DTOs.Daf
 {
-    public record ActualizarDafDTO
+    public record ActualizarDafDTO : AuditableDto
     {
         public int Id { get; set; }
         public int IdSubCapitulo { get; set; }

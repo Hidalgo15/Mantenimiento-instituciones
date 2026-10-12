@@ -4,14 +4,14 @@
     var capitulos = ViewBag.Capitulos as List<CapituloDto> ?? new List<CapituloDto>();
 }
 
-<div class="container-fluid py-2">
-    <!-- CABECERA SUPERIOR ALINEADA A CUENTAS -->
+<div class="container-fluid py-3">
+    <!-- CABECERA SUPERIOR -->
     <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
         <div>
             <h4 class="fw-bold mb-0 text-dark">Gestión de Capítulos</h4>
             <small class="text-muted">Administre y consulte los capítulos institucionales</small>
         </div>
-        <span class="badge text-white py-2 px-3 fs-6" style="background-color: #0d5493;">
+        <span class="badge text-white py-2 px-3 fs-6 rounded-pill" style="background-color: #0d5493;">
             <i class="bi bi-bookmark-check me-1"></i> Institucional
         </span>
     </div>
@@ -22,14 +22,14 @@
             <div class="row align-items-end g-3">
                 <div class="col-md-8">
                     <label for="selectCapitulo" class="form-label fw-bold text-dark mb-2">
-                        <i class="bi bi-search me-1 text-primary"></i> Seleccionar Capítulo
+                        <i class="bi bi-search me-1" style="color: #0d5493;"></i> Seleccionar Capítulo
                     </label>
                     <div class="position-relative mb-2">
                         <div class="input-group">
-                            <input type="text" id="txtBuscarCapitulo" class="form-control rounded-start-3 border-secondary-subtle"
+                            <input type="text" id="txtBuscarCapitulo" class="form-control rounded-start-pill border-secondary-subtle"
                                    placeholder="Buscar capítulo por código o nombre..." aria-label="Buscar capítulo"
                                    oninput="filtrarOpcionesSelect(this, 'selectCapitulo', 'resultadosBusquedaCapitulo')" />
-                            <button type="button" class="btn btn-outline-secondary rounded-end-3"
+                            <button type="button" class="btn btn-outline-secondary rounded-end-pill px-3"
                                     onclick="limpiarBusquedaSelect('txtBuscarCapitulo', 'selectCapitulo', 'resultadosBusquedaCapitulo')"
                                     title="Limpiar búsqueda" aria-label="Limpiar búsqueda de capítulo">
                                 <i class="bi bi-x-lg"></i>
@@ -38,7 +38,7 @@
                         <div id="resultadosBusquedaCapitulo" class="list-group position-absolute top-100 start-0 w-100 shadow d-none"
                              style="z-index: 1050; max-height: 18rem; overflow-y: auto;" role="listbox"></div>
                     </div>
-                    <select id="selectCapitulo" class="form-select form-select-lg rounded-3 fs-6 border-secondary-subtle" onchange="cargarGridCapitulos()">
+                    <select id="selectCapitulo" class="form-select form-select-lg rounded-pill fs-6 border-secondary-subtle" onchange="cargarGridCapitulos()">
                         <option value="">-- Seleccione un capítulo --</option>
                         @foreach (var cap in capitulos)
                         {
@@ -47,8 +47,7 @@
                     </select>
                 </div>
                 <div class="col-md-4 text-end">
-                    <!-- Oculto inicialmente con d-none -->
-                    <button type="button" class="btn btn-cgr-primary btn-lg w-100 rounded-3 d-none" onclick="abrirModalCrear()" id="btnNuevoCapitulo">
+                    <button type="button" class="btn btn-cgr-primary btn-lg w-100 rounded-pill d-none" onclick="abrirModalCrear()" id="btnNuevoCapitulo">
                         <i class="bi bi-plus-circle me-2"></i> Nuevo Capítulo
                     </button>
                 </div>
@@ -58,8 +57,8 @@
 
     <!-- CONTENEDOR DEL GRID -->
     <div id="contenedorGrid">
-        <div class="alert alert-light border shadow-sm text-center py-5 rounded-3">
-            <i class="bi bi-info-circle text-primary fs-1 d-block mb-2"></i>
+        <div class="alert alert-secondary border-0 shadow-sm text-center py-5 rounded-3 mb-0" style="background-color: #f8fafc;">
+            <i class="bi bi-info-circle fs-2 text-primary d-block mb-2"></i>
             <h6 class="fw-bold text-dark">Ningún capítulo seleccionado</h6>
             <p class="text-muted small mb-0">Seleccione un capítulo del menú desplegable para visualizar su información.</p>
         </div>
@@ -69,8 +68,8 @@
 <!-- MODAL CREAR / EDITAR CAPÍTULO -->
 <div class="modal fade" id="modalCapitulo" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow rounded-3">
-            <div class="modal-header text-white" style="background-color: #0d5493;">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header text-white px-4 py-3" style="background-color: #0d5493;">
                 <h5 class="modal-title fw-bold" id="modalCapituloTitle">
                     <i class="bi bi-bookmark-plus me-2"></i> Agregar Capítulo
                 </h5>
@@ -83,19 +82,19 @@
                     <div class="mb-3">
                         <label class="form-label fw-bold text-dark">Código</label>
                         <div class="input-group">
-                            <span class="input-group-text bg-light"><i class="bi bi-hash"></i></span>
-                            <input type="text" id="txtCodigo" class="form-control" required maxlength="10" placeholder="Ej: 0101" />
+                            <span class="input-group-text bg-light border-end-0 rounded-start-3"><i class="bi bi-hash text-muted"></i></span>
+                            <input type="text" id="txtCodigo" class="form-control rounded-end-3" required maxlength="10" placeholder="Ej: 0101" />
                         </div>
                     </div>
                     <div class="mb-3">
                         <label class="form-label fw-bold text-dark">Descripción</label>
-                        <input type="text" id="txtDescripcion" class="form-control" required maxlength="255" placeholder="Ej: Servicios Personales" />
+                        <input type="text" id="txtDescripcion" class="form-control rounded-3" required maxlength="255" placeholder="Ej: Servicios Personales" />
                     </div>
                 </form>
             </div>
-            <div class="modal-footer bg-light border-top-0 rounded-bottom-3">
-                <button type="button" class="btn btn-outline-secondary px-4 rounded-3" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-cgr-primary px-4 rounded-3" onclick="guardarCapitulo()">
+            <div class="modal-footer bg-light border-top-0 px-4 py-3">
+                <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-cgr-primary px-4 rounded-pill" onclick="guardarCapitulo()">
                     <i class="bi bi-check-circle me-1"></i> Guardar
                 </button>
             </div>
@@ -112,41 +111,40 @@
         });
 
         function cargarGridCapitulos() {
-    // Tomamos el selector de capítulo
-    const select = document.getElementById('selectCapitulo');
-    const codigo = select ? select.value : '';
+            const select = document.getElementById('selectCapitulo');
+            const codigo = select ? select.value : '';
 
-    const btnNuevo = document.getElementById('btnNuevoCapitulo');
-    const contenedor = document.getElementById('contenedorGrid');
+            const btnNuevo = document.getElementById('btnNuevoCapitulo');
+            const contenedor = document.getElementById('contenedorGrid');
 
-    if (btnNuevo) {
-        btnNuevo.classList.remove('d-none');
-        btnNuevo.classList.add('d-inline-block');
-    }
+            if (btnNuevo) {
+                btnNuevo.classList.remove('d-none');
+                btnNuevo.classList.add('d-inline-block');
+            }
 
-    contenedor.innerHTML = `
-        <div class="text-center py-5 bg-white rounded-3 border shadow-sm">
-            <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
-            <p class="text-muted mb-0 fw-semibold">Cargando registros...</p>
-        </div>`;
-
-    fetch(`/Capitulo/ObtenerGrid?codigo=${encodeURIComponent(codigo)}`)
-        .then(res => {
-            if (!res.ok) throw new Error('Error en la respuesta del servidor');
-            return res.text();
-        })
-        .then(html => {
-            contenedor.innerHTML = html;
-        })
-        .catch(err => {
-            console.error(err);
             contenedor.innerHTML = `
-                <div class="alert alert-danger border shadow-sm text-center py-4 rounded-3 mb-0">
-                    <i class="bi bi-exclamation-octagon fs-3 d-block mb-2"></i>
-                    <span class="fw-semibold">Error al cargar los datos.</span>
+                <div class="text-center py-5 bg-white rounded-3 border shadow-sm">
+                    <div class="spinner-border text-primary mb-3" style="width: 2.5rem; height: 2.5rem;" role="status"></div>
+                    <p class="text-muted mb-0 fw-semibold">Cargando registros...</p>
                 </div>`;
-        });
-}
+
+            fetch(`/Capitulo/ObtenerGrid?codigo=${encodeURIComponent(codigo)}`)
+                .then(res => {
+                    if (!res.ok) throw new Error('Error en la respuesta del servidor');
+                    return res.text();
+                })
+                .then(html => {
+                    contenedor.innerHTML = html;
+                })
+                .catch(err => {
+                    console.error(err);
+                    contenedor.innerHTML = `
+                        <div class="alert alert-danger border shadow-sm text-center py-4 rounded-3 mb-0">
+                            <i class="bi bi-exclamation-octagon fs-3 d-block mb-2"></i>
+                            <span class="fw-semibold">Error al cargar los datos.</span>
+                        </div>`;
+                });
+        }
 
         function abrirModalCrear() {
             document.getElementById('modalCapituloTitle').innerHTML = '<i class="bi bi-plus-circle me-2"></i> Agregar Capítulo';

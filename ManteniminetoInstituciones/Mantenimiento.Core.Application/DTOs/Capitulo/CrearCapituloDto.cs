@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Mantenimiento.Core.Application.DTOs.Auditoria;
 
 namespace Mantenimiento.Core.Application.DTOs.Capitulo
 {
-    public record CrearCapituloDto
+    public record CrearCapituloDto : AuditableDto
     {
         public string CodigoCapitulo { get; set; } = string.Empty;
         public string NombreCapitulo { get; set; } = string.Empty;

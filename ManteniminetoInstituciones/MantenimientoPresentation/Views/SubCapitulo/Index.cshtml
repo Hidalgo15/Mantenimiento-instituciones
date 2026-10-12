@@ -1,18 +1,17 @@
 ﻿@using Mantenimiento.Core.Application.DTOs.SubCapitulo
 @{
     ViewData["Title"] = "Gestión de Sub-capítulo";
-    // Asumiendo que tienes un DTO o modelo para los capítulos en ViewBag.Capitulos
     var capitulos = ViewBag.Capitulos as IEnumerable<dynamic> ?? new List<dynamic>();
 }
 
-<div class="container-fluid py-2">
-    <!-- CABECERA SUPERIOR ALINEADA -->
+<div class="container-fluid py-3">
+    <!-- CABECERA SUPERIOR -->
     <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
         <div>
             <h4 class="fw-bold mb-0 text-dark">Gestión de Sub-capítulos</h4>
             <small class="text-muted">Administre y consulte los Sub-capítulo institucionales</small>
         </div>
-        <span class="badge text-white py-2 px-3 fs-6" style="background-color: #0d5493;">
+        <span class="badge text-white py-2 px-3 fs-6 rounded-pill" style="background-color: #0d5493;">
             <i class="bi bi-diagram-2 me-1"></i> Institucional
         </span>
     </div>
@@ -21,17 +20,16 @@
     <div class="card border-0 shadow-sm rounded-3 mb-4">
         <div class="card-body p-4">
             <div class="row align-items-end g-3">
-                <!-- SELECCIÓN PRINCIPAL (FILTRAR POR CAPÍTULO) -->
                 <div class="col-md-9">
                     <label for="selectCapituloFiltro" class="form-label fw-bold text-dark mb-2">
-                        <i class="bi bi-folder2-open me-1 text-primary"></i> Seleccionar Capítulo para Filtrar
+                        <i class="bi bi-folder2-open me-1" style="color: #0d5493;"></i> Seleccionar Capítulo para Filtrar
                     </label>
                     <div class="position-relative mb-2">
                         <div class="input-group">
-                            <input type="text" id="txtBuscarCapituloFiltro" class="form-control rounded-start-3 border-secondary-subtle"
+                            <input type="text" id="txtBuscarCapituloFiltro" class="form-control rounded-start-pill border-secondary-subtle"
                                    placeholder="Buscar capítulo por código o nombre..." aria-label="Buscar capítulo"
                                    oninput="filtrarOpcionesSelect(this, 'selectCapituloFiltro', 'resultadosBusquedaCapituloFiltro')" />
-                            <button type="button" class="btn btn-outline-secondary rounded-end-3"
+                            <button type="button" class="btn btn-outline-secondary rounded-end-pill px-3"
                                     onclick="limpiarBusquedaSelect('txtBuscarCapituloFiltro', 'selectCapituloFiltro', 'resultadosBusquedaCapituloFiltro')"
                                     title="Limpiar búsqueda" aria-label="Limpiar búsqueda de capítulo">
                                 <i class="bi bi-x-lg"></i>
@@ -40,18 +38,17 @@
                         <div id="resultadosBusquedaCapituloFiltro" class="list-group position-absolute top-100 start-0 w-100 shadow d-none"
                              style="z-index: 1050; max-height: 18rem; overflow-y: auto;" role="listbox"></div>
                     </div>
-                    <select id="selectCapituloFiltro" class="form-select form-select-lg rounded-3 fs-6 border-secondary-subtle" onchange="cargarGridSubCapitulos()">
+                    <select id="selectCapituloFiltro" class="form-select form-select-lg rounded-pill fs-6 border-secondary-subtle" onchange="cargarGridSubCapitulos()">
                         <option value="">-- Seleccione un capítulo --</option>
                         @foreach (var cap in capitulos)
                         {
-                            <option value="@cap.Id">@cap.CodigoCapitulo - @cap.NombreCapitulo</option> <!-- Ajusta las propiedades 'Id', 'Codigo' y 'Nombre' según tu DTO de Capítulos -->
+                            <option value="@cap.Id">@cap.CodigoCapitulo - @cap.NombreCapitulo</option>
                         }
                     </select>
                 </div>
 
-                <!-- BOTÓN NUEVO Sub-capítulo -->
                 <div class="col-md-3 text-end">
-                    <button type="button" class="btn btn-cgr-primary btn-lg w-100 rounded-3" id="btnNuevoSubCapitulo" onclick="abrirModalCrear()">
+                    <button type="button" class="btn btn-cgr-primary btn-lg w-100 rounded-pill py-2" id="btnNuevoSubCapitulo" onclick="abrirModalCrear()">
                         <i class="bi bi-plus-circle me-2"></i> Nuevo Sub-capítulo
                     </button>
                 </div>
@@ -61,19 +58,19 @@
 
     <!-- CONTENEDOR DEL GRID -->
     <div id="contenedorGrid">
-        <div class="alert alert-light border shadow-sm text-center py-5 rounded-3">
-            <i class="bi bi-info-circle text-primary fs-1 d-block mb-2"></i>
+        <div class="alert alert-secondary border-0 shadow-sm text-center py-5 rounded-3 mb-0" style="background-color: #f8fafc;">
+            <i class="bi bi-info-circle fs-2 text-primary d-block mb-2"></i>
             <h6 class="fw-bold text-dark">Ningún capítulo seleccionado</h6>
             <p class="text-muted small mb-0">Seleccione un capítulo del menú desplegable para visualizar sus Sub-capítulo.</p>
         </div>
     </div>
 </div>
 
-<!-- MODAL CREAR / EDITAR Sub-capítulo -->
+<!-- MODAL CREAR / EDITAR SUB-CAPÍTULO -->
 <div class="modal fade" id="modalSubCapitulo" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow rounded-3">
-            <div class="modal-header text-white" style="background-color: #0d5493;">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header text-white px-4 py-3" style="background-color: #0d5493;">
                 <h5 class="modal-title fw-bold" id="modalSubCapituloTitle">
                     <i class="bi bi-diagram-2-fill me-2"></i> Agregar Sub-capítulo
                 </h5>
@@ -83,12 +80,11 @@
                 <form id="formSubCapitulo">
                     <input type="hidden" id="txtId" value="0" />
 
-                    <!-- SELECT DE CAPÍTULO PADRE EN EL MODAL -->
                     <div class="mb-3">
                         <label for="selectCapituloModal" class="form-label fw-bold text-dark">Capítulo</label>
                         <div class="input-group">
-                            <span class="input-group-text bg-light"><i class="bi bi-folder"></i></span>
-                            <select id="selectCapituloModal" class="form-select" required>
+                            <span class="input-group-text bg-light border-end-0 rounded-start-3"><i class="bi bi-folder text-muted"></i></span>
+                            <select id="selectCapituloModal" class="form-select rounded-end-3" required>
                                 <option value="">-- Seleccione un capítulo --</option>
                                 @foreach (var cap in capitulos)
                                 {
@@ -101,20 +97,20 @@
                     <div class="mb-3">
                         <label class="form-label fw-bold text-dark">Código del Sub-capítulo</label>
                         <div class="input-group">
-                            <span class="input-group-text bg-light"><i class="bi bi-hash"></i></span>
-                            <input type="text" id="txtCodigo" class="form-control" required placeholder="Ej: 01" />
+                            <span class="input-group-text bg-light border-end-0 rounded-start-3"><i class="bi bi-hash text-muted"></i></span>
+                            <input type="text" id="txtCodigo" class="form-control rounded-end-3" required placeholder="Ej: 01" />
                         </div>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-bold text-dark">Descripción del Sub-capítulo</label>
-                        <input type="text" id="txtSubCapitulo" class="form-control" required maxlength="255" placeholder="Ej: Personal Permanente" />
+                        <input type="text" id="txtSubCapitulo" class="form-control rounded-3" required maxlength="255" placeholder="Ej: Personal Permanente" />
                     </div>
                 </form>
             </div>
-            <div class="modal-footer bg-light border-top-0 rounded-bottom-3">
-                <button type="button" class="btn btn-outline-secondary px-4 rounded-3" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-cgr-primary px-4 rounded-3" onclick="guardarSubCapitulo()">
+            <div class="modal-footer bg-light border-top-0 px-4 py-3">
+                <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-cgr-primary px-4 rounded-pill" onclick="guardarSubCapitulo()">
                     <i class="bi bi-check-circle me-1"></i> Guardar
                 </button>
             </div>
@@ -136,19 +132,19 @@
 
             if (!capituloId) {
                 contenedor.innerHTML = `
-                            <div class="alert alert-light border shadow-sm text-center py-5 rounded-3">
-                                <i class="bi bi-info-circle text-primary fs-1 d-block mb-2"></i>
-                                <h6 class="fw-bold text-dark">Ningún capítulo seleccionado</h6>
-                                <p class="text-muted small mb-0">Seleccione un capítulo del menú desplegable para visualizar sus Sub-capítulo.</p>
-                            </div>`;
+                    <div class="alert alert-secondary border-0 shadow-sm text-center py-5 rounded-3 mb-0" style="background-color: #f8fafc;">
+                        <i class="bi bi-info-circle fs-2 text-primary d-block mb-2"></i>
+                        <h6 class="fw-bold text-dark">Ningún capítulo seleccionado</h6>
+                        <p class="text-muted small mb-0">Seleccione un capítulo del menú desplegable para visualizar sus Sub-capítulo.</p>
+                    </div>`;
                 return;
             }
 
             contenedor.innerHTML = `
-                        <div class="text-center py-5 bg-white rounded-3 border shadow-sm">
-                            <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
-                            <p class="text-muted mb-0 fw-semibold">Cargando registros...</p>
-                        </div>`;
+                <div class="text-center py-5 bg-white rounded-3 border shadow-sm">
+                    <div class="spinner-border text-primary mb-3" style="width: 2.5rem; height: 2.5rem;" role="status"></div>
+                    <p class="text-muted mb-0 fw-semibold">Cargando registros...</p>
+                </div>`;
 
             fetch(`/SubCapitulo/ObtenerGrid?capituloId=${capituloId}`)
                 .then(res => res.text())
@@ -157,10 +153,10 @@
                 })
                 .catch(err => {
                     contenedor.innerHTML = `
-                                <div class="alert alert-danger border shadow-sm text-center py-4 rounded-3 mb-0">
-                                    <i class="bi bi-exclamation-octagon fs-3 d-block mb-2"></i>
-                                    <span class="fw-semibold">Error al cargar los datos.</span>
-                                </div>`;
+                        <div class="alert alert-danger border shadow-sm text-center py-4 rounded-3 mb-0">
+                            <i class="bi bi-exclamation-octagon fs-3 d-block mb-2"></i>
+                            <span class="fw-semibold">Error al cargar los datos.</span>
+                        </div>`;
                 });
         }
 
