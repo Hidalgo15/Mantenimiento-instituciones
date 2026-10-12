@@ -21,13 +21,14 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
             _context = context;
         }
 
-        public async Task<List<CuentaDbo>> ObtenerCuentasAsync(int? idCuenta = null, int? tipoTramite = null)
+        public async Task<List<CuentaDbo>> ObtenerCuentasAsync(int? tipoTramite = null, string? busqueda = null)
         {
-            var pId = new SqlParameter("@id_cuenta", SqlDbType.Int) { Value = (object?)idCuenta ?? DBNull.Value };
+            var pId = new SqlParameter("@id_cuenta", SqlDbType.Int) { Value = DBNull.Value };
             var pTipo = new SqlParameter("@tipo_tramite", SqlDbType.Int) { Value = (object?)tipoTramite ?? DBNull.Value };
+            var pBusqueda = new SqlParameter("@busqueda", SqlDbType.NVarChar, 255) { Value = (object?)busqueda ?? DBNull.Value };
 
             return await _context.TipoCuentaDbo
-                .FromSqlRaw("EXEC dbo.sp_Cuentas_Obtener @id_cuenta = @id_cuenta, @tipo_tramite = @tipo_tramite", pId, pTipo)
+                .FromSqlRaw("EXEC dbo.sp_Cuentas_Obtener @id_cuenta = @id_cuenta, @tipo_tramite = @tipo_tramite, @busqueda = @busqueda", pId, pTipo, pBusqueda)
                 .AsNoTracking()
                 .ToListAsync();
         }
@@ -42,8 +43,16 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
 
         public async Task<CuentaDbo?> ObtenerPorIdAsync(int idCuenta)
         {
-            var result = await ObtenerCuentasAsync(idCuenta: idCuenta);
-            return result.FirstOrDefault();
+            var pId = new SqlParameter("@id_cuenta", SqlDbType.Int) { Value = idCuenta };
+            var pTipo = new SqlParameter("@tipo_tramite", SqlDbType.Int) { Value = DBNull.Value };
+            var pBusqueda = new SqlParameter("@busqueda", SqlDbType.NVarChar, 255) { Value = DBNull.Value };
+
+            var resultado = await _context.TipoCuentaDbo
+                .FromSqlRaw("EXEC dbo.sp_Cuentas_Obtener @id_cuenta = @id_cuenta, @tipo_tramite = @tipo_tramite, @busqueda = @busqueda", pId, pTipo, pBusqueda)
+                .AsNoTracking()
+                .ToListAsync();
+
+            return resultado.FirstOrDefault();
         }
 
         public async Task CrearCuentaAsync(int idCuentaBase, string? descripcion, int tipoTramite)

@@ -34,9 +34,9 @@ namespace MantenimientoPresentation.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ObtenerGrid(int? tipoTramite = null)
+        public async Task<IActionResult> ObtenerGrid(int? tipoTramite = null, string? busqueda = null)
         {
-            var cuentas = await _cuentaMapeoService.ObtenerCuentasAsync(tipoTramite);
+            var cuentas = await _cuentaMapeoService.ObtenerCuentasAsync(tipoTramite, busqueda);
             return PartialView("_CuentasGridPartial", cuentas);
         }
 

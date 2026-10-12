@@ -68,7 +68,7 @@
                     <option value="">-- Todos los Tipos de Trámite --</option>
                     @foreach (var tramite in tiposTramite)
                     {
-                        <option value="@tramite.TipoTramite">@tramite.TipoTramite</option>
+                        <option value="@tramite.Tipo">@tramite.Tipo</option>
                     }
                     <option value="Pendiente">PENDIENTE</option>
                 </select>
@@ -136,7 +136,7 @@
                             <option value="0">-- Seleccione un Tipo de Trámite (Opcional - Por defecto Pendiente) --</option>
                             @foreach (var tramite in tiposTramite)
                             {
-                                <option value="@tramite.Id">@tramite.TipoTramite</option>
+                                <option value="@tramite.Id">@tramite.Tipo</option>
                             }
                         </select>
                     </div>

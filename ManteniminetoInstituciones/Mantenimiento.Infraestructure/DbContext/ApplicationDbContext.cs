@@ -211,8 +211,8 @@ namespace Mantenimiento.Infraestructure.Persistence
                 entity.Property(e => e.DescripcionCuenta).HasColumnName("descripcion_cuenta");
                 entity.Property(e => e.TipoTramiteId).HasColumnName("tipo_tramite");
 
-                // Ignorar la propiedad auxiliar que viene del SP / JOIN
-                entity.Ignore(e => e.TipoTramiteNombre);
+                // CAMBIO AQUÍ: Mapeamos la columna que viene del Stored Procedure en lugar de ignorarla
+                entity.Property(e => e.TipoTramiteNombre).HasColumnName("tipo_tramite_nombre");
             });
 
             #endregion

@@ -14,14 +14,14 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
             _context = context;
         }
 
-        public async Task<List<TipoTramiteContrato>> GetAllTipoTramiteAsync()
+        public async Task<List<TramiteContrato>> GetAllTipoTramiteAsync()
         {
             return await _context.TipoTramiteContratos
                 .AsNoTracking()
                 .ToListAsync();
         }
 
-        public async Task<TipoTramiteContrato> GetTipoTramiteByIdAsync(int id)
+        public async Task<TramiteContrato> GetTipoTramiteByIdAsync(int id)
         {
             return (await _context.TipoTramiteContratos
                 .AsNoTracking()

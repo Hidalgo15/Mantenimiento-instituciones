@@ -60,9 +60,9 @@ namespace Mantenimiento.Core.Application.Services
             if (tipoTramiteId > 0)
             {
                 var tipoTramiteDto = await _tipoTramiteService.ObtenerPorIdAsync(tipoTramiteId);
-                if (tipoTramiteDto != null && !string.IsNullOrWhiteSpace(tipoTramiteDto.tipoTramiteContrato))
+                if (tipoTramiteDto != null && !string.IsNullOrWhiteSpace(tipoTramiteDto.Tipo))
                 {
-                    tipoTramiteNombre = tipoTramiteDto.tipoTramiteContrato;
+                    tipoTramiteNombre = tipoTramiteDto.Tipo;
                 }
             }
 
@@ -89,9 +89,9 @@ namespace Mantenimiento.Core.Application.Services
             if (tipoTramiteId > 0)
             {
                 var tipoTramiteDto = await _tipoTramiteService.ObtenerPorIdAsync(tipoTramiteId);
-                if (tipoTramiteDto != null && !string.IsNullOrWhiteSpace(tipoTramiteDto.tipoTramiteContrato))
+                if (tipoTramiteDto != null && !string.IsNullOrWhiteSpace(tipoTramiteDto.Tipo))
                 {
-                    tipoTramiteNombre = tipoTramiteDto.tipoTramiteContrato;
+                    tipoTramiteNombre = tipoTramiteDto.Tipo;
                 }
             }
 
@@ -126,7 +126,7 @@ namespace Mantenimiento.Core.Application.Services
             Fondo = f.Fondo,
             Descripcion = f.Descripcion,
             Estructura = f.Estructura,
-            TipoTramiteContrato = new tipoTramiteContrato
+            TipoTramiteContrato = new TramiteContrato
             {
                 TipoTramite = f.TipoTramite ?? string.Empty
             }

@@ -1,8 +1,10 @@
 ﻿using Mantenimiento.Core.Domain.Entities;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -21,16 +23,21 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
         public async Task<List<TipoTramitePago>> ObtenerTodosAsync()
         {
             return await _context.TipoTramitePago
+                .FromSqlRaw("EXEC dbo.sp_TipoTramitePago_Obtener")
                 .AsNoTracking()
-                .OrderBy(t => t.Tipo)
                 .ToListAsync();
         }
 
         public async Task<TipoTramitePago?> ObtenerPorIdAsync(int id)
         {
-            return await _context.TipoTramitePago
+            var pId = new SqlParameter("@id", SqlDbType.Int) { Value = id };
+
+            var lista = await _context.TipoTramitePago
+                .FromSqlRaw("EXEC dbo.sp_TipoTramitePago_Obtener @id = @id", pId)
                 .AsNoTracking()
-                .FirstOrDefaultAsync(t => t.Id == id);
+                .ToListAsync();
+
+            return lista.FirstOrDefault();
         }
     }
 }

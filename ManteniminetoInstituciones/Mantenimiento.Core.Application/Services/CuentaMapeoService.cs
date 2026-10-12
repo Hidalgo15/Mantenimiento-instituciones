@@ -20,9 +20,9 @@ namespace Mantenimiento.Core.Application.Services
             _repo = repo;
         }
 
-        public async Task<List<CuentaDto>> ObtenerCuentasAsync(int? tipoTramite = null)
+        public async Task<List<CuentaDto>> ObtenerCuentasAsync(int? tipoTramite = null, string? busqueda = null)
         {
-            var lista = await _repo.ObtenerCuentasAsync(tipoTramite: tipoTramite);
+            var lista = await _repo.ObtenerCuentasAsync(tipoTramite: tipoTramite, busqueda: busqueda);
             return lista.Select(MapToDto).ToList();
         }
 
@@ -72,13 +72,18 @@ namespace Mantenimiento.Core.Application.Services
 
         private static CuentaDto MapToDto(CuentaDbo c) => new()
         {
+            //    IdCuenta = c.IdCuenta,
+            //    CodigoCuenta = c.CodigoCuenta,
+            //    DescripcionCuenta = c.DescripcionCuenta,
+            //    TipoTramite = c.TipoTramiteId,
+            //    TipoTramiteNombre = !string.IsNullOrWhiteSpace(c.TipoTramiteNombre)
+            //? c.TipoTramiteNombre.Trim()
+            //: string.Empty
             IdCuenta = c.IdCuenta,
             CodigoCuenta = c.CodigoCuenta,
             DescripcionCuenta = c.DescripcionCuenta,
-            TipoTramite = c.TipoTramiteId,
-            TipoTramiteNombre = !string.IsNullOrWhiteSpace(c.TipoTramiteNombre)
-        ? c.TipoTramiteNombre.Trim()
-        : string.Empty
+            TipoTramite = c.TipoTramiteId, // o TipoTramite según tu entidad
+            TipoTramiteNombre = c.TipoTramiteNombre ?? string.Empty
         };
 
 

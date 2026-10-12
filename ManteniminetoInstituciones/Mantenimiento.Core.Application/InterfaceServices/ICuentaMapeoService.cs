@@ -15,6 +15,6 @@ namespace Mantenimiento.Core.Application.InterfaceServices
         Task EliminarCuentaAsync(int idCuenta);
         Task<List<CuentaCt>> ObtenerCatalogoBaseAsync();
         Task<CuentaDto?> ObtenerPorIdAsync(int idCuenta);
-        Task<List<CuentaDto>> ObtenerCuentasAsync(int? tipoTramite = null);
+        Task<List<CuentaDto>> ObtenerCuentasAsync(int? tipoTramite = null, string? busqueda = null);
     }
 }
