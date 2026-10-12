@@ -20,7 +20,7 @@
     </div>
 
     <div class="row g-4">
-        <!-- COLUMNA IZQUIERDA: MENÚ ESTRUCTURA INSTITUCIONAL (UNIFORME EN TONO SUAVE) -->
+        <!-- COLUMNA IZQUIERDA: MENÚ ESTRUCTURA INSTITUCIONAL -->
         <div class="col-12 col-lg-7">
             <div class="d-flex align-items-center justify-content-between mb-3">
                 <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
@@ -151,7 +151,7 @@
             </div>
         </div>
 
-        <!-- COLUMNA DERECHA: OTROS CATÁLOGOS (TARJETAS SÓLIDAS COMO ANTES) -->
+        <!-- COLUMNA DERECHA: OTROS CATÁLOGOS -->
         <div class="col-12 col-lg-5">
             <div class="d-flex align-items-center justify-content-between mb-3">
                 <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
@@ -223,7 +223,7 @@
                     </div>
                 </a>
 
-                <!-- Mapeo de Cuentas -->
+                <!-- Gestión de Cuentas -->
                 <a asp-controller="CuentaMapeo" asp-action="Index" class="text-decoration-none">
                     <div class="card module-card border-0 shadow-sm rounded-4 p-3 transition-all">
                         <div class="card-body p-0 d-flex align-items-center justify-content-between">
@@ -243,9 +243,7 @@
                     </div>
                 </a>
 
-
-
-                 <!-- Gestión de Cuentas -->
+                <!-- Gestión de Cuentas CT -->
                 <a asp-controller="CuentaCt" asp-action="Index" class="text-decoration-none">
                     <div class="card module-card border-0 shadow-sm rounded-4 p-3 transition-all">
                         <div class="card-body p-0 d-flex align-items-center justify-content-between">
@@ -255,7 +253,7 @@
                                 </div>
                                 <div>
                                     <h6 class="fw-bold text-dark mb-0">Gestión de Cuentas CT</h6>
-                                    <small class="text-muted">Gestion de Cuentas CT</small>
+                                    <small class="text-muted">Administración y control de cuentas CT</small>
                                 </div>
                             </div>
                             <span class="btn btn-light rounded-circle p-2 arrow-btn">
@@ -265,6 +263,45 @@
                     </div>
                 </a>
 
+                <!-- Relación Cuentas y Requisitos -->
+                <a asp-controller="CuentaRequisito" asp-action="Index" class="text-decoration-none">
+                    <div class="card module-card border-0 shadow-sm rounded-4 p-3 transition-all">
+                        <div class="card-body p-0 d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="icon-shape bg-slate text-white rounded-3 shadow-sm">
+                                    <i class="bi bi-diagram-3-fill fs-5"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold text-dark mb-0">Relación Cuentas y Requisitos</h6>
+                                    <small class="text-muted">Vinculación de cuentas con requisitos</small>
+                                </div>
+                            </div>
+                            <span class="btn btn-light rounded-circle p-2 arrow-btn">
+                                <i class="bi bi-arrow-right fs-6"></i>
+                            </span>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Requisitos -->
+                <a asp-controller="Requisito" asp-action="Index" class="text-decoration-none">
+                    <div class="card module-card border-0 shadow-sm rounded-4 p-3 transition-all">
+                        <div class="card-body p-0 d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-3">
+                                <div class="icon-shape bg-dark text-white rounded-3 shadow-sm">
+                                    <i class="bi bi-file-earmark-check-fill fs-5"></i>
+                                </div>
+                                <div>
+                                    <h6 class="fw-bold text-dark mb-0">Requisitos</h6>
+                                    <small class="text-muted">Catálogo y administración de requisitos</small>
+                                </div>
+                            </div>
+                            <span class="btn btn-light rounded-circle p-2 arrow-btn">
+                                <i class="bi bi-arrow-right fs-6"></i>
+                            </span>
+                        </div>
+                    </div>
+                </a>
 
             </div>
         </div>
@@ -303,13 +340,17 @@
         pointer-events: none;
     }
 
-    /* Colores Sólidos para Otros Catálogos */
+    /* Colores Sólidos */
     .bg-navy {
         background-color: var(--brand-navy);
     }
 
     .bg-dark {
         background-color: #212529 !important;
+    }
+
+    .bg-slate {
+        background-color: #334155 !important;
     }
 
     .bg-deep-teal {
