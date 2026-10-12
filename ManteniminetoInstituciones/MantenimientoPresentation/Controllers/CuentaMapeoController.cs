@@ -1,4 +1,4 @@
-﻿using Mantenimiento.Core.Application.DTOs.Cuenta;
+﻿using Mantenimiento.Core.Application.DTOs.Cuenta.DboCuentasDTO;
 using Mantenimiento.Core.Application.InterfaceServices;
 using Microsoft.AspNetCore.Mvc;
 

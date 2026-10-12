@@ -1,4 +1,4 @@
-﻿using Mantenimiento.Core.Application.DTOs.Cuenta;
+﻿using Mantenimiento.Core.Application.DTOs.Cuenta.DboCuentasDTO;
 using Mantenimiento.Core.Domain.Entities;
 using System;
 using System.Collections.Generic;
