@@ -1,6 +1,6 @@
 ﻿using Mantenimiento.Core.Application.DTOs.Capitulo;
 using Mantenimiento.Core.Application.InterfaceServices;
-using Mantenimiento.Core.Domain.Entities;
+using Mantenimiento.Core.Application.Mappings;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 
 namespace Mantenimiento.Core.Application.Services
@@ -17,40 +17,27 @@ namespace Mantenimiento.Core.Application.Services
         public async Task<List<CapituloDto>> ObtenerCapitulosAsync(string? codigo = null)
         {
             var lista = await _repo.ObtenerCapitulosAsync(codigo);
-            return lista.Select(MapToDto).ToList();
+            return lista.Select(CapituloMapper.ToDto).ToList();
         }
 
         public async Task<CapituloDto> ObtenerPorIdAsync(int id)
         {
             var entidad = await _repo.GetByIdAsync(id);
-            return MapToDto(entidad);
+            return CapituloMapper.ToDto(entidad);
         }
 
         public async Task CrearCapituloAsync(CrearCapituloDto dto)
         {
             ValidarCapitulo(dto.CodigoCapitulo, dto.NombreCapitulo);
 
-            var entidad = new Capitulo
-            {
-                CodigoCapitulo = dto.CodigoCapitulo.Trim(),
-                NombreCapitulo = dto.NombreCapitulo.Trim()
-            };
-
-            await _repo.InsertarConSpAsync(entidad);
+            await _repo.InsertarConSpAsync(CapituloMapper.ToEntity(dto));
         }
 
         public async Task ActualizarCapituloAsync(ActualizarCapituloDto dto)
         {
             ValidarCapitulo(dto.CodigoCapitulo, dto.NombreCapitulo);
 
-            var entidad = new Capitulo
-            {
-                Id = dto.Id,
-                CodigoCapitulo = dto.CodigoCapitulo.Trim(),
-                NombreCapitulo = dto.NombreCapitulo.Trim()
-            };
-
-            await _repo.ActualizarConSpAsync(entidad);
+            await _repo.ActualizarConSpAsync(CapituloMapper.ToEntity(dto));
         }
 
         public async Task EliminarCapituloAsync(int id)
@@ -69,12 +56,5 @@ namespace Mantenimiento.Core.Application.Services
             if (codigo.Length > 10)
                 throw new ArgumentException("El código del capítulo no puede exceder 10 caracteres.");
         }
-
-        private static CapituloDto MapToDto(Capitulo c) => new()
-        {
-            Id = c.Id,
-            CodigoCapitulo = c.CodigoCapitulo,
-            NombreCapitulo = c.NombreCapitulo
-        };
     }
 }

@@ -3,6 +3,7 @@ using Mantenimiento.Core.Application.Services;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 using Mantenimiento.Infraestructure.Persistence;
 using Mantenimiento.Infraestructure.Persistence.Repositories;
+using MantenimientoPresentation.Services;
 using Microsoft.EntityFrameworkCore;
 
 namespace MantenimientoPresentation
@@ -15,9 +16,6 @@ namespace MantenimientoPresentation
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
-
-            // AutoMapper - Registro Global
-            builder.Services.AddAutoMapper(cfg => cfg.AddMaps(AppDomain.CurrentDomain.GetAssemblies()));
 
             // DbContext Corregido
             builder.Services.AddDbContext<ApplicationDbContext>(options =>

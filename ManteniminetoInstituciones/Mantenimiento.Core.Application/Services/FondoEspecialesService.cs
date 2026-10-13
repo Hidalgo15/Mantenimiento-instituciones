@@ -1,6 +1,6 @@
 ﻿using Mantenimiento.Core.Application.DTOs.Fondos;
 using Mantenimiento.Core.Application.InterfaceServices;
-using Mantenimiento.Core.Domain.Entities;
+using Mantenimiento.Core.Application.Mappings;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 
 
@@ -38,13 +38,13 @@ namespace Mantenimiento.Core.Application.Services
                     f.TipoTramite.Equals(tipoTramite, StringComparison.OrdinalIgnoreCase));
             }
 
-            return query.Select(MapToDto).ToList();
+            return query.Select(FondoEspecialesMapper.ToDto).ToList();
         }
 
-        public async Task<FondoDto> ObtenerPorIdAsync(int id)
+        public async Task<FondoDto?> ObtenerPorIdAsync(int id)
         {
             var entidad = await _fondoRepo.GetFondoEspecialByIdAsync(id);
-            return entidad != null ? MapToDto(entidad) : null!;
+            return entidad != null ? FondoEspecialesMapper.ToDto(entidad) : null;
         }
 
         public async Task CrearFondoEspecialAsync(CrearFondoDto dto)
@@ -66,14 +66,9 @@ namespace Mantenimiento.Core.Application.Services
                 }
             }
 
-            var entidad = new FondosEspeciales
-            {
-                Fondo = dto.Fondo.Trim(),
-                Descripcion = dto.Descripcion?.Trim(), // Guardar la descripción recibida
-                TipoTramite = tipoTramiteNombre
-            };
-
-            await _fondoRepo.CreateFondosEspecialesAsync(entidad, dto.IdInstitucion);
+            await _fondoRepo.CreateFondosEspecialesAsync(
+                FondoEspecialesMapper.ToEntity(dto, tipoTramiteNombre),
+                dto.IdInstitucion);
         }
 
         public async Task ActualizarFondoEspecialAsync(FondoDto dto)
@@ -95,15 +90,9 @@ namespace Mantenimiento.Core.Application.Services
                 }
             }
 
-            var entidad = new FondosEspeciales
-            {
-                Id = dto.Id,
-                Fondo = dto.Fondo.Trim(),
-                Descripcion = dto.Descripcion?.Trim(), // Guardar la descripción recibida
-                TipoTramite = tipoTramiteNombre
-            };
-
-            await _fondoRepo.UpdateFondosEspecialesAsync(entidad, dto.IdInstitucion);
+            await _fondoRepo.UpdateFondosEspecialesAsync(
+                FondoEspecialesMapper.ToEntity(dto, tipoTramiteNombre),
+                dto.IdInstitucion);
         }
 
         public async Task EliminarFondoEspecialAsync(int id)
@@ -119,18 +108,6 @@ namespace Mantenimiento.Core.Application.Services
             if (int.TryParse(fondo, out var fondoValue) && fondoValue <= 0)
                 throw new ArgumentException("El campo fondo debe ser un número positivo.");
         }
-
-        private static FondoDto MapToDto(FondosEspeciales f) => new()
-        {
-            Id = f.Id,
-            Fondo = f.Fondo,
-            Descripcion = f.Descripcion,
-            Estructura = f.Estructura,
-            TipoTramiteContrato = new TramiteContrato
-            {
-                TipoTramite = f.TipoTramite ?? string.Empty
-            }
-        };
     }
 
 }

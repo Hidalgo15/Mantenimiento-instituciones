@@ -34,7 +34,7 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
                 .ToListAsync();
         }
 
-        public async Task<FondosEspeciales> GetFondoEspecialByIdAsync(int id)
+        public async Task<FondosEspeciales?> GetFondoEspecialByIdAsync(int id)
         {
             /*
             var pId = new SqlParameter("@Id", id);

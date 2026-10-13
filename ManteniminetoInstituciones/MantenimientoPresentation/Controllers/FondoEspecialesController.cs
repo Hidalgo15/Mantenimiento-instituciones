@@ -74,6 +74,9 @@ namespace MantenimientoPresentation.Controllers
                     return Json(new { success = false, message = "Identificador no válido." });
 
                 var fondo = await _fondoService.ObtenerPorIdAsync(id);
+                if (fondo == null)
+                    return Json(new { success = false, message = "No se encontró el fondo especial solicitado." });
+
                 return Json(new { success = true, data = fondo });
             }
             catch (Exception ex)
