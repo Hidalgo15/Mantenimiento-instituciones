@@ -95,7 +95,7 @@
                     <input type="hidden" id="txtIdCuenta" value="0" />
 
                     <div id="divSeleccionCuentaBase" class="mb-3">
-                        <label for="selectCuentaBase" class="form-label fw-bold text-dark">Cuenta Base (Catálogo ct.cuentas)</label>
+                        <label for="selectCuentaBase" class="form-label fw-bold text-dark">Cuenta CT</label>
                         <div class="position-relative mb-2">
                             <div class="input-group">
                                 <input type="text" id="txtBuscarCuentaBase" class="form-control rounded-start-pill border-secondary-subtle"
@@ -112,7 +112,7 @@
                         </div>
 
                         <select id="selectCuentaBase" class="form-select rounded-3" onchange="alSeleccionarCuentaBase(this)">
-                            <option value="0">-- Seleccione una Cuenta Base --</option>
+                            <option value="0">-- Seleccione una Cuenta CT --</option>
                             @foreach (var c in catalogoBase)
                             {
                                 <option value="@Convert.ToInt32(c.IdCuenta)" data-codigo="@c.CodigoCuenta" data-descripcion="@c.DescripcionCuenta">

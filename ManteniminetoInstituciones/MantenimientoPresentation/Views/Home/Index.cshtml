@@ -20,8 +20,8 @@
     </div>
 
     <div class="row g-4">
-        <!-- COLUMNA IZQUIERDA: MENÚ ESTRUCTURA INSTITUCIONAL -->
-        <div class="col-12 col-lg-7">
+        <!-- COLUMNA IZQUIERDA: ESTRUCTURA INSTITUCIONAL -->
+        <div class="col-12 col-lg-6">
             <div class="d-flex align-items-center justify-content-between mb-3">
                 <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
                     <span class="section-icon-wrapper bg-primary-subtle text-primary">
@@ -31,13 +31,10 @@
                 </h5>
             </div>
 
-            <!-- ACORDEÓN TIPO MENÚ -->
+            <!-- ACORDEÓN ESTRUCTURA ORGANIZACIONAL -->
             <div class="accordion custom-nav-accordion shadow-sm rounded-4 overflow-hidden" id="accordionEstructura">
-
                 <div class="accordion-item border-0">
-                    <!-- CABECERA DEL MENÚ PRINCIPAL -->
                     <div class="accordion-header p-3 bg-white d-flex align-items-center justify-content-between">
-
                         <div class="d-flex align-items-center gap-3 cursor-pointer flex-grow-1 me-2"
                              data-bs-toggle="collapse"
                              data-bs-target="#collapseEstructura"
@@ -51,9 +48,7 @@
                                 <small class="text-muted">Niveles y componentes institucionales</small>
                             </div>
                         </div>
-
                         <div class="d-flex align-items-center gap-2">
-                            <!-- BOTÓN DE DESPLEGAR ACORDEÓN -->
                             <button class="btn btn-menu-toggle rounded-circle p-2 border-0"
                                     type="button"
                                     data-bs-toggle="collapse"
@@ -66,12 +61,10 @@
                         </div>
                     </div>
 
-                    <!-- DESPLEGABLE CON LOS MÓDULOS INTERNOS -->
                     <div id="collapseEstructura" class="accordion-collapse collapse show" data-bs-parent="#accordionEstructura">
                         <div class="accordion-body bg-light-subtle p-3 border-top">
                             <div class="nav-tree-wrapper d-flex flex-column gap-2 ms-md-2">
-
-                                <!-- ITEM MENÚ: CAPÍTULOS -->
+                                <!-- Capítulos -->
                                 <a asp-controller="Capitulo" asp-action="Index" class="menu-subitem-link text-decoration-none">
                                     <div class="menu-subitem p-3 bg-white rounded-3 border d-flex align-items-center justify-content-between transition-all">
                                         <div class="d-flex align-items-center gap-3">
@@ -83,13 +76,11 @@
                                                 <small class="text-muted">Gestión principal de capítulos</small>
                                             </div>
                                         </div>
-                                        <span class="subitem-arrow text-muted">
-                                            <i class="bi bi-chevron-right fs-6"></i>
-                                        </span>
+                                        <span class="subitem-arrow text-muted"><i class="bi bi-chevron-right fs-6"></i></span>
                                     </div>
                                 </a>
 
-                                <!-- ITEM MENÚ: SUB-CAPÍTULOS -->
+                                <!-- Sub-Capítulos -->
                                 <a asp-controller="SubCapitulo" asp-action="Index" class="menu-subitem-link text-decoration-none">
                                     <div class="menu-subitem p-3 bg-white rounded-3 border d-flex align-items-center justify-content-between transition-all">
                                         <div class="d-flex align-items-center gap-3">
@@ -101,13 +92,11 @@
                                                 <small class="text-muted">Desglose por sub-capítulos</small>
                                             </div>
                                         </div>
-                                        <span class="subitem-arrow text-muted">
-                                            <i class="bi bi-chevron-right fs-6"></i>
-                                        </span>
+                                        <span class="subitem-arrow text-muted"><i class="bi bi-chevron-right fs-6"></i></span>
                                     </div>
                                 </a>
 
-                                <!-- ITEM MENÚ: DAF -->
+                                <!-- DAF -->
                                 <a asp-controller="Daf" asp-action="Index" class="menu-subitem-link text-decoration-none">
                                     <div class="menu-subitem p-3 bg-white rounded-3 border d-flex align-items-center justify-content-between transition-all">
                                         <div class="d-flex align-items-center gap-3">
@@ -119,13 +108,11 @@
                                                 <small class="text-muted">Direcciones Administrativas y Financieras</small>
                                             </div>
                                         </div>
-                                        <span class="subitem-arrow text-muted">
-                                            <i class="bi bi-chevron-right fs-6"></i>
-                                        </span>
+                                        <span class="subitem-arrow text-muted"><i class="bi bi-chevron-right fs-6"></i></span>
                                     </div>
                                 </a>
 
-                                <!-- ITEM MENÚ: UNIDADES EJECUTORAS -->
+                                <!-- Unidades Ejecutoras -->
                                 <a asp-controller="UnidadEjecutora" asp-action="Index" class="menu-subitem-link text-decoration-none">
                                     <div class="menu-subitem p-3 bg-white rounded-3 border d-flex align-items-center justify-content-between transition-all">
                                         <div class="d-flex align-items-center gap-3">
@@ -137,52 +124,28 @@
                                                 <small class="text-muted">Administración de unidades operativas</small>
                                             </div>
                                         </div>
-                                        <span class="subitem-arrow text-muted">
-                                            <i class="bi bi-chevron-right fs-6"></i>
-                                        </span>
+                                        <span class="subitem-arrow text-muted"><i class="bi bi-chevron-right fs-6"></i></span>
                                     </div>
                                 </a>
-
                             </div>
                         </div>
                     </div>
                 </div>
-
             </div>
         </div>
 
-        <!-- COLUMNA DERECHA: OTROS CATÁLOGOS -->
-        <div class="col-12 col-lg-5">
+        <!-- COLUMNA DERECHA: OTROS CATÁLOGOS Y GESTIÓN DE CUENTAS -->
+        <div class="col-12 col-lg-6">
             <div class="d-flex align-items-center justify-content-between mb-3">
                 <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
                     <span class="section-icon-wrapper bg-secondary-subtle text-secondary">
                         <i class="bi bi-grid-3x3-gap-fill"></i>
                     </span>
-                    Otros Catálogos
+                    Catálogos y Cuentas
                 </h5>
             </div>
 
             <div class="d-flex flex-column gap-3">
-                <!-- Cuentas Institucionales -->
-                <a asp-controller="CuentaInstitucion" asp-action="Index" class="text-decoration-none">
-                    <div class="card module-card border-0 shadow-sm rounded-4 p-3 transition-all">
-                        <div class="card-body p-0 d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="icon-shape bg-navy text-white rounded-3 shadow-sm">
-                                    <i class="bi bi-bank fs-5"></i>
-                                </div>
-                                <div>
-                                    <h6 class="fw-bold text-dark mb-0">Cuentas Institucionales</h6>
-                                    <small class="text-muted">Cuentas bancarias registradas</small>
-                                </div>
-                            </div>
-                            <span class="btn btn-light rounded-circle p-2 arrow-btn">
-                                <i class="bi bi-arrow-right fs-6"></i>
-                            </span>
-                        </div>
-                    </div>
-                </a>
-
                 <!-- Analista Supervisor -->
                 <a asp-controller="AnalistaSupervisor" asp-action="Index" class="text-decoration-none">
                     <div class="card module-card border-0 shadow-sm rounded-4 p-3 transition-all">
@@ -196,9 +159,7 @@
                                     <small class="text-muted">Asignaciones de personal supervisor</small>
                                 </div>
                             </div>
-                            <span class="btn btn-light rounded-circle p-2 arrow-btn">
-                                <i class="bi bi-arrow-right fs-6"></i>
-                            </span>
+                            <span class="btn btn-light rounded-circle p-2 arrow-btn"><i class="bi bi-arrow-right fs-6"></i></span>
                         </div>
                     </div>
                 </a>
@@ -216,92 +177,128 @@
                                     <small class="text-muted">Gestión de asignaciones presupuestarias especiales</small>
                                 </div>
                             </div>
-                            <span class="btn btn-light rounded-circle p-2 arrow-btn">
-                                <i class="bi bi-arrow-right fs-6"></i>
-                            </span>
+                            <span class="btn btn-light rounded-circle p-2 arrow-btn"><i class="bi bi-arrow-right fs-6"></i></span>
                         </div>
                     </div>
                 </a>
 
-                <!-- Gestión de Cuentas -->
-                <a asp-controller="CuentaMapeo" asp-action="Index" class="text-decoration-none">
-                    <div class="card module-card border-0 shadow-sm rounded-4 p-3 transition-all">
-                        <div class="card-body p-0 d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center gap-3">
+                <!-- ACORDEÓN: GESTIÓN DE CUENTAS Y REQUISITOS -->
+                <div class="accordion custom-nav-accordion shadow-sm rounded-4 overflow-hidden" id="accordionCuentas">
+                    <div class="accordion-item border-0">
+                        <div class="accordion-header p-3 bg-white d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-3 cursor-pointer flex-grow-1 me-2"
+                                 data-bs-toggle="collapse"
+                                 data-bs-target="#collapseCuentas"
+                                 aria-expanded="true"
+                                 aria-controls="collapseCuentas">
                                 <div class="icon-shape bg-navy text-white rounded-3 shadow-sm">
-                                    <i class="bi bi-journal-bookmark-fill fs-5"></i>
+                                    <i class="bi bi-bank fs-5"></i>
                                 </div>
                                 <div>
-                                    <h6 class="fw-bold text-dark mb-0">Gestión de Cuentas</h6>
-                                    <small class="text-muted">Mapeo y configuración de cuentas</small>
+                                    <h6 class="fw-bold mb-0 text-dark">Gestión de Cuentas y Requisitos</h6>
+                                    <small class="text-muted">Cuentas institucionales, base, CT y requisitos</small>
                                 </div>
                             </div>
-                            <span class="btn btn-light rounded-circle p-2 arrow-btn">
-                                <i class="bi bi-arrow-right fs-6"></i>
-                            </span>
+                            <div class="d-flex align-items-center gap-2">
+                                <button class="btn btn-menu-toggle rounded-circle p-2 border-0"
+                                        type="button"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target="#collapseCuentas"
+                                        aria-expanded="true"
+                                        aria-controls="collapseCuentas"
+                                        aria-label="Desplegar menú">
+                                    <i class="bi bi-chevron-down fs-6 toggle-icon"></i>
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                </a>
 
-                <!-- Gestión de Cuentas CT -->
-                <a asp-controller="CuentaCt" asp-action="Index" class="text-decoration-none">
-                    <div class="card module-card border-0 shadow-sm rounded-4 p-3 transition-all">
-                        <div class="card-body p-0 d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="icon-shape bg-navy text-white rounded-3 shadow-sm">
-                                    <i class="bi bi-journal-bookmark-fill fs-5"></i>
-                                </div>
-                                <div>
-                                    <h6 class="fw-bold text-dark mb-0">Gestión de Cuentas CT</h6>
-                                    <small class="text-muted">Administración y control de cuentas CT</small>
-                                </div>
-                            </div>
-                            <span class="btn btn-light rounded-circle p-2 arrow-btn">
-                                <i class="bi bi-arrow-right fs-6"></i>
-                            </span>
-                        </div>
-                    </div>
-                </a>
+                        <div id="collapseCuentas" class="accordion-collapse collapse show" data-bs-parent="#accordionCuentas">
+                            <div class="accordion-body bg-light-subtle p-3 border-top">
+                                <div class="nav-tree-wrapper d-flex flex-column gap-2 ms-md-2">
+                                    <!-- Cuentas Institucionales (Ahora de primero) -->
+                                    <a asp-controller="CuentaInstitucion" asp-action="Index" class="menu-subitem-link text-decoration-none">
+                                        <div class="menu-subitem p-3 bg-white rounded-3 border d-flex align-items-center justify-content-between transition-all">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div class="sub-icon-shape icon-subtle-blue rounded-3">
+                                                    <i class="bi bi-bank fs-5"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="fw-semibold mb-0 text-dark">Cuentas Institucionales</h6>
+                                                    <small class="text-muted">Cuentas bancarias registradas</small>
+                                                </div>
+                                            </div>
+                                            <span class="subitem-arrow text-muted"><i class="bi bi-chevron-right fs-6"></i></span>
+                                        </div>
+                                    </a>
 
-                <!-- Relación Cuentas y Requisitos -->
-                <a asp-controller="CuentaRequisito" asp-action="Index" class="text-decoration-none">
-                    <div class="card module-card border-0 shadow-sm rounded-4 p-3 transition-all">
-                        <div class="card-body p-0 d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="icon-shape bg-slate text-white rounded-3 shadow-sm">
-                                    <i class="bi bi-diagram-3-fill fs-5"></i>
-                                </div>
-                                <div>
-                                    <h6 class="fw-bold text-dark mb-0">Relación Cuentas y Requisitos</h6>
-                                    <small class="text-muted">Vinculación de cuentas con requisitos</small>
-                                </div>
-                            </div>
-                            <span class="btn btn-light rounded-circle p-2 arrow-btn">
-                                <i class="bi bi-arrow-right fs-6"></i>
-                            </span>
-                        </div>
-                    </div>
-                </a>
+                                    <!-- Cuentas Base -->
+                                    <a asp-controller="CuentaMapeo" asp-action="Index" class="menu-subitem-link text-decoration-none">
+                                        <div class="menu-subitem p-3 bg-white rounded-3 border d-flex align-items-center justify-content-between transition-all">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div class="sub-icon-shape icon-subtle-blue rounded-3">
+                                                    <i class="bi bi-journal-text fs-5"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="fw-semibold mb-0 text-dark">Cuentas Base</h6>
+                                                    <small class="text-muted">Mapeo y configuración general de cuentas</small>
+                                                </div>
+                                            </div>
+                                            <span class="subitem-arrow text-muted"><i class="bi bi-chevron-right fs-6"></i></span>
+                                        </div>
+                                    </a>
 
-                <!-- Requisitos -->
-                <a asp-controller="Requisito" asp-action="Index" class="text-decoration-none">
-                    <div class="card module-card border-0 shadow-sm rounded-4 p-3 transition-all">
-                        <div class="card-body p-0 d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="icon-shape bg-dark text-white rounded-3 shadow-sm">
-                                    <i class="bi bi-file-earmark-check-fill fs-5"></i>
-                                </div>
-                                <div>
-                                    <h6 class="fw-bold text-dark mb-0">Requisitos</h6>
-                                    <small class="text-muted">Catálogo y administración de requisitos</small>
+                                    <!-- Cuentas CT -->
+                                    <a asp-controller="CuentaCt" asp-action="Index" class="menu-subitem-link text-decoration-none">
+                                        <div class="menu-subitem p-3 bg-white rounded-3 border d-flex align-items-center justify-content-between transition-all">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div class="sub-icon-shape icon-subtle-blue rounded-3">
+                                                    <i class="bi bi-journal-bookmark-fill fs-5"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="fw-semibold mb-0 text-dark">Cuentas CT</h6>
+                                                    <small class="text-muted">Administración y control de cuentas CT</small>
+                                                </div>
+                                            </div>
+                                            <span class="subitem-arrow text-muted"><i class="bi bi-chevron-right fs-6"></i></span>
+                                        </div>
+                                    </a>
+
+                                    <!-- Relación Cuentas y Requisitos -->
+                                    <a asp-controller="CuentaRequisito" asp-action="Index" class="menu-subitem-link text-decoration-none">
+                                        <div class="menu-subitem p-3 bg-white rounded-3 border d-flex align-items-center justify-content-between transition-all">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div class="sub-icon-shape icon-subtle-blue rounded-3">
+                                                    <i class="bi bi-diagram-3-fill fs-5"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="fw-semibold mb-0 text-dark">Relación Cuentas y Requisitos</h6>
+                                                    <small class="text-muted">Vinculación y matrices de cumplimiento</small>
+                                                </div>
+                                            </div>
+                                            <span class="subitem-arrow text-muted"><i class="bi bi-chevron-right fs-6"></i></span>
+                                        </div>
+                                    </a>
+
+                                    <!-- Requisitos -->
+                                    <a asp-controller="Requisito" asp-action="Index" class="menu-subitem-link text-decoration-none">
+                                        <div class="menu-subitem p-3 bg-white rounded-3 border d-flex align-items-center justify-content-between transition-all">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div class="sub-icon-shape icon-subtle-blue rounded-3">
+                                                    <i class="bi bi-file-earmark-check-fill fs-5"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="fw-semibold mb-0 text-dark">Requisitos</h6>
+                                                    <small class="text-muted">Catálogo y administración de requisitos</small>
+                                                </div>
+                                            </div>
+                                            <span class="subitem-arrow text-muted"><i class="bi bi-chevron-right fs-6"></i></span>
+                                        </div>
+                                    </a>
                                 </div>
                             </div>
-                            <span class="btn btn-light rounded-circle p-2 arrow-btn">
-                                <i class="bi bi-arrow-right fs-6"></i>
-                            </span>
                         </div>
                     </div>
-                </a>
+                </div>
 
             </div>
         </div>
@@ -349,15 +346,11 @@
         background-color: #212529 !important;
     }
 
-    .bg-slate {
-        background-color: #334155 !important;
-    }
-
     .bg-deep-teal {
         background-color: #0d9488;
     }
 
-    /* Estilo Suave Uniforme para el Árbol de Estructura */
+    /* Estilo Suave Uniforme para los Árboles */
     .icon-subtle-blue {
         background-color: #eff6ff;
         color: #2563eb;
