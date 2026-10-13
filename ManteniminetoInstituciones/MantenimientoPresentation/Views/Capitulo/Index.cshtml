@@ -47,7 +47,7 @@
                     </select>
                 </div>
                 <div class="col-md-4 text-end">
-                    <button type="button" class="btn btn-cgr-primary btn-lg w-100 rounded-pill d-none" onclick="abrirModalCrear()" id="btnNuevoCapitulo">
+                    <button type="button" class="btn btn-cgr-primary btn-lg w-100 rounded-pill" onclick="abrirModalCrear()" id="btnNuevoCapitulo">
                         <i class="bi bi-plus-circle me-2"></i> Nuevo Capítulo
                     </button>
                 </div>
@@ -114,12 +114,16 @@
             const select = document.getElementById('selectCapitulo');
             const codigo = select ? select.value : '';
 
-            const btnNuevo = document.getElementById('btnNuevoCapitulo');
             const contenedor = document.getElementById('contenedorGrid');
 
-            if (btnNuevo) {
-                btnNuevo.classList.remove('d-none');
-                btnNuevo.classList.add('d-inline-block');
+            if (!codigo) {
+                contenedor.innerHTML = `
+                    <div class="alert alert-secondary border-0 shadow-sm text-center py-5 rounded-3 mb-0" style="background-color: #f8fafc;">
+                        <i class="bi bi-info-circle fs-2 text-primary d-block mb-2"></i>
+                        <h6 class="fw-bold text-dark">Ningún capítulo seleccionado</h6>
+                        <p class="text-muted small mb-0">Seleccione un capítulo del menú desplegable para visualizar su información.</p>
+                    </div>`;
+                return;
             }
 
             contenedor.innerHTML = `
@@ -146,6 +150,30 @@
                 });
         }
 
+        async function actualizarOpcionesCapitulos(codigoSeleccionado) {
+            const response = await fetch('/Capitulo/ObtenerOpciones');
+            if (!response.ok) throw new Error('No se pudo actualizar la lista de capítulos.');
+
+            const result = await response.json();
+            if (!result.success) throw new Error(result.message || 'No se pudo actualizar la lista de capítulos.');
+
+            const select = document.getElementById('selectCapitulo');
+            select.replaceChildren(new Option('-- Seleccione un capítulo --', ''));
+
+            result.data.forEach(capitulo => {
+                select.add(new Option(
+                    `${capitulo.codigoCapitulo} - ${capitulo.nombreCapitulo}`,
+                    capitulo.codigoCapitulo
+                ));
+            });
+
+            const existe = Array.from(select.options).some(option => option.value === codigoSeleccionado);
+            select.value = existe ? codigoSeleccionado : '';
+            document.getElementById('txtBuscarCapitulo').value = '';
+            document.getElementById('resultadosBusquedaCapitulo').classList.add('d-none');
+            cargarGridCapitulos();
+        }
+
         function abrirModalCrear() {
             document.getElementById('modalCapituloTitle').innerHTML = '<i class="bi bi-plus-circle me-2"></i> Agregar Capítulo';
             document.getElementById('txtId').value = '0';
@@ -163,8 +191,8 @@
                         const capitulo = res.data;
                         document.getElementById('modalCapituloTitle').innerHTML = '<i class="bi bi-pencil-square me-2"></i> Editar Capítulo';
                         document.getElementById('txtId').value = capitulo.id;
-                        document.getElementById('txtCodigo').value = capitulo.codigo;
-                        document.getElementById('txtDescripcion').value = capitulo.descripcion;
+                        document.getElementById('txtCodigo').value = capitulo.codigoCapitulo;
+                        document.getElementById('txtDescripcion').value = capitulo.nombreCapitulo;
 
                         modalCapituloBs.show();
                     } else {
@@ -173,46 +201,65 @@
                 });
         }
 
-        function guardarCapitulo() {
+        async function guardarCapitulo() {
             const id = parseInt(document.getElementById('txtId').value);
             const esEdicion = id > 0;
 
             const dto = {
                 id: id,
-                codigo: document.getElementById('txtCodigo').value,
-                descripcion: document.getElementById('txtDescripcion').value
+                codigoCapitulo: document.getElementById('txtCodigo').value,
+                nombreCapitulo: document.getElementById('txtDescripcion').value
             };
 
             const endpoint = esEdicion ? '/Capitulo/Actualizar' : '/Capitulo/Crear';
+            let guardado = false;
 
-            fetch(endpoint, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(dto)
-            })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    modalCapituloBs.hide();
-                    cargarGridCapitulos();
-                } else {
+            try {
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dto)
+                });
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
                     alert('Error: ' + data.message);
+                    return;
                 }
-            });
+
+                guardado = true;
+                modalCapituloBs.hide();
+                await actualizarOpcionesCapitulos(dto.codigoCapitulo);
+            } catch (err) {
+                console.error(err);
+                alert(guardado
+                    ? 'El capítulo se guardó, pero no se pudo actualizar la lista automáticamente.'
+                    : 'No se pudo guardar el capítulo. Intente nuevamente.');
+            }
         }
 
-        function eliminarCapitulo(id) {
+        async function eliminarCapitulo(id) {
             if (!confirm('¿Desea eliminar este registro?')) return;
 
-            fetch(`/Capitulo/Eliminar?id=${id}`, { method: 'POST' })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        cargarGridCapitulos();
-                    } else {
-                        alert('Error al eliminar: ' + data.message);
-                    }
-                });
+            let eliminado = false;
+            try {
+                const response = await fetch(`/Capitulo/Eliminar?id=${id}`, { method: 'POST' });
+                const data = await response.json();
+
+                if (!response.ok || !data.success) {
+                    alert('Error al eliminar: ' + data.message);
+                    return;
+                }
+
+                eliminado = true;
+                const codigoSeleccionado = document.getElementById('selectCapitulo').value;
+                await actualizarOpcionesCapitulos(codigoSeleccionado);
+            } catch (err) {
+                console.error(err);
+                alert(eliminado
+                    ? 'El capítulo se eliminó, pero no se pudo actualizar la lista automáticamente.'
+                    : 'No se pudo eliminar el capítulo. Intente nuevamente.');
+            }
         }
     </script>
 }
