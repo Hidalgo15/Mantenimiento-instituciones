@@ -29,31 +29,47 @@ namespace MantenimientoPresentation
             // Repositorios y Servicios
             builder.Services.AddScoped<IInstitucionRepository, InstitucionRepository>();
             builder.Services.AddScoped<IInstitucionService, InstitucionService>();
+
             builder.Services.AddScoped<ICuentaInstitucionRepository, CuentaInstitucionRepository>();
             builder.Services.AddScoped<ICuentaInstitucionService, CuentaInstitucionService>();
+
             builder.Services.AddScoped<ICapituloRepository, CapituloRepository>();
             builder.Services.AddScoped<ICapituloService, CapituloService>();
+
             builder.Services.AddScoped<ISubCapituloRepository, SubCapituloRepository>();
             builder.Services.AddScoped<ISubCapituloService, SubCapituloService>();
+
             builder.Services.AddScoped<IDafRepository, DafRepository>();
             builder.Services.AddScoped<IDafService, DafService>();
+
             builder.Services.AddScoped<IUnidadEjecutoraRepository, UnidadEjecutoraRepository>();
             builder.Services.AddScoped<IUnidadEjecutoraService, UnidadEjecutoraService>();
+
             builder.Services.AddScoped<IAnalistaSupervisorRepository, AnalistaSupervisorRepository>();
             builder.Services.AddScoped<IAnalistaSupervisorService, AnalistaSupervisorService>();
+
             builder.Services.AddScoped<ICategoriaTramiteRepository, CategoriaTramiteRepository>();
             builder.Services.AddScoped<ICategoriaTramiteService, CategoriaTramiteService>();
+
             builder.Services.AddScoped<IFondoEspecialesService, FondoEspecialesService>();
             builder.Services.AddScoped<IFondoEspecialesRepository, FondoEspecialesRepository>();
+
             builder.Services.AddScoped<ITipoTramiteService, TipoTramiteService>();
             builder.Services.AddScoped<ITipoTramiteRepository, TipoTramiteContratoRepository>();
+
             builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+
             builder.Services.AddScoped<ICuentaMapeoRepository, CuentaMapeoRepository>();
             builder.Services.AddScoped<ICuentaMapeoService, CuentaMapeoService>();
+
             builder.Services.AddScoped<ICuentaCtRepository, CuentaCtRepository>();
             builder.Services.AddScoped<ICuentaCtService, CuentaCtService>();
+
             builder.Services.AddScoped<ICuentaRequisitoRepository, CuentaRequisitoRepository>();
             builder.Services.AddScoped<ICuentaRequisitoService, CuentaRequisitoService>();
+
+            builder.Services.AddScoped<IRequisitoRepository, RequisitoRepository>();
+            builder.Services.AddScoped<IRequisitoService, RequisitoService>();
 
 
             // Repositorios
