@@ -1,6 +1,6 @@
 ﻿using Mantenimiento.Core.Application.DTOs.UnidadEjecutora;
 using Mantenimiento.Core.Application.InterfaceServices;
-using Mantenimiento.Core.Domain.Entities;
+using Mantenimiento.Core.Application.Mappings;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 
 namespace Mantenimiento.Core.Application.Services
@@ -24,7 +24,7 @@ namespace Mantenimiento.Core.Application.Services
         public async Task<IEnumerable<UnidadEjecutoraDto>> ObtenerAsync(int? id = null, string? codigoUnidadEjecutora = null, int? idDaf = null)
         {
             var lista = await _repo.ObtenerAsync(id, codigoUnidadEjecutora, idDaf);
-            return lista.Select(MapToDto);
+            return lista.Select(UnidadEjecutoraMapper.ToDto);
         }
 
         /// <summary>
@@ -38,7 +38,7 @@ namespace Mantenimiento.Core.Application.Services
 
             var res = await _repo.ObtenerAsync(id: id);
             var entidad = res.FirstOrDefault();
-            return entidad != null ? MapToDto(entidad) : null;
+            return entidad != null ? UnidadEjecutoraMapper.ToDto(entidad) : null;
         }
 
         /// <summary>
@@ -53,17 +53,7 @@ namespace Mantenimiento.Core.Application.Services
 
             Validar(dto.IdDaf, dto.IdCategoria, dto.CodigoUnidadEjecutora, dto.NombreUnidadEjecutora, dto.Rnc);
 
-            var entidad = new UnidadEjecutora
-            {
-                IdPadre = null,
-                IdDaf = dto.IdDaf,
-                IdCategoria = dto.IdCategoria,
-                CodigoUnidadEjecutora = dto.CodigoUnidadEjecutora.Trim(),
-                NombreUnidadEjecutora = dto.NombreUnidadEjecutora.Trim(),
-                Rnc = dto.Rnc?.Trim(),
-                Estado = dto.Estado,
-                PortalCompra = dto.PortalCompra ? 1 : 0
-            };
+            var entidad = UnidadEjecutoraMapper.ToEntity(dto);
 
             await _repo.CrearConSpAsync(entidad, dto.Usuario);
         }
@@ -84,19 +74,7 @@ namespace Mantenimiento.Core.Application.Services
             if (dto.IdPadre.HasValue && dto.IdPadre.Value == dto.Id)
                 throw new ArgumentException("Una unidad ejecutora no puede ser su propia entidad padre.");
 
-            var entidad = new UnidadEjecutora
-            {
-                Id = dto.Id,
-                IdPadre = dto.Id,
-                IdDaf = dto.IdDaf,
-                IdCategoria = dto.IdCategoria,
-                Estructura = dto.Estructura,
-                CodigoUnidadEjecutora = dto.CodigoUnidadEjecutora.Trim(),
-                NombreUnidadEjecutora = dto.NombreUnidadEjecutora.Trim(),
-                Rnc = dto.Rnc?.Trim(),
-                Estado = dto.Estado,
-                PortalCompra = dto.PortalCompra ? 1 : 0
-            };
+            var entidad = UnidadEjecutoraMapper.ToEntity(dto);
 
             await _repo.ActualizarConSpAsync(entidad, dto.Usuario);
         }
@@ -143,26 +121,5 @@ namespace Mantenimiento.Core.Application.Services
                 throw new ArgumentException("El RNC no puede superar los 20 caracteres.");
         }
 
-        /// <summary>
-        /// Mapea una entidad UnidadEjecutora a su correspondiente DTO UnidadEjecutoraDto.
-        /// </summary>
-        /// <param name="u"></param>
-        /// <returns></returns>
-        private static UnidadEjecutoraDto MapToDto(UnidadEjecutora u) => new()
-        {
-            Id = u.Id,
-            IdPadre = u.IdPadre,
-            IdDaf = u.IdDaf,
-            IdCategoria = u.IdCategoria,
-            Estructura = u.Estructura,
-            DescripcionCategoria = u.DescripcionCategoria,
-            CodigoDaf = u.CodigoDaf ?? string.Empty,
-            NombreDaf = u.NombreDaf ?? string.Empty,
-            CodigoUnidadEjecutora = u.CodigoUnidadEjecutora ?? string.Empty,
-            NombreUnidadEjecutora = u.NombreUnidadEjecutora ?? string.Empty,
-            Rnc = u.Rnc,
-            Estado = u.Estado,
-            PortalCompra = u.PortalCompra
-        };
     }
 }

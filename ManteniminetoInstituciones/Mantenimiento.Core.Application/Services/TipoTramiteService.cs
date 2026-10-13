@@ -2,6 +2,7 @@
 
 using Mantenimiento.Core.Application.DTOs.TipoTramite;
 using Mantenimiento.Core.Application.InterfaceServices;
+using Mantenimiento.Core.Application.Mappings;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 
 namespace Mantenimiento.Core.Application.Services
@@ -19,11 +20,7 @@ namespace Mantenimiento.Core.Application.Services
         {
             var entidades = await _tipoTramiteRepo.GetAllTipoTramiteAsync();
 
-            return entidades.Select(e => new TipoTramiteDto
-            {
-                Id = e.Id,
-                Tipo = e.TipoTramite
-            }).ToList();
+            return entidades.Select(TipoTramiteMapper.ToDto).ToList();
         }
 
         public async Task<TipoTramiteDto?> ObtenerPorIdAsync(int id)
@@ -33,11 +30,7 @@ namespace Mantenimiento.Core.Application.Services
             if (entidad == null)
                 return null;
 
-            return new TipoTramiteDto
-            {
-                Id = entidad.Id,
-                Tipo = entidad.TipoTramite
-            };
+            return TipoTramiteMapper.ToDto(entidad);
         }
     }
 }

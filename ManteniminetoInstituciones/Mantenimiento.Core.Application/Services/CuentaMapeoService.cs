@@ -1,13 +1,9 @@
 ﻿using Mantenimiento.Core.Application.DTOs.Cuenta.DboCuentasDTO;
 using Mantenimiento.Core.Application.DTOs.CuentaInstitucion;
 using Mantenimiento.Core.Application.InterfaceServices;
+using Mantenimiento.Core.Application.Mappings;
 using Mantenimiento.Core.Domain.Entities;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Mantenimiento.Core.Application.Services
 {
@@ -23,7 +19,7 @@ namespace Mantenimiento.Core.Application.Services
         public async Task<List<CuentaDto>> ObtenerCuentasAsync(int? tipoTramite = null, string? busqueda = null)
         {
             var lista = await _repo.ObtenerCuentasAsync(tipoTramite: tipoTramite, busqueda: busqueda);
-            return lista.Select(MapToDto).ToList();
+            return lista.Select(CuentaMapeoMapper.ToDto).ToList();
         }
 
         public async Task<List<CuentaCt>> ObtenerCatalogoBaseAsync()
@@ -34,7 +30,7 @@ namespace Mantenimiento.Core.Application.Services
         public async Task<CuentaDto?> ObtenerPorIdAsync(int idCuenta)
         {
             var entidad = await _repo.ObtenerPorIdAsync(idCuenta);
-            return entidad != null ? MapToDto(entidad) : null;
+            return entidad != null ? CuentaMapeoMapper.ToDto(entidad) : null;
         }
 
         public async Task CrearCuentaAsync(CrearCuentaDto dto)
@@ -69,17 +65,5 @@ namespace Mantenimiento.Core.Application.Services
 
             await _repo.EliminarCuentaAsync(idCuenta);
         }
-
-        private static CuentaDto MapToDto(CuentaDbo c) => new()
-        {
-           
-            IdCuenta = c.IdCuenta,
-            CodigoCuenta = c.CodigoCuenta,
-            DescripcionCuenta = c.DescripcionCuenta,
-            TipoTramite = c.TipoTramiteId, // o TipoTramite según tu entidad
-            TipoTramiteNombre = c.TipoTramiteNombre ?? string.Empty
-        };
-
-
     }
 }

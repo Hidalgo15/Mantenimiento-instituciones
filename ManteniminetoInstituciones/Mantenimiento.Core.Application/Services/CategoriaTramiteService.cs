@@ -1,5 +1,6 @@
 ﻿using Mantenimiento.Core.Application.DTOs.UnidadEjecutora;
 using Mantenimiento.Core.Application.InterfaceServices;
+using Mantenimiento.Core.Application.Mappings;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 
 namespace Mantenimiento.Core.Application.Services
@@ -16,13 +17,7 @@ namespace Mantenimiento.Core.Application.Services
         public async Task<IEnumerable<CategoriaTramiteDto>> ObtenerTodasAsync()
         {
             var entidades = await _repo.ObtenerTodasAsync();
-
-            // Mapeo de Entidad -> DTO en el Service
-            return entidades.Select(e => new CategoriaTramiteDto
-            {
-                CodigoCategoria = e.CodigoCategoria,
-                Descripcion = e.Descripcion
-            });
+            return entidades.Select(CategoriaTramiteMapper.ToDto);
         }
     }
 }

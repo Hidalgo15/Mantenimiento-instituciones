@@ -1,4 +1,4 @@
-﻿namespace Mantenimiento.Core.Application.DTOs.CuentaRequisito
+﻿namespace Mantenimiento.Core.Application.DTOs.Resultado
 {
     public class ResultadoOperacionDto
     {

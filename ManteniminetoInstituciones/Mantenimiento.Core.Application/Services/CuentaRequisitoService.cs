@@ -1,6 +1,7 @@
-﻿using AutoMapper;
-using Mantenimiento.Core.Application.DTOs.CuentaRequisito;
+﻿using Mantenimiento.Core.Application.DTOs.CuentaRequisito;
+using Mantenimiento.Core.Application.DTOs.Resultado;
 using Mantenimiento.Core.Application.InterfaceServices;
+using Mantenimiento.Core.Application.Mappings;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 
 namespace Mantenimiento.Core.Application.Services
@@ -8,25 +9,23 @@ namespace Mantenimiento.Core.Application.Services
     public class CuentaRequisitoService : ICuentaRequisitoService
     {
         private readonly ICuentaRequisitoRepository _repository;
-        private readonly IMapper _mapper;
 
-        public CuentaRequisitoService(ICuentaRequisitoRepository repository, IMapper mapper)
+        public CuentaRequisitoService(ICuentaRequisitoRepository repository)
         {
             _repository = repository;
-            _mapper = mapper;
         }
 
         public async Task<List<CuentaRequisitoDto>> ObtenerRelacionAsync(double? idCuenta, int? idRequisito, bool? estado)
         {
             var entidades = await _repository.ObtenerRelacionAsync(idCuenta, idRequisito, estado);
-            return _mapper.Map<List<CuentaRequisitoDto>>(entidades);
+            return entidades.Select(CuentaRequisitoMapper.ToDto).ToList();
         }
 
         public async Task<ResultadoOperacionDto> AsignarAsync(CrearCuentaRequisitoDto dto)
         {
             ValidarDatos(dto.IdCuenta, dto.IdRequisito);
             var res = await _repository.AsignarAsync(dto.IdCuenta, dto.IdRequisito, dto.Estado);
-            return _mapper.Map<ResultadoOperacionDto>(res);
+            return ResultadoOperacionMapper.ToDto(res);
         }
 
         public async Task<ResultadoOperacionDto> ActualizarAsync(ActualizarCuentaRequisitoDto dto)
@@ -36,7 +35,7 @@ namespace Mantenimiento.Core.Application.Services
 
             ValidarDatos(dto.IdCuenta, dto.IdRequisito);
             var res = await _repository.ActualizarAsync(dto.CuentaRequisitosID, dto.IdCuenta, dto.IdRequisito, dto.Estado);
-            return _mapper.Map<ResultadoOperacionDto>(res);
+            return ResultadoOperacionMapper.ToDto(res);
         }
 
         public async Task<ResultadoOperacionDto> EliminarAsync(int cuentaRequisitosID)
@@ -45,19 +44,19 @@ namespace Mantenimiento.Core.Application.Services
                 throw new ArgumentException("El ID de la relación es inválido.");
 
             var res = await _repository.EliminarAsync(cuentaRequisitosID);
-            return _mapper.Map<ResultadoOperacionDto>(res);
+            return ResultadoOperacionMapper.ToDto(res);
         }
 
         public async Task<List<CuentaCatalogoDto>> ObtenerCatalogoCuentasAsync()
         {
             var entidades = await _repository.ObtenerCatalogoCuentasAsync();
-            return _mapper.Map<List<CuentaCatalogoDto>>(entidades);
+            return entidades.Select(CuentaRequisitoMapper.ToDto).ToList();
         }
 
         public async Task<List<RequisitoCatalogoDto>> ObtenerCatalogoRequisitosAsync()
         {
             var entidades = await _repository.ObtenerCatalogoRequisitosAsync();
-            return _mapper.Map<List<RequisitoCatalogoDto>>(entidades);
+            return entidades.Select(CuentaRequisitoMapper.ToDto).ToList();
         }
 
         private static void ValidarDatos(double idCuenta, int idRequisito)

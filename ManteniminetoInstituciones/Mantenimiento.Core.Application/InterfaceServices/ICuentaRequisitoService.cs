@@ -1,4 +1,5 @@
 ﻿using Mantenimiento.Core.Application.DTOs.CuentaRequisito;
+using Mantenimiento.Core.Application.DTOs.Resultado;
 
 namespace Mantenimiento.Core.Application.InterfaceServices
 {

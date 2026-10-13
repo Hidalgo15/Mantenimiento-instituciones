@@ -28,6 +28,8 @@ namespace Mantenimiento.Infraestructure.Persistence
         public DbSet<ResultadoOperacion> ResultadoOperaciones { get; set; }
         public DbSet<CuentaCatalogo> CuentaCatalogos { get; set; }
         public DbSet<RequisitoCatalogo> RequisitoCatalogos { get; set; }
+        public DbSet<Requisito> RequisitosTbl { get; set; }
+        public DbSet<RequisitoCreacionResultado> RequisitoCreacionResultados { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -256,9 +258,6 @@ namespace Mantenimiento.Infraestructure.Persistence
                 entity.Property(e => e.Estado).HasColumnName("estado");
             });
 
-            // Entidad sin llave para capturar el resultado de los SPs de acción (Asignar, Actualizar, Eliminar)
-            modelBuilder.Entity<ResultadoOperacion>().HasNoKey();
-
             // Entidad sin llave para el catálogo de cuentas de dropdown
             modelBuilder.Entity<CuentaCatalogo>(entity =>
             {
@@ -278,6 +277,15 @@ namespace Mantenimiento.Infraestructure.Persistence
 
             #endregion
 
+            #region ResultadoOperacion
+            modelBuilder.Entity<ResultadoOperacion>(entity =>
+            {
+                entity.HasNoKey();
+                entity.Property(e => e.CodigoResultado).HasColumnName("CodigoResultado");
+                entity.Property(e => e.Mensaje).HasColumnName("Mensaje");
+            });
+            #endregion
+
             #region CuentaRequisitoConsulta
             modelBuilder.Entity<CuentaRequisitoConsulta>(entity =>
             {
@@ -291,6 +299,28 @@ namespace Mantenimiento.Infraestructure.Persistence
                 entity.Property(e => e.Estado).HasColumnName("estado");
             });
             #endregion
+
+            #region Requisitos
+            modelBuilder.Entity<Requisito>(entity =>
+            {
+                entity.HasKey(e => e.RequisitosID);
+                entity.ToTable("requisitos", "ct");
+                entity.Property(e => e.RequisitosID).HasColumnName("RequisitosID");
+                entity.Property(e => e.IdRequisitos).HasColumnName("id_requisitos");
+                entity.Property(e => e.Requisitos).HasColumnName("REQUISITOS");
+            });
+            #endregion
+
+            #region RequisitoCreacionResultado
+            modelBuilder.Entity<RequisitoCreacionResultado>(entity =>
+            {
+                entity.HasNoKey();
+                entity.Property(e => e.RequisitosID).HasColumnName("RequisitosID");
+                entity.Property(e => e.Mensaje).HasColumnName("Mensaje");
+            });
+            #endregion
+
+
         }
     }
 }

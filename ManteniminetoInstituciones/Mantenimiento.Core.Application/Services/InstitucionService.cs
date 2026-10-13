@@ -1,5 +1,6 @@
 using Mantenimiento.Core.Application.DTOs.Institucion;
 using Mantenimiento.Core.Application.InterfaceServices;
+using Mantenimiento.Core.Application.Mappings;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 
 namespace Mantenimiento.Core.Application.Services
@@ -18,14 +19,9 @@ namespace Mantenimiento.Core.Application.Services
             var instituciones = await _repository.ObtenerInstitucionesAsync();
             return instituciones
                 .Where(institucion => institucion.Estatus)
-                .Select(institucion => new InstitucionSeleccionDto
-                {
-                    IdInstitucion = institucion.IdInstitucion,
-                    Estructura = institucion.Estructura,
-                    UnidadEjecutora = institucion.UnidadEjecutora
-                })
+                .Select(InstitucionMapper.ToDto)
                 .DistinctBy(institucion => institucion.Estructura)
-                .OrderBy(x => x.UnidadEjecutora) // <-- ORDENAR ALFABÉTICAMENTE POR NOMBRE
+                .OrderBy(x => x.UnidadEjecutora)
                 .ToList();
         }
     }
