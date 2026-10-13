@@ -1,6 +1,6 @@
 ﻿using Mantenimiento.Core.Application.DTOs.CuentaInstitucion;
 using Mantenimiento.Core.Application.InterfaceServices;
-using Mantenimiento.Core.Domain.Entities;
+using Mantenimiento.Core.Application.Mappings;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 
 namespace Mantenimiento.Core.Application.Services
@@ -17,14 +17,14 @@ namespace Mantenimiento.Core.Application.Services
         public async Task<List<CuentaInstitucionDto>> ObtenerCuentasPorEstructuraAsync(string insCodigo)
         {
             var cuentas = await _repo.ObtenerCuentasPorEstructuraAsync(insCodigo);
-            return cuentas.Select(MapToDto).ToList();
+            return cuentas.Select(CuentaInstitucionMapper.ToDto).ToList();
         }
 
         public async Task<CuentaInstitucionDto> ObtenerPorIdAsync(int id)
         {
             var entidad = await _repo.GetByIdAsync(id);
             if (entidad == null) throw new KeyNotFoundException("La cuenta no existe.");
-            return MapToDto(entidad);
+            return CuentaInstitucionMapper.ToDto(entidad);
         }
 
         public async Task CrearCuentaAsync(CrearCuentaInstitucionDto dto)
@@ -35,15 +35,7 @@ namespace Mantenimiento.Core.Application.Services
             if (existe)
                 throw new InvalidOperationException("La cuenta bancaria ya se encuentra registrada para esta institución.");
 
-            var entidad = new CuentaInstitucion
-            {
-                InsCodigo = dto.InsCodigo,
-                Institucion = dto.Institucion,
-                CtaCtaBanco = dto.CtaCtaBanco,
-                CtaDescripcion = dto.CtaDescripcion
-            };
-
-            await _repo.InsertarConSpAsync(entidad);
+            await _repo.InsertarConSpAsync(CuentaInstitucionMapper.ToEntity(dto));
         }
 
         public async Task ActualizarCuentaAsync(ActualizarCuentaInstitucionDto dto)
@@ -54,16 +46,7 @@ namespace Mantenimiento.Core.Application.Services
             if (existe)
                 throw new InvalidOperationException("Ya existe otra cuenta registrada con el mismo número para esta institución.");
 
-            var entidad = new CuentaInstitucion
-            {
-                Id = dto.Id,
-                InsCodigo = dto.InsCodigo,
-                Institucion = dto.Institucion,
-                CtaCtaBanco = dto.CtaCtaBanco,
-                CtaDescripcion = dto.CtaDescripcion
-            };
-
-            await _repo.ActualizarConSpAsync(entidad);
+            await _repo.ActualizarConSpAsync(CuentaInstitucionMapper.ToEntity(dto));
         }
 
         public async Task EliminarCuentaAsync(int id)
@@ -79,14 +62,5 @@ namespace Mantenimiento.Core.Application.Services
             if (!ctaCtaBanco.All(char.IsDigit))
                 throw new ArgumentException("La cuenta de banco debe contener únicamente números.");
         }
-
-        private static CuentaInstitucionDto MapToDto(CuentaInstitucion c) => new()
-        {
-            Id = c.Id ?? 0,
-            InsCodigo = c.InsCodigo,
-            Institucion = c.Institucion,
-            CtaCtaBanco = c.CtaCtaBanco,
-            CtaDescripcion = c.CtaDescripcion
-        };
     }
 }

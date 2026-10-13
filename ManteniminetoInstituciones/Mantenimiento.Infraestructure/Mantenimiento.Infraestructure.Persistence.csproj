@@ -13,7 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Mantenimiento.Core.Application\Mantenimiento.Core.Application.csproj" />
     <ProjectReference Include="..\Mantenimiento.Core\Mantenimiento.Core.Domain.csproj" />
   </ItemGroup>
 

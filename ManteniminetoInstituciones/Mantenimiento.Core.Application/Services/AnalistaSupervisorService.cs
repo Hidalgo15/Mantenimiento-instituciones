@@ -1,6 +1,6 @@
-﻿using AutoMapper;
-using Mantenimiento.Core.Application.DTOs.AnalistaSupervisor;
+﻿using Mantenimiento.Core.Application.DTOs.AnalistaSupervisor;
 using Mantenimiento.Core.Application.InterfaceServices;
+using Mantenimiento.Core.Application.Mappings;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 
 namespace Mantenimiento.Core.Application.Services
@@ -8,24 +8,22 @@ namespace Mantenimiento.Core.Application.Services
     public class AnalistaSupervisorService : IAnalistaSupervisorService
     {
         private readonly IAnalistaSupervisorRepository _repository;
-        private readonly IMapper _mapper;
 
-        public AnalistaSupervisorService(IAnalistaSupervisorRepository repository, IMapper mapper)
+        public AnalistaSupervisorService(IAnalistaSupervisorRepository repository)
         {
             _repository = repository;
-            _mapper = mapper;
         }
 
         public async Task<List<AnalistaSupervisorConsultaDto>> ObtenerMantenimientoAsync(string? nombreAnalista, string? estadoAnalista, string? despachoSupervisor)
         {
             var entidades = await _repository.ObtenerMantenimientoAsync(nombreAnalista, estadoAnalista, despachoSupervisor);
-            return _mapper.Map<List<AnalistaSupervisorConsultaDto>>(entidades);
+            return entidades.Select(AnalistaSupervisorMapper.ToDto).ToList();
         }
 
         public async Task<List<SupervisorOptionDto>> ObtenerSupervisoresDisponiblesAsync()
         {
             var entidades = await _repository.ObtenerSupervisoresDisponiblesAsync();
-            return _mapper.Map<List<SupervisorOptionDto>>(entidades);
+            return entidades.Select(AnalistaSupervisorMapper.ToDto).ToList();
         }
 
         public async Task AsignarAsync(AsignarSupervisorDto dto)

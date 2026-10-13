@@ -10,6 +10,6 @@ namespace Mantenimiento.Core.Application.InterfaceServices
         Task CrearFondoEspecialAsync(CrearFondoDto dto);
         Task EliminarFondoEspecialAsync(int id);
         Task<List<FondoDto>> ObtenerFondosEspecialesAsync(string? estructura = null, string? tipoTramite = null);
-        Task<FondoDto> ObtenerPorIdAsync(int id);
+        Task<FondoDto?> ObtenerPorIdAsync(int id);
     }
 }
