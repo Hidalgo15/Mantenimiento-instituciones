@@ -20,13 +20,13 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
         public async Task ActualizarConSpAsync(SubCapitulo subCapitulo)
         {
             var pId = new SqlParameter("@id", subCapitulo.Id);
-            var pCodigo = new SqlParameter("@codigo_sub_capitulo", subCapitulo.CodigoSubCapitulo);
+            var pIdCapitulo = new SqlParameter("@id_capitulo", subCapitulo.IdCapitulo);
+            var pCodigo = new SqlParameter("@codigo_sub_capitulo", subCapitulo.CodigoSubCapitulo ?? (object)DBNull.Value);
             var pNombre = new SqlParameter("@sub_capitulo", subCapitulo.subcapitulo ?? (object)DBNull.Value);
-            var pCapitulo = new SqlParameter("@id_capitulo", subCapitulo.IdCapitulo);
 
             await _context.Database.ExecuteSqlRawAsync(
-                "EXEC sp_subcapitulo_Actualizar @id, @codigo_sub_capitulo, @sub_capitulo, @id_capitulo",
-                pId, pCodigo, pNombre, pCapitulo);
+                "EXEC dbo.sp_subcapitulo_Actualizar @id, @id_capitulo, @codigo_sub_capitulo, @sub_capitulo",
+                pId, pIdCapitulo, pCodigo, pNombre);
         }
 
         public async Task EliminarConSpAsync(int id)
@@ -57,8 +57,10 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
 
         public async Task<int> InsertarConSpAsync(SubCapitulo subCapitulo)
         {
-            var pCodigo = new SqlParameter("@codigo_sub_capitulo", subCapitulo.CodigoSubCapitulo);
+            var pIdCapitulo = new SqlParameter("@id_capitulo", subCapitulo.IdCapitulo);
+            var pCodigo = new SqlParameter("@codigo_sub_capitulo", subCapitulo.CodigoSubCapitulo ?? (object)DBNull.Value);
             var pNombre = new SqlParameter("@sub_capitulo", subCapitulo.subcapitulo ?? (object)DBNull.Value);
+
             var pIdGenerado = new SqlParameter
             {
                 ParameterName = "@id_generado",
@@ -66,10 +68,10 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
                 Direction = ParameterDirection.Output
             };
 
-            // Llamar al SP correcto para insertar subcapítulo
+            // Respetamos el orden exacto del Stored Procedure en SQL Server
             await _context.Database.ExecuteSqlRawAsync(
-                "EXEC dbo.sp_subcapitulo_Insertar @codigo_sub_capitulo, @sub_capitulo, @id_generado OUTPUT",
-                pCodigo, pNombre, pIdGenerado);
+                "EXEC dbo.sp_subcapitulo_Crear @id_capitulo, @codigo_sub_capitulo, @sub_capitulo, @id_generado OUTPUT",
+                pIdCapitulo, pCodigo, pNombre, pIdGenerado);
 
             return (int)pIdGenerado.Value;
         }
