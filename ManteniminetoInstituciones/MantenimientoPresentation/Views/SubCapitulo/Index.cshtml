@@ -225,18 +225,41 @@
                 });
         }
 
-        function eliminarSubCapitulo(id) {
-            if (!confirm('¿Desea eliminar este Sub-capítulo?')) return;
+      function eliminarSubCapitulo(id) {
+                if (!confirm('¿Desea eliminar este Sub-capítulo?')) return;
 
-            fetch(`/SubCapitulo/Eliminar?id=${id}`, { method: 'POST' })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        cargarGridSubCapitulos();
-                    } else {
-                        alert('Error al eliminar: ' + data.message);
-                    }
-                });
-        }
+                fetch(`/SubCapitulo/Eliminar?id=${id}`, { method: 'POST' })
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.success) {
+                            cargarGridSubCapitulos();
+                        } else {
+                            // Mensaje integrado y descriptivo cuando posee DAFs asociadas
+                            mostrarAlertaError(data.message);
+                        }
+                    })
+                    .catch(() => {
+                        mostrarAlertaError('Ocurrió un error de red al intentar eliminar el subcapítulo.');
+                    });
+            }
+
+            // Función auxiliar opcional para mostrar un contenedor de alerta estilizado arriba del grid
+            function mostrarAlertaError(mensaje) {
+                const contenedor = document.getElementById('contenedorGrid');
+                const alertaHtml = `
+                    <div class="alert alert-danger border-0 shadow-sm rounded-3 p-3 mb-3 d-flex align-items-center justify-content-between animate__animated animate__fadeIn">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-exclamation-triangle-fill fs-4 me-3 text-danger"></i>
+                            <div>
+                                <h6 class="fw-bold mb-1 text-dark">No se pudo completar la acción</h6>
+                                <p class="text-muted small mb-0">${mensaje}</p>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close" onclick="cargarGridSubCapitulos()" aria-label="Close"></button>
+                    </div>`;
+    
+                // Inserta la alerta arriba del grid actual
+                contenedor.insertAdjacentHTML('afterbegin', alertaHtml);
+            }
     </script>
 }

@@ -10,9 +10,11 @@ namespace Mantenimiento.Core.Application.Services
     public class SubCapituloService : ISubCapituloService
     {
         private readonly ISubCapituloRepository _repo;
-        public SubCapituloService(ISubCapituloRepository repo)
+        private readonly IDafRepository _dafRepo; // <-- Añadimos el repositorio de DAF
+        public SubCapituloService(ISubCapituloRepository repo, IDafRepository dafRepository )
         {
             _repo = repo;
+            _dafRepo = dafRepository;
         }
 
         public async Task<List<SubCapituloDto>> ObtenerSubCapitulosAsync(string? codigo = null)
@@ -43,6 +45,12 @@ namespace Mantenimiento.Core.Application.Services
 
         public async Task EliminarSubCapituloAsync(int id)
         {
+            var dafsAsociadas = await _dafRepo.ObtenerPorSubCapituloAsync(id);
+            if (dafsAsociadas != null && dafsAsociadas.Any())
+            {
+                throw new InvalidOperationException("No se puede eliminar este Sub-capítulo porque tiene unidades DAF asociadas.");
+            }
+
             await _repo.EliminarConSpAsync(id);
         }
 
