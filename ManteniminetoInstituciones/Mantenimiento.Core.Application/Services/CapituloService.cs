@@ -8,10 +8,12 @@ namespace Mantenimiento.Core.Application.Services
     public class CapituloService : ICapituloService
     {
         private readonly ICapituloRepository _repo;
+        private readonly ISubCapituloRepository _subCapituloRepo;
 
-        public CapituloService(ICapituloRepository repo)
+        public CapituloService(ICapituloRepository repo, ISubCapituloRepository subCapituloRepo)
         {
             _repo = repo;
+            _subCapituloRepo = subCapituloRepo;
         }
 
         public async Task<List<CapituloDto>> ObtenerCapitulosAsync(string? codigo = null)
@@ -42,6 +44,10 @@ namespace Mantenimiento.Core.Application.Services
 
         public async Task EliminarCapituloAsync(int id)
         {
+            var subCapitulos = await _subCapituloRepo.ObtenerSubCapitulosPorCapituloAsync(id);
+            if (subCapitulos.Count > 0)
+                throw new InvalidOperationException("No se puede eliminar el capítulo porque tiene subcapítulos asociados. Elimine primero sus subcapítulos.");
+
             await _repo.EliminarConSpAsync(id);
         }
 

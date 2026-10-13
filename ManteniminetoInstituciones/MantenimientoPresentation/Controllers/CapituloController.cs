@@ -1,5 +1,6 @@
 ﻿using Mantenimiento.Core.Application.DTOs.Capitulo;
 using Mantenimiento.Core.Application.InterfaceServices;
+using Microsoft.Data.SqlClient;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MantenimientoPresentation.Controllers
@@ -48,6 +49,21 @@ namespace MantenimientoPresentation.Controllers
             {
                 _logger.LogError(ex, "Error al obtener el grid de capítulos.");
                 return StatusCode(500, "Ocurrió un error al cargar la información. Intente nuevamente.");
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ObtenerOpciones()
+        {
+            try
+            {
+                var capitulos = await _service.ObtenerCapitulosAsync();
+                return Json(new { success = true, data = capitulos });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al actualizar las opciones de capítulos.");
+                return StatusCode(500, new { success = false, message = "No se pudo actualizar la lista de capítulos." });
             }
         }
 
@@ -125,10 +141,24 @@ namespace MantenimientoPresentation.Controllers
                 _logger.LogInformation("Capítulo con Id {Id} eliminado por {Usuario}.", id, usuario);
                 return Json(new { success = true, message = "Capítulo eliminado exitosamente." });
             }
+            catch (InvalidOperationException ex)
+            {
+                _logger.LogWarning(ex, "No se pudo eliminar el capítulo con Id {Id} porque tiene registros dependientes.", id);
+                return Json(new { success = false, message = ex.Message });
+            }
+            catch (SqlException ex) when (ex.Number == 547)
+            {
+                _logger.LogWarning(ex, "La eliminación del capítulo con Id {Id} fue bloqueada por registros dependientes.", id);
+                return Json(new
+                {
+                    success = false,
+                    message = "No se puede eliminar el capítulo porque tiene subcapítulos asociados. Elimine primero sus subcapítulos."
+                });
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al eliminar el capítulo con Id {Id}.", id);
-                return Json(new { success = false, message = ex.Message });
+                return Json(new { success = false, message = "Ocurrió un error al eliminar el capítulo." });
             }
         }
     }
