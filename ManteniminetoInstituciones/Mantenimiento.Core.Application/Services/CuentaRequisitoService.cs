@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Mantenimiento.Core.Application.DTOs.CuentaRequisito;
+using Mantenimiento.Core.Application.DTOs.Resultado;
 using Mantenimiento.Core.Application.InterfaceServices;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 
