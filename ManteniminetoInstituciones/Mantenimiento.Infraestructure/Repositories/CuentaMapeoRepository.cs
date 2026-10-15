@@ -2,12 +2,7 @@
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Mantenimiento.Infraestructure.Persistence.Repositories
 {
@@ -21,6 +16,15 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
             _context = context;
         }
 
+        /// <summary>
+        /// Obtiene de forma asíncrona las cuentas que coinciden con los criterios especificados.
+        /// </summary>
+        /// <remarks>Ejecuta el procedimiento almacenado dbo.sp_Cuentas_Obtener con @id_cuenta = NULL y
+        /// los parámetros @tipo_tramite y @busqueda; la consulta se realiza sin seguimiento (AsNoTracking).</remarks>
+        /// <param name="tipoTramite">Filtro opcional por tipo de trámite; si es null se omite el filtro.</param>
+        /// <param name="busqueda">Término de búsqueda opcional para filtrar cuentas; si es null se omite el filtro.</param>
+        /// <returns>Tarea que representa la operación asíncrona cuyo resultado es una lista de CuentaDbo que cumplen los
+        /// criterios.</returns>
         public async Task<List<CuentaDbo>> ObtenerCuentasAsync(int? tipoTramite = null, string? busqueda = null)
         {
             var pId = new SqlParameter("@id_cuenta", SqlDbType.Int) { Value = DBNull.Value };
@@ -33,6 +37,12 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
                 .ToListAsync();
         }
 
+        /// <summary>
+        /// Obtiene de forma asincrónica las cuentas base del catálogo desde el contexto de datos, sin seguimiento y
+        /// ordenadas por CodigoCuenta.
+        /// </summary>
+        /// <remarks>La consulta usa AsNoTracking() y ordena los resultados por CodigoCuenta.</remarks>
+        /// <returns>Una tarea que representa la operación asincrónica que devuelve una lista de CuentaCt.</returns>
         public async Task<List<CuentaCt>> ObtenerCuentasBaseCatalogAsync()
         {
             return await _context.TipoCuentaCt
@@ -41,6 +51,14 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
                 .ToListAsync();
         }
 
+        /// <summary>
+        /// Obtiene de forma asíncrona la cuenta con el identificador especificado, o null si no existe.
+        /// </summary>
+        /// <remarks>Ejecuta el procedimiento almacenado dbo.sp_Cuentas_Obtener con los parámetros
+        /// correspondientes y devuelve el primer registro; la consulta se realiza con AsNoTracking.</remarks>
+        /// <param name="idCuenta">Identificador de la cuenta a recuperar.</param>
+        /// <returns>Una tarea que representa la operación asíncrona. El resultado contiene la instancia de CuentaDbo si se
+        /// encuentra; en caso contrario, null.</returns>
         public async Task<CuentaDbo?> ObtenerPorIdAsync(int idCuenta)
         {
             var pId = new SqlParameter("@id_cuenta", SqlDbType.Int) { Value = idCuenta };
@@ -55,6 +73,13 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
             return resultado.FirstOrDefault();
         }
 
+        /// <summary>
+        /// Crea una nueva cuenta en la base de datos ejecutando el procedimiento almacenado dbo.sp_Cuentas_Insertar con los parámetros proporcionados.
+        /// </summary>
+        /// <param name="idCuentaBase"></param>
+        /// <param name="descripcion"></param>
+        /// <param name="tipoTramite"></param>
+        /// <returns></returns>
         public async Task CrearCuentaAsync(int idCuentaBase, string? descripcion, int tipoTramite)
         {
             var pIdBase = new SqlParameter("@id_cuenta", idCuentaBase);
@@ -66,6 +91,16 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
                 pIdBase, pDesc, pTipo);
         }
 
+        /// <summary>
+        /// Actualiza los datos de una cuenta ejecutando el procedimiento almacenado dbo.sp_Cuentas_Actualizar.
+        /// </summary>
+        /// <remarks>Ejecuta SQL crudo a través de ExecuteSqlRawAsync pasando parámetros; puede lanzar
+        /// excepciones de acceso a datos (por ejemplo, SqlException o DbUpdateException) que deben manejarse en el
+        /// llamador.</remarks>
+        /// <param name="idCuenta">Identificador de la cuenta a actualizar.</param>
+        /// <param name="descripcion">Nueva descripción de la cuenta.</param>
+        /// <param name="tipoTramite">Tipo de trámite asociado a la cuenta.</param>
+        /// <returns>Una tarea que representa la operación asincrónica de actualización.</returns>
         public async Task ActualizarCuentaAsync(int idCuenta, string descripcion, int tipoTramite)
         {
             var pId = new SqlParameter("@id_cuenta", idCuenta);
@@ -77,6 +112,13 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
                 pId, pDesc, pTipo);
         }
 
+        /// <summary>
+        /// Elimina la cuenta especificada ejecutando el procedimiento almacenado dbo.sp_Cuentas_Eliminar.
+        /// </summary>
+        /// <remarks>Ejecuta un procedimiento almacenado en la base de datos; puede lanzar excepciones en
+        /// caso de error de ejecución SQL.</remarks>
+        /// <param name="idCuenta">Identificador de la cuenta que se eliminará.</param>
+        /// <returns>Tarea que representa la operación asincrónica que se completa cuando la eliminación finaliza.</returns>
         public async Task EliminarCuentaAsync(int idCuenta)
         {
             var pId = new SqlParameter("@id_cuenta", idCuenta);

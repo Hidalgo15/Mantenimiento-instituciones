@@ -13,6 +13,10 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
             _context = context;
         }
 
+        /// <summary>
+        /// Obtiene todas las categorías de trámite desde la vista v_categoria_tramite.
+        /// </summary>
+        /// <returns></returns>
         public async Task<IEnumerable<CategoriaTramite>> ObtenerTodasAsync()
         {
             // Consultar directamente la vista v_categoria_tramite
