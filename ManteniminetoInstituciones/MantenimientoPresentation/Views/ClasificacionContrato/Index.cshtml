@@ -1,0 +1,213 @@
+﻿@using Mantenimiento.Core.Application.DTOs.ClasificacionContrato
+@{
+    ViewData["Title"] = "Clasificación de Contratos";
+    var contratoTipos = ViewBag.ContratoTipos as List<ClasificacionOpcionDto> ?? new List<ClasificacionOpcionDto>();
+    var tiposOperacion = ViewBag.TiposOperacion as List<ClasificacionOpcionDto> ?? new List<ClasificacionOpcionDto>();
+    var procesosSeleccion = ViewBag.ProcesosSeleccion as List<ProcesoSeleccionCatalogoDto> ?? new List<ProcesoSeleccionCatalogoDto>();
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h4 class="fw-bold mb-0 text-dark">Gestión de Clasificación de Contratos</h4>
+            <small class="text-muted">Administre los tipos, operaciones y procesos de selección asociados</small>
+        </div>
+        <button type="button" class="btn btn-cgr-primary rounded-pill px-4" onclick="abrirModalCrear()">
+            <i class="bi bi-plus-circle me-1"></i> Nueva Clasificación
+        </button>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-body p-4">
+            <div class="row align-items-end g-3">
+                <div class="col-md-4">
+                    <label class="form-label fw-bold text-dark mb-2">Tipo de Contrato</label>
+                    <select id="filtroContratoTipo" class="form-select rounded-pill" onchange="cargarGrid()">
+                        <option value="">-- Todos --</option>
+                        @foreach (var item in contratoTipos)
+                        {
+                            <option value="@item.Valor">@item.Texto</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold text-dark mb-2">Tipo de Operación</label>
+                    <select id="filtroTipoOperacion" class="form-select rounded-pill" onchange="cargarGrid()">
+                        <option value="">-- Todos --</option>
+                        @foreach (var item in tiposOperacion)
+                        {
+                            <option value="@item.Valor">@item.Texto</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold text-dark mb-2">Proceso de Selección</label>
+                    <select id="filtroProceso" class="form-select rounded-pill" onchange="cargarGrid()">
+                        <option value="">-- Todos --</option>
+                        @foreach (var item in procesosSeleccion)
+                        {
+                            <option value="@item.Proceso">@item.Proceso</option>
+                        }
+                    </select>
+                </div>
+                <div class="col-md-2 text-end">
+                    <button type="button" class="btn btn-outline-secondary w-100 rounded-pill" onclick="limpiarFiltros()">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> Limpiar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Contenedor Grid -->
+    <div id="contenedorGrid">
+        <div class="text-center py-5 bg-white rounded-3 border shadow-sm">
+            <div class="spinner-border text-primary mb-3" role="status"></div>
+            <p class="text-muted mb-0 fw-semibold">Cargando clasificaciones...</p>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Crear / Editar -->
+<div class="modal fade" id="modalMantenimiento" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header text-white px-4 py-3" style="background-color: #0d5493;">
+                <h5 class="modal-title fw-bold" id="modalTitle">Nueva Clasificación</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="formMantenimiento">
+                    <input type="hidden" id="hdnCodigoClasificacion" value="0" />
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark">Tipo de Contrato</label>
+                        <input type="text" id="txtContratoTipo" class="form-control rounded-3" maxlength="50" placeholder="Ej: BIENES Y SERVICIOS" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark">Tipo de Operación</label>
+                        <input type="text" id="txtTipoOperacion" class="form-control rounded-3" maxlength="50" placeholder="Ej: NUEVO CONTRATO" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark">Proceso de Selección</label>
+                        <select id="selectProcesoSeleccion" class="form-select rounded-3">
+                            <option value="">-- Seleccione un proceso --</option>
+                            @foreach (var item in procesosSeleccion)
+                            {
+                                <option value="@item.Proceso">@item.Proceso</option>
+                            }
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light border-top-0 px-4 py-3">
+                <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-cgr-primary px-4 rounded-pill" onclick="guardarClasificacion()">Guardar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let modalBs;
+        document.addEventListener('DOMContentLoaded', () => {
+            modalBs = new bootstrap.Modal(document.getElementById('modalMantenimiento'));
+            cargarGrid();
+        });
+
+        function cargarGrid() {
+            const contratoTipo = document.getElementById('filtroContratoTipo').value;
+            const tipoOperacion = document.getElementById('filtroTipoOperacion').value;
+            const contratoProcesoSeleccion = document.getElementById('filtroProceso').value;
+
+            const params = new URLSearchParams({ contratoTipo, tipoOperacion, contratoProcesoSeleccion });
+
+            fetch(`/ClasificacionContrato/ObtenerGrid?${params.toString()}`)
+                .then(res => res.text())
+                .then(html => document.getElementById('contenedorGrid').innerHTML = html);
+        }
+
+        function limpiarFiltros() {
+            document.getElementById('filtroContratoTipo').value = '';
+            document.getElementById('filtroTipoOperacion').value = '';
+            document.getElementById('filtroProceso').value = '';
+            cargarGrid();
+        }
+
+        function abrirModalCrear() {
+            document.getElementById('hdnCodigoClasificacion').value = '0';
+            document.getElementById('txtContratoTipo').value = '';
+            document.getElementById('txtTipoOperacion').value = '';
+            document.getElementById('selectProcesoSeleccion').value = '';
+            document.getElementById('modalTitle').innerText = 'Nueva Clasificación';
+            modalBs.show();
+        }
+
+        function abrirModalEditar(id) {
+            fetch(`/ClasificacionContrato/ObtenerPorId?id=${id}`)
+                .then(res => res.json())
+                .then(res => {
+                    if (res.success) {
+                        const data = res.data;
+                        document.getElementById('hdnCodigoClasificacion').value = data.codigoClasificacion;
+                        document.getElementById('txtContratoTipo').value = data.contratoTipo || '';
+                        document.getElementById('txtTipoOperacion').value = data.tipoOperacion || '';
+                        document.getElementById('selectProcesoSeleccion').value = data.contratoProcesoSeleccion || '';
+                        document.getElementById('modalTitle').innerText = 'Editar Clasificación';
+                        modalBs.show();
+                    } else {
+                        alert(res.message);
+                    }
+                });
+        }
+
+        function guardarClasificacion() {
+            const id = parseInt(document.getElementById('hdnCodigoClasificacion').value);
+            const contratoTipo = document.getElementById('txtContratoTipo').value.trim();
+            const tipoOperacion = document.getElementById('txtTipoOperacion').value.trim();
+            const contratoProcesoSeleccion = document.getElementById('selectProcesoSeleccion').value;
+
+            const url = id === 0 ? '/ClasificacionContrato/Crear' : '/ClasificacionContrato/Actualizar';
+            const dto = id === 0
+                ? { contratoTipo, tipoOperacion, contratoProcesoSeleccion }
+                : { codigoClasificacion: id, contratoTipo, tipoOperacion, contratoProcesoSeleccion };
+
+            fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dto)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    modalBs.hide();
+                    cargarGrid();
+                } else {
+                    alert(data.message);
+                }
+            });
+        }
+
+        function eliminarClasificacion(id) {
+            if (!confirm('¿Está seguro de eliminar esta clasificación?')) return;
+
+            fetch('/ClasificacionContrato/Eliminar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(id)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    cargarGrid();
+                } else {
+                    alert(data.message);
+                }
+            });
+        }
+    </script>
+}

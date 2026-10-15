@@ -69,6 +69,9 @@ namespace MantenimientoPresentation
             builder.Services.AddScoped<IRequisitoRepository, RequisitoRepository>();
             builder.Services.AddScoped<IRequisitoService, RequisitoService>();
 
+            builder.Services.AddScoped<IClasificacionContratoRepository, ClasificacionContratoRepository>();
+            builder.Services.AddScoped<IClasificacionContratoService, ClasificacionContratoService>();
+
 
             // Repositorios
             builder.Services.AddScoped<ITipoTramitePagoRepository, TipoTramitePagoRepository>();

@@ -1,0 +1,60 @@
+﻿@using Mantenimiento.Core.Application.DTOs.ClasificacionContrato
+@model List<ClasificacionContratoDto>
+
+@if (Model != null && Model.Any())
+{
+    <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light text-secondary border-bottom small text-uppercase fw-bold">
+                    <tr>
+                        <th class="py-3 px-3" style="width: 80px;">ID</th>
+                        <th class="py-3 px-3">Tipo de Contrato</th>
+                        <th class="py-3 px-3">Tipo de Operación</th>
+                        <th class="py-3 px-3">Proceso de Selección</th>
+                        <th class="py-3 px-3 text-center" style="width: 200px;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="px-3 fw-bold text-secondary">#@item.CodigoClasificacion</td>
+                            <td class="px-3 fw-semibold text-dark">@(item.ContratoTipo ?? "-")</td>
+                            <td class="px-3 text-secondary">@(item.TipoOperacion ?? "-")</td>
+                            <td class="px-3">
+                                @if (!string.IsNullOrEmpty(item.ContratoProcesoSeleccion))
+                                {
+                                    <span class="badge bg-light text-dark border px-2 py-1">@item.ContratoProcesoSeleccion</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </td>
+                            <td class="px-3 text-center">
+                                <div class="d-inline-flex gap-2">
+                                    <button class="btn btn-sm btn-outline-primary rounded-pill px-3"
+                                            onclick="abrirModalEditar(@item.CodigoClasificacion)">
+                                        <i class="bi bi-pencil-square me-1"></i> Editar
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger rounded-pill px-3"
+                                            onclick="eliminarClasificacion(@item.CodigoClasificacion)">
+                                        <i class="bi bi-trash me-1"></i> Eliminar
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-secondary border-0 shadow-sm text-center py-5 rounded-3 mb-0" style="background-color: #f8fafc;">
+        <i class="bi bi-search fs-2 text-secondary d-block mb-2"></i>
+        <span class="fw-semibold text-secondary">No se encontraron clasificaciones registradas.</span>
+    </div>
+}
