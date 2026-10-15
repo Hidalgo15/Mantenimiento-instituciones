@@ -13,6 +13,10 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
             _context = context;
         }
 
+        /// <summary>
+        /// Obtiene todas las instituciones de la base de datos de manera asíncrona.
+        /// </summary>
+        /// <returns></returns>
         public async Task<List<Institucion>> ObtenerInstitucionesAsync()
         {
             return await _context.Instituciones

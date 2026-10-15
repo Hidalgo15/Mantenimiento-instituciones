@@ -14,6 +14,14 @@ namespace Mantenimiento.Core.Application.Services
             _repository = repository;
         }
 
+        /// <summary>
+        /// Obtiene las instituciones activas, convertidas a InstitucionSeleccionDto, únicas por Estructura y ordenadas
+        /// por UnidadEjecutora.
+        /// </summary>
+        /// <remarks>Consulta _repository.ObtenerInstitucionesAsync, filtra por Estatus, mapea con
+        /// InstitucionMapper.ToDto, aplica DistinctBy por Estructura y ordena por UnidadEjecutora.</remarks>
+        /// <returns>Una tarea que representa la operación asíncrona y devuelve una lista de InstitucionSeleccionDto activos
+        /// (Estatus = true), deduplicados por Estructura y ordenados por UnidadEjecutora.</returns>
         public async Task<List<InstitucionSeleccionDto>> ObtenerInstitucionesSelectorAsync()
         {
             var instituciones = await _repository.ObtenerInstitucionesAsync();

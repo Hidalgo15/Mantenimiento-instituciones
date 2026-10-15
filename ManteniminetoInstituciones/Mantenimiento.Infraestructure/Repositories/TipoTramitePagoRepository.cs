@@ -2,12 +2,7 @@
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
 using System.Data;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Mantenimiento.Infraestructure.Persistence.Repositories
 {
@@ -20,6 +15,10 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
             _context = context;
         }
 
+        /// <summary>
+        /// Obtiene todos los registros de TipoTramitePago desde la base de datos utilizando un procedimiento almacenado.
+        /// </summary>
+        /// <returns></returns>
         public async Task<List<TipoTramitePago>> ObtenerTodosAsync()
         {
             return await _context.TipoTramitePago
@@ -28,6 +27,13 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
                 .ToListAsync();
         }
 
+        /// <summary>
+        /// Obtiene de forma asíncrona un TipoTramitePago por su identificador.
+        /// </summary>
+        /// <remarks>Ejecuta el procedimiento almacenado dbo.sp_TipoTramitePago_Obtener mediante
+        /// FromSqlRaw y devuelve el primer resultado sin seguimiento (AsNoTracking).</remarks>
+        /// <param name="id">Identificador del TipoTramitePago a recuperar.</param>
+        /// <returns>Tarea que devuelve el TipoTramitePago correspondiente al identificador, o null si no se encuentra.</returns>
         public async Task<TipoTramitePago?> ObtenerPorIdAsync(int id)
         {
             var pId = new SqlParameter("@id", SqlDbType.Int) { Value = id };
