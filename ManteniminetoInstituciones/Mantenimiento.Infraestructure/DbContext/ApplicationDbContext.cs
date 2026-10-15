@@ -205,7 +205,6 @@ namespace Mantenimiento.Infraestructure.Persistence
             });
             #endregion
 
-
             #region dbo.cuenta
 
             modelBuilder.Entity<CuentaDbo>(entity =>
@@ -320,6 +319,16 @@ namespace Mantenimiento.Infraestructure.Persistence
             });
             #endregion
 
+            #region dbo.requisitos_contratos
+            modelBuilder.Entity<RequisitoContrato>(entity =>
+            {
+                entity.HasKey(e => e.CodigoRequisito);
+                entity.ToTable("requisitos_contratos", "dbo");
+                entity.Property(e => e.CodigoRequisito).HasColumnName("codigo_requisito");
+                entity.Property(e => e.DescripcionRequisito).HasColumnName("descripcion_requisito");
+                entity.Property(e => e.CodigoDocumentoTre).HasColumnName("codigo_documento_tre");
+            });
+            #endregion
 
         }
     }
