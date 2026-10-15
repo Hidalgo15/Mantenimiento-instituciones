@@ -12,10 +12,10 @@
                         <th class="py-3 px-3">Tipo de Contrato</th>
                         <th class="py-3 px-3">Tipo de Operación</th>
                         <th class="py-3 px-3">Proceso de Selección</th>
-                        <th class="py-3 px-3 text-center" style="width: 200px;">Acciones</th>
+                        <th class="py-3 px-3 text-center" style="width: 220px;">Acciones</th>
                     </tr>
                 </thead>
-                <tbody>
+                <tbody class="border-top-0">
                     @foreach (var item in Model)
                     {
                         <tr>
@@ -25,7 +25,7 @@
                             <td class="px-3">
                                 @if (!string.IsNullOrEmpty(item.ContratoProcesoSeleccion))
                                 {
-                                    <span class="badge bg-light text-dark border px-2 py-1">@item.ContratoProcesoSeleccion</span>
+                                    <span class="badge bg-light text-dark border rounded-pill px-3 py-1">@item.ContratoProcesoSeleccion</span>
                                 }
                                 else
                                 {
@@ -33,7 +33,7 @@
                                 }
                             </td>
                             <td class="px-3 text-center">
-                                <div class="d-inline-flex gap-2">
+                                <div class="d-inline-flex flex-wrap justify-content-center gap-2">
                                     <button class="btn btn-sm btn-outline-primary rounded-pill px-3"
                                             onclick="abrirModalEditar(@item.CodigoClasificacion)">
                                         <i class="bi bi-pencil-square me-1"></i> Editar
