@@ -1,7 +1,6 @@
 ﻿using Mantenimiento.Core.Domain.Entities;
+using Mantenimiento.Core.Domain.Entities.ClasificacionContrato;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Microsoft.EntityFrameworkCore.SqlServer;
 
 namespace Mantenimiento.Infraestructure.Persistence
 {
@@ -30,6 +29,9 @@ namespace Mantenimiento.Infraestructure.Persistence
         public DbSet<RequisitoCatalogo> RequisitoCatalogos { get; set; }
         public DbSet<Requisito> RequisitosTbl { get; set; }
         public DbSet<RequisitoCreacionResultado> RequisitoCreacionResultados { get; set; }
+        public DbSet<ClasificacionContrato> ClasificacionContratosTbl { get; set; }
+        public DbSet<ProcesoSeleccionCatalogo> ProcesoSeleccionCatalogosTbl { get; set; }
+        public DbSet<ClasificacionOpcion> ClasificacionOpcionesTbl { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -329,6 +331,32 @@ namespace Mantenimiento.Infraestructure.Persistence
                 entity.Property(e => e.CodigoDocumentoTre).HasColumnName("codigo_documento_tre");
             });
             #endregion
+            #region ClasificacionContratos
+            modelBuilder.Entity<ClasificacionContrato>(entity =>
+            {
+                entity.HasKey(e => e.CodigoClasificacion);
+                entity.ToTable("clasificacion_contratos", "dbo");
+                entity.Property(e => e.CodigoClasificacion).HasColumnName("codigo_clasificacion");
+                entity.Property(e => e.ContratoTipo).HasColumnName("contrato_tipo");
+                entity.Property(e => e.TipoOperacion).HasColumnName("tipo_operacion");
+                entity.Property(e => e.ContratoProcesoSeleccion).HasColumnName("contrato_proceso_seleccion");
+            });
+
+            modelBuilder.Entity<ProcesoSeleccionCatalogo>(entity =>
+            {
+                entity.HasNoKey();
+                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.Proceso).HasColumnName("proceso");
+            });
+
+            modelBuilder.Entity<ClasificacionOpcion>(entity =>
+            {
+                entity.HasNoKey();
+                entity.Property(e => e.Valor).HasColumnName("valor");
+                entity.Property(e => e.Texto).HasColumnName("texto");
+            });
+            #endregion
+
 
         }
     }
