@@ -14,6 +14,10 @@ namespace Mantenimiento.Core.Application.Services
             _repo = repo;
         }
 
+        /// <summary>
+        /// obtiene todas las categorias de tramite
+        /// </summary>
+        /// <returns></returns>
         public async Task<IEnumerable<CategoriaTramiteDto>> ObtenerTodasAsync()
         {
             var entidades = await _repo.ObtenerTodasAsync();
