@@ -54,7 +54,7 @@ namespace MantenimientoPresentation
 
             builder.Services.AddScoped<ITipoTramiteService, TipoTramiteService>();
             builder.Services.AddScoped<ITipoTramiteRepository, TipoTramiteContratoRepository>();
-          
+
             builder.Services.AddScoped<ITipoTramitePagoRepository, TipoTramitePagoRepository>();
             builder.Services.AddScoped<ITipoTramitePagoService, TipoTramitePagoService>();
 
@@ -77,6 +77,9 @@ namespace MantenimientoPresentation
 
             builder.Services.AddScoped<IRequisitoContratoRepository, RequisitoContratoRepository>();
             builder.Services.AddScoped<IRequisitoContratoService, RequisitoContratoService>();
+
+            builder.Services.AddScoped<IRelacionContratoRequisitoRepository, RelacionContratoRequisitoRepository>();
+            builder.Services.AddScoped<IRelacionContratoRequisitoService, RelacionContratoRequisitoService>();
 
             var app = builder.Build();
 

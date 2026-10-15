@@ -1,0 +1,218 @@
+﻿@using Mantenimiento.Core.Application.DTOs.RelacionContratoRequisito
+@{
+    ViewData["Title"] = "Relación de Contratos y Requisitos";
+    var clasificaciones = ViewBag.Clasificaciones as List<CatalogoClasificacionContratoDto> ?? new List<CatalogoClasificacionContratoDto>();
+    var requisitos = ViewBag.Requisitos as List<CatalogoRequisitoContratoDto> ?? new List<CatalogoRequisitoContratoDto>();
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h4 class="fw-bold mb-0 text-dark">Gestión de Requisitos por Clasificación de Contrato</h4>
+            <small class="text-muted">Asigne y administre los requisitos documentales requeridos para cada contrato</small>
+        </div>
+        <span class="badge text-white py-2 px-3 fs-6 rounded-pill" style="background-color: #0d5493;">
+            <i class="bi bi-link-45deg me-1"></i> Contratos
+        </span>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-body p-4 bg-white rounded-3">
+            <div class="row align-items-end g-3">
+                <!-- Filtro Clasificación -->
+                <div class="col-md-5">
+                    <label class="form-label fw-bold text-dark mb-2">
+                        <i class="bi bi-funnel me-1" style="color: #0d5493;"></i> Clasificación de Contrato
+                    </label>
+                    <select id="filtroCodigoClasificacion" class="form-select rounded-pill border-secondary-subtle" onchange="cargarGrid()">
+                        <option value="">-- Todas las clasificaciones --</option>
+                        @foreach (var c in clasificaciones)
+                        {
+                            var textoOpcion = !string.IsNullOrEmpty(c.ContratoProcesoSeleccion) 
+                                ? $"{c.ContratoTipo} - {c.TipoOperacion} ({c.ContratoProcesoSeleccion})" 
+                                : $"{c.ContratoTipo} - {c.TipoOperacion}";
+
+                            <option value="@c.CodigoClasificacion">@textoOpcion</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- Filtro Requisito -->
+                <div class="col-md-5">
+                    <label class="form-label fw-bold text-dark mb-2">
+                        <i class="bi bi-funnel me-1" style="color: #0d5493;"></i> Requisito
+                    </label>
+                    <select id="filtroCodigoRequisito" class="form-select rounded-pill border-secondary-subtle" onchange="cargarGrid()">
+                        <option value="">-- Todos los requisitos --</option>
+                        @foreach (var r in requisitos)
+                        {
+                            <option value="@r.CodigoRequisito">@r.DescripcionRequisito</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- Botón Limpiar -->
+                <div class="col-md-2 text-end">
+                    <button type="button" class="btn btn-outline-secondary w-100 rounded-pill py-2" onclick="limpiarFiltros()">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> Limpiar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Botón Nueva Relación -->
+    <div class="mb-3 text-end">
+        <button type="button" class="btn btn-cgr-primary rounded-pill px-4 py-2" onclick="abrirModalCrear()">
+            <i class="bi bi-plus-circle me-1"></i> Nueva Relación
+        </button>
+    </div>
+
+    <!-- Contenedor Grid -->
+    <div id="contenedorGrid">
+        <div class="text-center py-5 bg-white rounded-3 border shadow-sm">
+            <div class="spinner-border text-primary mb-3" style="width: 2.5rem; height: 2.5rem;" role="status"></div>
+            <p class="text-muted mb-0 fw-semibold">Cargando relaciones...</p>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Registro / Edición -->
+<div class="modal fade" id="modalMantenimiento" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header text-white px-4 py-3" style="background-color: #0d5493;">
+                <h5 class="modal-title fw-bold" id="modalTitle">Asignar Requisito a Contrato</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="formMantenimiento">
+                    <input type="hidden" id="hdnId" value="0" />
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark">Clasificación de Contrato</label>
+                        <select id="modalCodigoClasificacion" class="form-select rounded-3" required>
+                            <option value="">-- Seleccione una clasificación --</option>
+                            @foreach (var c in clasificaciones)
+                            {
+                                var textoOpcion = !string.IsNullOrEmpty(c.ContratoProcesoSeleccion) 
+                                    ? $"{c.ContratoTipo} - {c.TipoOperacion} ({c.ContratoProcesoSeleccion})" 
+                                    : $"{c.ContratoTipo} - {c.TipoOperacion}";
+
+                                <option value="@c.CodigoClasificacion">@textoOpcion</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark">Requisito</label>
+                        <select id="modalCodigoRequisito" class="form-select rounded-3" required>
+                            <option value="">-- Seleccione un requisito --</option>
+                            @foreach (var r in requisitos)
+                            {
+                                <option value="@r.CodigoRequisito">@r.DescripcionRequisito</option>
+                            }
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light border-top-0 px-4 py-3">
+                <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-cgr-primary px-4 rounded-pill" onclick="guardarRelacion()">
+                    <i class="bi bi-check-circle me-1"></i> Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let modalBs;
+        document.addEventListener('DOMContentLoaded', () => {
+            modalBs = new bootstrap.Modal(document.getElementById('modalMantenimiento'));
+            cargarGrid();
+        });
+
+        function cargarGrid() {
+            const codigoClasificacion = document.getElementById('filtroCodigoClasificacion').value;
+            const codigoRequisito = document.getElementById('filtroCodigoRequisito').value;
+
+            const params = new URLSearchParams({ codigoClasificacion, codigoRequisito });
+
+            fetch(`/RelacionContratoRequisito/ObtenerGrid?${params.toString()}`)
+                .then(res => res.text())
+                .then(html => document.getElementById('contenedorGrid').innerHTML = html);
+        }
+
+        function limpiarFiltros() {
+            document.getElementById('filtroCodigoClasificacion').value = '';
+            document.getElementById('filtroCodigoRequisito').value = '';
+            cargarGrid();
+        }
+
+        function abrirModalCrear() {
+            document.getElementById('hdnId').value = '0';
+            document.getElementById('modalCodigoClasificacion').value = '';
+            document.getElementById('modalCodigoRequisito').value = '';
+            document.getElementById('modalTitle').innerText = 'Asignar Requisito a Contrato';
+            modalBs.show();
+        }
+
+        function abrirModalEditar(id, codigoClasificacion, codigoRequisito) {
+            document.getElementById('hdnId').value = id;
+            document.getElementById('modalCodigoClasificacion').value = codigoClasificacion;
+            document.getElementById('modalCodigoRequisito').value = codigoRequisito;
+            document.getElementById('modalTitle').innerText = 'Editar Relación';
+            modalBs.show();
+        }
+
+        function guardarRelacion() {
+            const id = parseInt(document.getElementById('hdnId').value);
+            const codigoClasificacion = parseInt(document.getElementById('modalCodigoClasificacion').value);
+            const codigoRequisito = parseInt(document.getElementById('modalCodigoRequisito').value);
+
+            if (!codigoClasificacion || !codigoRequisito) {
+                alert('Debe completar todos los campos requeridos.');
+                return;
+            }
+
+            const url = id === 0 ? '/RelacionContratoRequisito/Guardar' : '/RelacionContratoRequisito/Actualizar';
+            const dto = id === 0 ? { codigoClasificacion, codigoRequisito } : { id, codigoClasificacion, codigoRequisito };
+
+            fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dto)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    modalBs.hide();
+                    cargarGrid();
+                } else {
+                    alert(data.message);
+                }
+            });
+        }
+
+        function eliminarRelacion(id) {
+            if (!confirm('¿Está seguro de eliminar esta relación?')) return;
+
+            fetch('/RelacionContratoRequisito/Eliminar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(id)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    cargarGrid();
+                } else {
+                    alert(data.message);
+                }
+            });
+        }
+    </script>
+}
