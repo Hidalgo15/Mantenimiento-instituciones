@@ -12,18 +12,20 @@
             <h4 class="fw-bold mb-0 text-dark">Gestión de Clasificación de Contratos</h4>
             <small class="text-muted">Administre los tipos, operaciones y procesos de selección asociados</small>
         </div>
-        <button type="button" class="btn btn-cgr-primary rounded-pill px-4" onclick="abrirModalCrear()">
-            <i class="bi bi-plus-circle me-1"></i> Nueva Clasificación
-        </button>
+        <span class="badge text-white py-2 px-3 fs-6 rounded-pill" style="background-color: #0d5493;">
+            <i class="bi bi-diagram-3 me-1"></i> Contratos
+        </span>
     </div>
 
     <!-- Filtros -->
     <div class="card border-0 shadow-sm rounded-3 mb-4">
-        <div class="card-body p-4">
+        <div class="card-body p-4 bg-white rounded-3">
             <div class="row align-items-end g-3">
                 <div class="col-md-4">
-                    <label class="form-label fw-bold text-dark mb-2">Tipo de Contrato</label>
-                    <select id="filtroContratoTipo" class="form-select rounded-pill" onchange="cargarGrid()">
+                    <label class="form-label fw-bold text-dark mb-2">
+                        <i class="bi bi-funnel me-1" style="color: #0d5493;"></i> Tipo de Contrato
+                    </label>
+                    <select id="filtroContratoTipo" class="form-select rounded-pill border-secondary-subtle" onchange="cargarGrid()">
                         <option value="">-- Todos --</option>
                         @foreach (var item in contratoTipos)
                         {
@@ -32,8 +34,10 @@
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label fw-bold text-dark mb-2">Tipo de Operación</label>
-                    <select id="filtroTipoOperacion" class="form-select rounded-pill" onchange="cargarGrid()">
+                    <label class="form-label fw-bold text-dark mb-2">
+                        <i class="bi bi-funnel me-1" style="color: #0d5493;"></i> Tipo de Operación
+                    </label>
+                    <select id="filtroTipoOperacion" class="form-select rounded-pill border-secondary-subtle" onchange="cargarGrid()">
                         <option value="">-- Todos --</option>
                         @foreach (var item in tiposOperacion)
                         {
@@ -42,8 +46,10 @@
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label fw-bold text-dark mb-2">Proceso de Selección</label>
-                    <select id="filtroProceso" class="form-select rounded-pill" onchange="cargarGrid()">
+                    <label class="form-label fw-bold text-dark mb-2">
+                        <i class="bi bi-funnel me-1" style="color: #0d5493;"></i> Proceso de Selección
+                    </label>
+                    <select id="filtroProceso" class="form-select rounded-pill border-secondary-subtle" onchange="cargarGrid()">
                         <option value="">-- Todos --</option>
                         @foreach (var item in procesosSeleccion)
                         {
@@ -52,7 +58,7 @@
                     </select>
                 </div>
                 <div class="col-md-2 text-end">
-                    <button type="button" class="btn btn-outline-secondary w-100 rounded-pill" onclick="limpiarFiltros()">
+                    <button type="button" class="btn btn-outline-secondary w-100 rounded-pill py-2" onclick="limpiarFiltros()">
                         <i class="bi bi-arrow-counterclockwise me-1"></i> Limpiar
                     </button>
                 </div>
@@ -60,10 +66,17 @@
         </div>
     </div>
 
+    <!-- Botón Nueva Clasificación flotante o alineado -->
+    <div class="mb-3 text-end">
+        <button type="button" class="btn btn-cgr-primary rounded-pill px-4 py-2" onclick="abrirModalCrear()">
+            <i class="bi bi-plus-circle me-1"></i> Nueva Clasificación
+        </button>
+    </div>
+
     <!-- Contenedor Grid -->
     <div id="contenedorGrid">
         <div class="text-center py-5 bg-white rounded-3 border shadow-sm">
-            <div class="spinner-border text-primary mb-3" role="status"></div>
+            <div class="spinner-border text-primary mb-3" style="width: 2.5rem; height: 2.5rem;" role="status"></div>
             <p class="text-muted mb-0 fw-semibold">Cargando clasificaciones...</p>
         </div>
     </div>
@@ -105,7 +118,9 @@
             </div>
             <div class="modal-footer bg-light border-top-0 px-4 py-3">
                 <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-cgr-primary px-4 rounded-pill" onclick="guardarClasificacion()">Guardar</button>
+                <button type="button" class="btn btn-cgr-primary px-4 rounded-pill" onclick="guardarClasificacion()">
+                    <i class="bi bi-check-circle me-1"></i> Guardar
+                </button>
             </div>
         </div>
     </div>
