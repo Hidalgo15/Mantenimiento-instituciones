@@ -24,8 +24,15 @@
                                 <span class="fw-semibold text-dark d-block">@item.ContratoTipo</span>
                                 <small class="text-muted">@item.TipoOperacion</small>
                             </td>
-                            <td class="px-3">
-                                <span class="badge bg-light text-dark border rounded-pill px-3 py-1">@(item.ContratoProcesoSeleccion ?? "N/A")</span>
+                           <td class="px-3">
+                                @if (!string.IsNullOrEmpty(item.ContratoProcesoSeleccion) && item.ContratoProcesoSeleccion.ToUpper() != "NULL")
+                                {
+                                    <span class="badge bg-light text-dark border rounded-pill px-3 py-1">@item.ContratoProcesoSeleccion</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
                             </td>
                             <td class="px-3 fw-medium text-dark">
                                 @item.DescripcionRequisito
