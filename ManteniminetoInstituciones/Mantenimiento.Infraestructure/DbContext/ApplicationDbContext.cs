@@ -1,7 +1,7 @@
 ﻿using Mantenimiento.Core.Domain.Entities;
+using Mantenimiento.Core.Domain.Entities.ClasificacionContrato;
+using Mantenimiento.Core.Domain.Entities.RelacionContratoRequisito;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using Microsoft.EntityFrameworkCore.SqlServer;
 
 namespace Mantenimiento.Infraestructure.Persistence
 {
@@ -18,10 +18,26 @@ namespace Mantenimiento.Infraestructure.Persistence
         public DbSet<AnalistaSupervisorConsulta> AnalistaSupervisorConsultas { get; set; }
         public DbSet<SupervisorOption> SupervisorOptions { get; set; }
         public DbSet<CategoriaTramite> CategoriasTramite { get; set; }
-
         public DbSet<FondosEspeciales> FondosEspeciales { get; set; }
+        public DbSet<TramiteContrato> TipoTramiteContratos { get; set; }
+        public DbSet<CuentaDbo> TipoCuentaDbo { get; set; }
+        public DbSet<CuentaCt> TipoCuentaCt { get; set; }
+        public DbSet<TipoTramitePago> TipoTramitePago { get; set; }
+        public DbSet<CuentaRequisito> CuentaRequisitos { get; set; }
+        public DbSet<CuentaRequisitoConsulta> CuentaRequisitoConsultas { get; set; }
+        public DbSet<ResultadoOperacion> ResultadoOperaciones { get; set; }
+        public DbSet<CuentaCatalogo> CuentaCatalogos { get; set; }
+        public DbSet<RequisitoCatalogo> RequisitoCatalogos { get; set; }
+        public DbSet<Requisito> RequisitosTbl { get; set; }
+        public DbSet<RequisitoCreacionResultado> RequisitoCreacionResultados { get; set; }
+        public DbSet<ClasificacionContrato> ClasificacionContratosTbl { get; set; }
+        public DbSet<ProcesoSeleccionCatalogo> ProcesoSeleccionCatalogosTbl { get; set; }
+        public DbSet<ClasificacionOpcion> ClasificacionOpcionesTbl { get; set; }
+        public DbSet<RelacionContratoRequisito> RelacionContratoRequisitoTbl { get; set; }
+        public DbSet<CatalogoClasificacionContrato> CatalogoClasificacionContratoTbl { get; set; }
+        public DbSet<CatalogoRequisitoContrato> CatalogoRequisitoContratoTbl { get; set; }
 
-        public DbSet<TipoTramiteContrato> TipoTramiteContratos { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
@@ -104,7 +120,7 @@ namespace Mantenimiento.Infraestructure.Persistence
 
             #endregion
 
-            #region SubCapitul
+            #region SubCapitulo
             // Mapeo Tabla SubCapitulo
             modelBuilder.Entity<SubCapitulo>(entity =>
             {
@@ -162,7 +178,7 @@ namespace Mantenimiento.Infraestructure.Persistence
             // Mapeo Tabla FondosEspeciales
             modelBuilder.Entity<FondosEspeciales>(entity =>
             {
-             
+
                 entity.HasKey(e => e.Id);
                 entity.ToTable("Fondo_especiales", "dbo");
 
@@ -186,7 +202,7 @@ namespace Mantenimiento.Infraestructure.Persistence
 
             #region TipoTramiteContrato
             // Mapeo Tabla TipoTramiteContrato
-            modelBuilder.Entity<TipoTramiteContrato>(entity =>
+            modelBuilder.Entity<TramiteContrato>(entity =>
             {
                 entity.HasKey(e => e.Id);
                 entity.ToTable("tipo_tramite_contrato", "dbo");
@@ -194,6 +210,193 @@ namespace Mantenimiento.Infraestructure.Persistence
                 entity.Property(e => e.TipoTramite).HasColumnName("tipo_tramite");
             });
             #endregion
+
+            #region dbo.cuenta
+
+            modelBuilder.Entity<CuentaDbo>(entity =>
+            {
+                entity.HasKey(e => e.IdCuenta);
+                entity.ToTable("cuentas", "dbo");
+                entity.Property(e => e.IdCuenta).HasColumnName("id_cuenta");
+                entity.Property(e => e.CodigoCuenta).HasColumnName("codigo_cuenta");
+                entity.Property(e => e.DescripcionCuenta).HasColumnName("descripcion_cuenta");
+                entity.Property(e => e.TipoTramiteId).HasColumnName("tipo_tramite");
+
+                // CAMBIO AQUÍ: Mapeamos la columna que viene del Stored Procedure en lugar de ignorarla
+                entity.Property(e => e.TipoTramiteNombre).HasColumnName("tipo_tramite_nombre");
+            });
+
+            #endregion
+
+            #region ct.cuenta
+            modelBuilder.Entity<CuentaCt>(entity =>
+            {
+                entity.HasKey(e => e.CuentaID);
+                entity.ToTable("cuentas", "ct");
+                entity.Property(e => e.CuentaID).HasColumnName("CuentaID");
+                entity.Property(e => e.IdCuenta).HasColumnName("id_cuenta");
+                entity.Property(e => e.CodigoCuenta).HasColumnName("codigo_cuenta");
+                entity.Property(e => e.DescripcionCuenta).HasColumnName("descripcion_cuenta");
+            });
+            #endregion
+
+            #region TipoTramitePago
+            modelBuilder.Entity<TipoTramitePago>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.ToTable("tipo_tramite_pago", "dbo");
+                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.Tipo).HasColumnName("tipo");
+            });
+            #endregion
+
+            #region CuentaRequisito (Mapeo de tabla, resultado de SP y catálogos)
+
+            // Mapeo de la tabla física relacional
+            modelBuilder.Entity<CuentaRequisito>(entity =>
+            {
+                entity.HasKey(e => e.CuentaRequisitosID);
+                entity.ToTable("relacion_cuenta_requisitos", "ct");
+                entity.Property(e => e.CuentaRequisitosID).HasColumnName("CuentaRequisitosID");
+                entity.Property(e => e.IdCuenta).HasColumnName("id_cuenta");
+                entity.Property(e => e.IdRequisito).HasColumnName("id_requisito");
+                entity.Property(e => e.Estado).HasColumnName("estado");
+            });
+
+            // Entidad sin llave para el catálogo de cuentas de dropdown
+            modelBuilder.Entity<CuentaCatalogo>(entity =>
+            {
+                entity.HasNoKey();
+                entity.Property(e => e.IdCuenta).HasColumnName("id_cuenta");
+                entity.Property(e => e.CodigoCuenta).HasColumnName("codigo_cuenta");
+                entity.Property(e => e.DescripcionCuenta).HasColumnName("descripcion_cuenta");
+            });
+
+            // Entidad sin llave para el catálogo de requisitos de dropdown
+            modelBuilder.Entity<RequisitoCatalogo>(entity =>
+            {
+                entity.HasNoKey();
+                entity.Property(e => e.IdRequisitos).HasColumnName("id_requisitos");
+                entity.Property(e => e.Requisitos).HasColumnName("REQUISITOS");
+            });
+
+            #endregion
+
+            #region ResultadoOperacion
+            modelBuilder.Entity<ResultadoOperacion>(entity =>
+            {
+                entity.HasNoKey();
+                entity.Property(e => e.CodigoResultado).HasColumnName("CodigoResultado");
+                entity.Property(e => e.Mensaje).HasColumnName("Mensaje");
+            });
+            #endregion
+
+            #region CuentaRequisitoConsulta
+            modelBuilder.Entity<CuentaRequisitoConsulta>(entity =>
+            {
+                entity.HasNoKey();
+                entity.Property(e => e.CuentaRequisitosID).HasColumnName("CuentaRequisitosID");
+                entity.Property(e => e.IdCuenta).HasColumnName("id_cuenta");
+                entity.Property(e => e.CodigoCuenta).HasColumnName("codigo_cuenta");
+                entity.Property(e => e.DescripcionCuenta).HasColumnName("descripcion_cuenta");
+                entity.Property(e => e.IdRequisito).HasColumnName("id_requisito");
+                entity.Property(e => e.DescripcionRequisito).HasColumnName("descripcion_requisito");
+                entity.Property(e => e.Estado).HasColumnName("estado");
+            });
+            #endregion
+
+            #region Requisitos
+            modelBuilder.Entity<Requisito>(entity =>
+            {
+                entity.HasKey(e => e.RequisitosID);
+                entity.ToTable("requisitos", "ct");
+                entity.Property(e => e.RequisitosID).HasColumnName("RequisitosID");
+                entity.Property(e => e.IdRequisitos).HasColumnName("id_requisitos");
+                entity.Property(e => e.Requisitos).HasColumnName("REQUISITOS");
+            });
+            #endregion
+
+            #region RequisitoCreacionResultado
+            modelBuilder.Entity<RequisitoCreacionResultado>(entity =>
+            {
+                entity.HasNoKey();
+                entity.Property(e => e.RequisitosID).HasColumnName("RequisitosID");
+                entity.Property(e => e.Mensaje).HasColumnName("Mensaje");
+            });
+            #endregion
+
+            #region dbo.requisitos_contratos
+            modelBuilder.Entity<RequisitoContrato>(entity =>
+            {
+                entity.HasKey(e => e.CodigoRequisito);
+                entity.ToTable("requisitos_contratos", "dbo");
+                entity.Property(e => e.CodigoRequisito).HasColumnName("codigo_requisito");
+                entity.Property(e => e.DescripcionRequisito).HasColumnName("descripcion_requisito");
+                entity.Property(e => e.CodigoDocumentoTre).HasColumnName("codigo_documento_tre");
+            });
+            #endregion
+
+            #region ClasificacionContratos
+            modelBuilder.Entity<ClasificacionContrato>(entity =>
+            {
+                entity.HasKey(e => e.CodigoClasificacion);
+                entity.ToTable("clasificacion_contratos", "dbo");
+                entity.Property(e => e.CodigoClasificacion).HasColumnName("codigo_clasificacion");
+                entity.Property(e => e.ContratoTipo).HasColumnName("contrato_tipo");
+                entity.Property(e => e.TipoOperacion).HasColumnName("tipo_operacion");
+                entity.Property(e => e.ContratoProcesoSeleccion).HasColumnName("contrato_proceso_seleccion");
+            });
+
+            modelBuilder.Entity<ProcesoSeleccionCatalogo>(entity =>
+            {
+                entity.HasNoKey();
+                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.Proceso).HasColumnName("proceso");
+            });
+
+            modelBuilder.Entity<ClasificacionOpcion>(entity =>
+            {
+                entity.HasNoKey();
+                entity.Property(e => e.Valor).HasColumnName("valor");
+                entity.Property(e => e.Texto).HasColumnName("texto");
+            });
+            #endregion
+
+            #region RelacionContratoRequisito
+            modelBuilder.Entity<RelacionContratoRequisito>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.ToTable("relacion_contrato_requisito", "dbo");
+                entity.Property(e => e.Id).HasColumnName("id");
+                entity.Property(e => e.CodigoClasificacion).HasColumnName("codigo_clasificacion");
+                entity.Property(e => e.ContratoTipo).HasColumnName("contrato_tipo");
+                entity.Property(e => e.TipoOperacion).HasColumnName("tipo_operacion");
+                entity.Property(e => e.ContratoProcesoSeleccion).HasColumnName("contrato_proceso_seleccion");
+                entity.Property(e => e.CodigoRequisito).HasColumnName("codigo_requisito");
+                entity.Property(e => e.DescripcionRequisito).HasColumnName("descripcion_requisito");
+                entity.Property(e => e.CodigoDocumentoTre).HasColumnName("codigo_documento_tre");
+            });
+
+            modelBuilder.Entity<CatalogoClasificacionContrato>(entity =>
+            {
+                entity.HasNoKey();
+                entity.Property(e => e.CodigoClasificacion).HasColumnName("codigo_clasificacion");
+                entity.Property(e => e.ContratoTipo).HasColumnName("contrato_tipo");
+                entity.Property(e => e.TipoOperacion).HasColumnName("tipo_operacion");
+                entity.Property(e => e.ContratoProcesoSeleccion).HasColumnName("contrato_proceso_seleccion");
+            });
+
+            modelBuilder.Entity<CatalogoRequisitoContrato>(entity =>
+            {
+                entity.HasNoKey();
+                entity.Property(e => e.CodigoRequisito).HasColumnName("codigo_requisito");
+                entity.Property(e => e.DescripcionRequisito).HasColumnName("descripcion_requisito");
+                entity.Property(e => e.CodigoDocumentoTre).HasColumnName("codigo_documento_tre");
+            });
+            #endregion
+
+
+
         }
     }
 }

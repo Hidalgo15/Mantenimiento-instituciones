@@ -1,8 +1,9 @@
-﻿namespace Mantenimiento.Core.Application.DTOs.SubCapitulo
+﻿using Mantenimiento.Core.Application.DTOs.Auditoria;
+
+namespace Mantenimiento.Core.Application.DTOs.SubCapitulo
 {
-    public record CrearSubCapituloDto
-    {
-        
+    public record CrearSubCapituloDto : AuditableDto
+    { 
         public int IdCapitulo { get; set; }
         public string? CodigoCapitulo { get; set; }
         public string? Capitulo { get; set; }

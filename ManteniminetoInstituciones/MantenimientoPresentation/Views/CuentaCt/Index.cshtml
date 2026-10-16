@@ -1,0 +1,279 @@
+﻿@{
+    ViewData["Title"] = "Catálogo Base de Cuentas (ct.cuentas)";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h4 class="fw-bold mb-0 text-dark">
+                Gestión de
+                Cuentas Requisitos Ordenes de Pago
+            </h4>
+            <small class="text-muted">Gestión de cuentas independientes del esquema ct.cuentas</small>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+            <button type="button" class="btn btn-cgr-primary rounded-pill px-3 py-2" onclick="abrirModalCrear()">
+                <i class="bi bi-plus-circle me-1"></i> Nueva Cuenta
+            </button>
+            <span class="badge text-white py-2 px-3 fs-6 rounded-pill" style="background-color: #0d5493;">
+                <i class="bi bi-journal-bookmark me-1"></i> cuentas ct
+            </span>
+        </div>
+    </div>
+
+    <!-- TARJETA DE FILTROS CON BÚSQUEDA FLOTANTE -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-body p-4 bg-white rounded-3">
+            <div class="row g-3 align-items-end">
+                <div class="col-md-10">
+                    <label for="txtFiltroBusqueda" class="form-label fw-bold text-dark mb-2">
+                        <i class="bi bi-search me-1" style="color: #0d5493;"></i> Buscar por Código o Descripción
+                    </label>
+                    <div class="position-relative">
+                        <div class="input-group">
+                            <input type="text" id="txtFiltroBusqueda" class="form-control rounded-start-pill border-secondary-subtle" 
+                                   placeholder="Escriba para buscar por código o descripción..." 
+                                   oninput="filtrarFiltroFlotante(this)" autocomplete="off" />
+                            <button type="button" class="btn btn-outline-secondary rounded-end-pill px-3" 
+                                    onclick="limpiarFiltroBusqueda()" title="Limpiar búsqueda">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                        <!-- Lista flotante de sugerencias -->
+                        <div id="resultadosFiltroFlotante" class="list-group position-absolute top-100 start-0 w-100 shadow d-none"
+                             style="z-index: 1050; max-height: 15rem; overflow-y: auto; background-color: white;"></div>
+                    </div>
+                </div>
+
+                <div class="col-md-2 d-grid">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill py-2" onclick="limpiarFiltroBusqueda()">
+                        <i class="bi bi-arrow-counterclockwise me-1"></i> Limpiar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR DEL GRID -->
+    <div id="contenedorGrid">
+        <div class="text-center py-5 bg-white rounded-3 border shadow-sm">
+            <div class="spinner-border text-primary mb-3" style="width: 2.5rem; height: 2.5rem;" role="status"></div>
+            <p class="text-muted mb-0 fw-semibold">Cargando cuentas del catálogo...</p>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CREAR / EDITAR CUENTA CT -->
+<div class="modal fade" id="modalCuentaCt" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header text-white px-4 py-3" style="background-color: #0d5493;">
+                <h5 class="modal-title fw-bold" id="modalCuentaCtTitle">
+                    <i class="bi bi-journal-plus me-2"></i> Nueva Cuenta Base
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="formCuentaCt">
+                    <input type="hidden" id="txtCuentaID" value="0" />
+
+                    <div class="mb-3">
+                        <label for="txtIdCuentaFloat" class="form-label fw-bold text-dark">ID Cuenta</label>
+                        <input type="number" step="any" id="txtIdCuentaFloat" class="form-control rounded-3" placeholder="Ej. 1.0" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="txtCodigoCuenta" class="form-label fw-bold text-dark">Código de Cuenta</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0 rounded-start-3"><i class="bi bi-hash text-muted"></i></span>
+                            <input type="text" id="txtCodigoCuenta" class="form-control rounded-end-3" required placeholder="Ej. 1.0.0.0.01" />
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="txtDescripcionCuenta" class="form-label fw-bold text-dark">Descripción de la Cuenta</label>
+                        <textarea id="txtDescripcionCuenta" class="form-control rounded-3" rows="3" required placeholder="Ingrese la descripción..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light border-top-0 px-4 py-3">
+                <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-cgr-primary px-4 rounded-pill" onclick="guardarCuentaCt()">
+                    <i class="bi bi-check-circle me-1"></i> Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let modalCuentaCtBs;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            modalCuentaCtBs = new bootstrap.Modal(document.getElementById('modalCuentaCt'));
+            cargarGridCuentas();
+        });
+
+        function cargarGridCuentas(busqueda = '') {
+            const contenedor = document.getElementById('contenedorGrid');
+            const params = new URLSearchParams({ busqueda: busqueda });
+
+            fetch(`/CuentaCt/ObtenerGrid?${params.toString()}`)
+                .then(res => res.text())
+                .then(html => { contenedor.innerHTML = html; })
+                .catch(err => {
+                    contenedor.innerHTML = `<div class="alert alert-danger text-center py-3 rounded-3">Error al cargar la información.</div>`;
+                });
+        }
+
+        function abrirModalCrear() {
+            document.getElementById('modalCuentaCtTitle').innerHTML = '<i class="bi bi-journal-plus me-2"></i> Nueva Cuenta Base';
+            document.getElementById('txtCuentaID').value = '0';
+            document.getElementById('txtIdCuentaFloat').value = '';
+            document.getElementById('txtCodigoCuenta').value = '';
+            document.getElementById('txtDescripcionCuenta').value = '';
+
+            modalCuentaCtBs.show();
+        }
+
+        function abrirModalEditar(id) {
+            fetch(`/CuentaCt/ObtenerPorId?id=${id}`)
+                .then(res => res.json())
+                .then(res => {
+                    if (res.success) {
+                        const data = res.data;
+                        document.getElementById('modalCuentaCtTitle').innerHTML = '<i class="bi bi-pencil-square me-2"></i> Editar Cuenta Base';
+                        document.getElementById('txtCuentaID').value = data.cuentaID;
+                        document.getElementById('txtIdCuentaFloat').value = data.idCuenta ?? '';
+                        document.getElementById('txtCodigoCuenta').value = data.codigoCuenta || '';
+                        document.getElementById('txtDescripcionCuenta').value = data.descripcionCuenta || '';
+
+                        modalCuentaCtBs.show();
+                    } else {
+                        alert('Error: ' + res.message);
+                    }
+                })
+                .catch(() => alert('Error al obtener la información de la cuenta.'));
+        }
+
+        function guardarCuentaCt() {
+            const cuentaID = parseInt(document.getElementById('txtCuentaID').value) || 0;
+            const esCreacion = cuentaID === 0;
+
+            const idCuentaVal = document.getElementById('txtIdCuentaFloat').value;
+            const idCuenta = idCuentaVal ? parseFloat(idCuentaVal) : null;
+            const codigoCuenta = document.getElementById('txtCodigoCuenta').value.trim();
+            const descripcionCuenta = document.getElementById('txtDescripcionCuenta').value.trim();
+
+            if (!codigoCuenta) {
+                alert('El código de cuenta es obligatorio.');
+                return;
+            }
+
+            if (!descripcionCuenta) {
+                alert('La descripción de la cuenta es obligatoria.');
+                return;
+            }
+
+            let endpoint = esCreacion ? '/CuentaCt/Crear' : '/CuentaCt/Actualizar';
+            let dto = esCreacion 
+                ? { idCuenta, codigoCuenta, descripcionCuenta } 
+                : { cuentaID, idCuenta, codigoCuenta, descripcionCuenta };
+
+            fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dto)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    modalCuentaCtBs.hide();
+                    cargarGridCuentas(document.getElementById('txtFiltroBusqueda').value.trim());
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(() => alert('Ocurrió un error al procesar la solicitud.'));
+        }
+
+        function eliminarCuentaCt(id) {
+            if (!confirm('¿Desea eliminar esta cuenta del catálogo base?')) return;
+
+            fetch(`/CuentaCt/Eliminar?id=${id}`, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        cargarGridCuentas(document.getElementById('txtFiltroBusqueda').value.trim());
+                    } else {
+                        alert('Error al eliminar: ' + data.message);
+                    }
+                })
+                .catch(() => alert('Ocurrió un error al intentar eliminar la cuenta.'));
+        }
+
+        function filtrarFiltroFlotante(input) {
+            const query = input.value.trim().toLowerCase();
+            const contenedorResultados = document.getElementById('resultadosFiltroFlotante');
+            
+            cargarGridCuentas(query);
+
+            contenedorResultados.innerHTML = '';
+            if (!query) {
+                contenedorResultados.classList.add('d-none');
+                return;
+            }
+
+            const filasTabla = document.querySelectorAll('#contenedorGrid table tbody tr');
+            const sugerenciasMap = new Map();
+
+            filasTabla.forEach(tr => {
+                const celdas = tr.querySelectorAll('td');
+                if (celdas.length >= 3) {
+                    const codigo = celdas[1].textContent.trim();
+                    const descripcion = celdas[2].textContent.trim();
+                    const textoCompleto = `${codigo} - ${descripcion}`;
+                    
+                    if (textoCompleto.toLowerCase().includes(query)) {
+                        sugerenciasMap.set(textoCompleto, textoCompleto);
+                    }
+                }
+            });
+
+            const sugerencias = Array.from(sugerenciasMap.values());
+
+            if (sugerencias.length === 0) {
+                contenedorResultados.innerHTML = `<div class="list-group-item text-muted small py-2">Sin coincidencias</div>`;
+            } else {
+                sugerencias.forEach(item => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'list-group-item list-group-item-action small py-2 text-start';
+                    btn.textContent = item;
+                    btn.onclick = () => {
+                        input.value = item.split(' - ')[0];
+                        contenedorResultados.classList.add('d-none');
+                        cargarGridCuentas(input.value.trim());
+                    };
+                    contenedorResultados.appendChild(btn);
+                });
+            }
+            contenedorResultados.classList.remove('d-none');
+        }
+
+        function limpiarFiltroBusqueda() {
+            document.getElementById('txtFiltroBusqueda').value = '';
+            document.getElementById('resultadosFiltroFlotante').classList.add('d-none');
+            cargarGridCuentas();
+        }
+
+        document.addEventListener('click', (e) => {
+            const contenedor = document.getElementById('resultadosFiltroFlotante');
+            const input = document.getElementById('txtFiltroBusqueda');
+            if (contenedor && !contenedor.contains(e.target) && e.target !== input) {
+                contenedor.classList.add('d-none');
+            }
+        });
+    </script>
+}

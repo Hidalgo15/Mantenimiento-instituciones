@@ -1,15 +1,16 @@
-﻿using Mantenimiento.Core.Domain.Entities;
+﻿using Mantenimiento.Core.Application.DTOs.Auditoria;
+using Mantenimiento.Core.Domain.Entities;
 
 namespace Mantenimiento.Core.Application.DTOs.Fondos
 {
-    public record CrearFondoDto
+    public record CrearFondoDto : AuditableDto
     {
 
         public int IdInstitucion { get; set; }
         public string Fondo { get; set; } = string.Empty;
         public string? Descripcion { get; set; } = string.Empty;
         public string? Estructura { get; set; } = string.Empty;
-        public TipoTramiteContrato? TipoTramiteContrato { get; set; } = new TipoTramiteContrato();
+        public TramiteContrato? tipoTramiteContrato { get; set; } = new TramiteContrato();
 
     }
 }

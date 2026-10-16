@@ -1,54 +1,83 @@
 ﻿@using Mantenimiento.Core.Application.DTOs.TipoTramite
-@using Mantenimiento.Core.Application.DTOs.UnidadEjecutora
+@using Mantenimiento.Core.Application.DTOs.Institucion
 
 @{
     ViewData["Title"] = "Gestión de Fondos Especiales";
     var tiposTramite = ViewBag.TiposTramite as List<TipoTramiteDto> ?? new List<TipoTramiteDto>();
-   var instituciones = ViewBag.UnidadEjecutora as IEnumerable<dynamic> ?? Enumerable.Empty<dynamic>();
+    var instituciones = ViewBag.Instituciones as List<InstitucionSeleccionDto> ?? new List<InstitucionSeleccionDto>();
 }
 
-<div class="container-fluid py-2">
+<div class="container-fluid py-3">
     <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
         <div>
             <h4 class="fw-bold mb-0 text-dark">Gestión de Fondos Especiales</h4>
             <small class="text-muted">Administre y consulte los Fondos Especiales institucionales</small>
         </div>
         <div class="d-flex align-items-center gap-2">
-            <button type="button" class="btn btn-cgr-primary rounded-3" onclick="abrirModalCrear()">
+            <button type="button" class="btn btn-cgr-primary rounded-pill px-3 py-2" onclick="abrirModalCrear()">
                 <i class="bi bi-plus-circle me-1"></i> Nuevo Fondo Especial
             </button>
-            <span class="badge text-white py-2 px-3 fs-6" style="background-color: #0d5493;">
+            <span class="badge text-white py-2 px-3 fs-6 rounded-pill" style="background-color: #0d5493;">
                 <i class="bi bi-bank me-1"></i> Institucional
             </span>
         </div>
     </div>
 
+    <!-- TARJETA DE FILTROS CON BÚSQUEDA RÁPIDA -->
     <div class="card border-0 shadow-sm rounded-3 mb-4">
-        <div class="card-body p-3 bg-white rounded-3">
-            <div class="row g-2 align-items-center">
+        <div class="card-body p-4 bg-white rounded-3">
+            <div class="row g-3 align-items-end">
+                <!-- Filtro e Input de Búsqueda por Institución -->
                 <div class="col-md-5">
-                    <select id="filtroDescripcion" class="form-select" onchange="filtrarTabla()">
+                    <label for="filtroInstitucion" class="form-label fw-bold text-dark mb-2">
+                        <i class="bi bi-search me-1" style="color: #0d5493;"></i> Seleccionar / Buscar Institución
+                    </label>
+
+                    <!-- Input de búsqueda en tiempo real con lista desplegable flotante -->
+                    <div class="position-relative mb-2">
+                        <div class="input-group">
+                            <input type="text" id="txtBuscarInstitucion" class="form-control rounded-start-pill border-secondary-subtle"
+                                   placeholder="Buscar institución por nombre o estructura..." aria-label="Buscar institución"
+                                   oninput="filtrarOpcionesSelect(this, 'filtroInstitucion', 'resultadosBusquedaInstitucion')" />
+                            <button type="button" class="btn btn-outline-secondary rounded-end-pill px-3"
+                                    onclick="limpiarBusquedaSelect('txtBuscarInstitucion', 'filtroInstitucion', 'resultadosBusquedaInstitucion')"
+                                    title="Limpiar búsqueda">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                        <!-- Resultados de coincidencia rápida -->
+                        <div id="resultadosBusquedaInstitucion" class="list-group position-absolute top-100 start-0 w-100 shadow d-none"
+                             style="z-index: 1050; max-height: 15rem; overflow-y: auto;" role="listbox"></div>
+                    </div>
+
+                    <!-- Selector Principal -->
+                    <select id="filtroInstitucion" class="form-select rounded-pill border-secondary-subtle" onchange="filtrarTabla()">
                         <option value="">-- Todas las Instituciones --</option>
                         @foreach (var inst in instituciones)
                         {
-                            <option value="@inst.NombreUnidadEjecutora">@inst.NombreUnidadEjecutora</option>
+                            <option value="@inst.Estructura">@inst.Estructura - @inst.UnidadEjecutora</option>
                         }
                     </select>
                 </div>
 
+                <!-- Filtro por Tipo de Trámite -->
                 <div class="col-md-5">
-                    <select id="filtroTipoTramite" class="form-select" onchange="filtrarTabla()">
+                    <label for="filtroTipoTramite" class="form-label fw-bold text-dark mb-2">
+                        <i class="bi bi-funnel me-1" style="color: #0d5493;"></i> Tipo de Trámite
+                    </label>
+                    <select id="filtroTipoTramite" class="form-select rounded-pill border-secondary-subtle" onchange="filtrarTabla()">
                         <option value="">-- Todos los Tipos de Trámite --</option>
                         @foreach (var tramite in tiposTramite)
                         {
-                            <option value="@tramite.TipoTramite">@tramite.TipoTramite</option>
+                            <option value="@tramite.Tipo">@tramite.Tipo</option>
                         }
                         <option value="Pendiente">PENDIENTE</option>
                     </select>
                 </div>
 
+                <!-- Botón Limpiar -->
                 <div class="col-md-2 d-grid">
-                    <button type="button" class="btn btn-outline-secondary rounded-3" onclick="limpiarFiltros()">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill py-2" onclick="limpiarFiltros()">
                         <i class="bi bi-arrow-counterclockwise me-1"></i> Limpiar
                     </button>
                 </div>
@@ -58,16 +87,17 @@
 
     <div id="contenedorGrid">
         <div class="text-center py-5 bg-white rounded-3 border shadow-sm">
-            <div class="spinner-border text-primary mb-3" style="width: 3rem; height: 3rem;" role="status"></div>
+            <div class="spinner-border text-primary mb-3" style="width: 2.5rem; height: 2.5rem;" role="status"></div>
             <p class="text-muted mb-0 fw-semibold">Cargando registros...</p>
         </div>
     </div>
 </div>
 
+<!-- MODAL CREAR / EDITAR FONDO ESPECIAL -->
 <div class="modal fade" id="modalFondo" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow rounded-3">
-            <div class="modal-header text-white" style="background-color: #0d5493;">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header text-white px-4 py-3" style="background-color: #0d5493;">
                 <h5 class="modal-title fw-bold" id="modalFondoTitle">
                     <i class="bi bi-bank-fill me-2"></i> Agregar Fondo Especial
                 </h5>
@@ -80,37 +110,43 @@
                     <div class="mb-3">
                         <label class="form-label fw-bold text-dark">Código / Nombre del Fondo</label>
                         <div class="input-group">
-                            <span class="input-group-text bg-light"><i class="bi bi-hash"></i></span>
-                            <input type="text" id="txtFondo" class="form-control" required placeholder="Ej: 007227" />
+                            <span class="input-group-text bg-light border-end-0 rounded-start-3"><i class="bi bi-hash text-muted"></i></span>
+                            <input type="text" id="txtFondo" class="form-control rounded-end-3" required placeholder="Ej: 007227" />
                         </div>
                     </div>
 
                     <div class="mb-3">
                         <label for="selectInstitucion" class="form-label fw-bold text-dark">Institución</label>
-                        <select id="selectInstitucion" class="form-select">
-                            <option value="0">-- Seleccione una Institución --</option>
+                        <select id="selectInstitucion" class="form-select rounded-3">
+                            <option value="">-- Seleccione una Institución --</option>
                             @foreach (var inst in instituciones)
                             {
-                                <option value="@inst.Id">@inst.NombreUnidadEjecutora</option>
+                                <option value="@inst.Estructura" data-institucion-id="@inst.IdInstitucion">@inst.Estructura - @inst.UnidadEjecutora</option>
                             }
                         </select>
                     </div>
 
+                    <!-- Campo manual para la Descripción -->
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark">Descripción</label>
+                        <textarea id="txtDescripcion" class="form-control rounded-3" rows="2" placeholder="Ingrese la descripción del fondo..."></textarea>
+                    </div>
+
                     <div class="mb-3">
                         <label for="selectTipoTramite" class="form-label fw-bold text-dark">Tipo de Trámite</label>
-                        <select id="selectTipoTramite" class="form-select">
-                            <option value="0">-- Seleccione un Tipo de Trámite --</option>
+                        <select id="selectTipoTramite" class="form-select rounded-3">
+                            <option value="0">-- Seleccione un Tipo de Trámite (Opcional - Por defecto Pendiente) --</option>
                             @foreach (var tramite in tiposTramite)
                             {
-                                <option value="@tramite.Id">@tramite.TipoTramite</option>
+                                <option value="@tramite.Id">@tramite.Tipo</option>
                             }
                         </select>
                     </div>
                 </form>
             </div>
-            <div class="modal-footer bg-light border-top-0 rounded-bottom-3">
-                <button type="button" class="btn btn-outline-secondary px-4 rounded-3" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-cgr-primary px-4 rounded-3" onclick="guardarFondo()">
+            <div class="modal-footer bg-light border-top-0 px-4 py-3">
+                <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-cgr-primary px-4 rounded-pill" onclick="guardarFondo()">
                     <i class="bi bi-check-circle me-1"></i> Guardar
                 </button>
             </div>
@@ -127,11 +163,11 @@
             cargarGridFondos();
         });
 
-        function cargarGridFondos(descripcion = '', tipoTramite = '') {
+        function cargarGridFondos(estructura = '', tipoTramite = '') {
             const contenedor = document.getElementById('contenedorGrid');
-            
+
             const params = new URLSearchParams({
-                descripcion: descripcion,
+                estructura: estructura,
                 tipoTramite: tipoTramite
             });
 
@@ -142,20 +178,78 @@
                 })
                 .catch(err => {
                     contenedor.innerHTML = `
-                        <div class="alert alert-danger text-center py-3">
-                            Error al cargar los datos.
-                        </div>`;
+                                        <div class="alert alert-danger text-center py-3 rounded-3">
+                                            Error al cargar los datos.
+                                        </div>`;
                 });
         }
 
         function filtrarTabla() {
-            const descripcion = document.getElementById('filtroDescripcion').value;
+            const estructura = document.getElementById('filtroInstitucion').value;
             const tipoTramite = document.getElementById('filtroTipoTramite').value;
-            cargarGridFondos(descripcion, tipoTramite);
+            cargarGridFondos(estructura, tipoTramite);
         }
 
+        // Filtra las opciones del select y muestra coincidencias flotantes mientras se escribe
+        function filtrarOpcionesSelect(input, selectId, resultadosId) {
+            const query = input.value.trim().toLowerCase();
+            const select = document.getElementById(selectId);
+            const contenedorResultados = document.getElementById(resultadosId);
+
+            contenedorResultados.innerHTML = '';
+
+            if (!query) {
+                contenedorResultados.classList.add('d-none');
+                return;
+            }
+
+            const opciones = Array.from(select.options).filter(opt => opt.value !== '');
+            const coincidencias = opciones.filter(opt => opt.text.toLowerCase().includes(query));
+
+            if (coincidencias.length === 0) {
+                contenedorResultados.innerHTML = `
+                                    <div class="list-group-item text-muted small py-2">
+                                        Sin coincidencias encontradas
+                                    </div>`;
+            } else {
+                coincidencias.forEach(opt => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'list-group-item list-group-item-action small py-2 text-start';
+                    btn.textContent = opt.text;
+                    btn.onclick = () => {
+                        select.value = opt.value;
+                        input.value = opt.text;
+                        contenedorResultados.classList.add('d-none');
+                        filtrarTabla(); // Dispara la recarga del grid filtrado
+                    };
+                    contenedorResultados.appendChild(btn);
+                });
+            }
+
+            contenedorResultados.classList.remove('d-none');
+        }
+
+        // Limpia el input de búsqueda y restablece el desplegable
+        function limpiarBusquedaSelect(inputId, selectId, resultadosId) {
+            document.getElementById(inputId).value = '';
+            document.getElementById(resultadosId).classList.add('d-none');
+            document.getElementById(resultadosId).innerHTML = '';
+        }
+
+        // Cerrar lista flotante al hacer clic fuera
+        document.addEventListener('click', (e) => {
+            const contenedor = document.getElementById('resultadosBusquedaInstitucion');
+            const input = document.getElementById('txtBuscarInstitucion');
+            if (contenedor && !contenedor.contains(e.target) && e.target !== input) {
+                contenedor.classList.add('d-none');
+            }
+        });
+
+        // Actualiza la función limpiarFiltros para resetear también el campo de texto de búsqueda
         function limpiarFiltros() {
-            document.getElementById('filtroDescripcion').value = '';
+            limpiarBusquedaSelect('txtBuscarInstitucion', 'filtroInstitucion', 'resultadosBusquedaInstitucion');
+            document.getElementById('filtroInstitucion').value = '';
             document.getElementById('filtroTipoTramite').value = '';
             cargarGridFondos();
         }
@@ -164,7 +258,8 @@
             document.getElementById('modalFondoTitle').innerHTML = '<i class="bi bi-plus-circle me-2"></i> Agregar Fondo Especial';
             document.getElementById('txtId').value = '0';
             document.getElementById('txtFondo').value = '';
-            document.getElementById('selectInstitucion').value = '0'; 
+            document.getElementById('selectInstitucion').value = '';
+            document.getElementById('txtDescripcion').value = '';
             document.getElementById('selectTipoTramite').value = '0';
 
             modalFondoBs.show();
@@ -179,7 +274,8 @@
                         document.getElementById('modalFondoTitle').innerHTML = '<i class="bi bi-pencil-square me-2"></i> Editar Fondo Especial';
                         document.getElementById('txtId').value = data.id;
                         document.getElementById('txtFondo').value = data.fondo || '';
-                        document.getElementById('selectInstitucion').value = data.idInstitucion || '0'; 
+                        document.getElementById('selectInstitucion').value = data.estructura || '';
+                        document.getElementById('txtDescripcion').value = data.descripcion || '';
                         document.getElementById('selectTipoTramite').value = data.tipoTramiteContrato?.id || '0';
 
                         modalFondoBs.show();
@@ -195,7 +291,9 @@
         function guardarFondo() {
             const id = parseInt(document.getElementById('txtId').value);
             const fondoText = document.getElementById('txtFondo').value.trim();
-            const idInstitucion = parseInt(document.getElementById('selectInstitucion').value) || 0;
+            const descripcionText = document.getElementById('txtDescripcion').value.trim();
+            const institucionSeleccionada = document.getElementById('selectInstitucion').selectedOptions[0];
+            const idInstitucion = parseInt(institucionSeleccionada?.dataset.institucionId) || 0;
             const tipoTramiteId = parseInt(document.getElementById('selectTipoTramite').value) || 0;
 
             if (!fondoText) {
@@ -208,15 +306,11 @@
                 return;
             }
 
-            if (tipoTramiteId <= 0) {
-                alert('Por favor seleccione un Tipo de Trámite válido.');
-                return;
-            }
-
             const dto = {
                 id: id,
                 idInstitucion: idInstitucion,
                 fondo: fondoText,
+                descripcion: descripcionText,
                 tipoTramiteContrato: {
                     id: tipoTramiteId,
                     tipoTramite: ''
@@ -230,18 +324,19 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dto)
             })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    modalFondoBs.hide();
-                    cargarGridFondos();
-                } else {
-                    alert('Error: ' + data.message);
-                }
-            })
-            .catch(err => {
-                alert('Ocurrió un error al procesar la solicitud.');
-            });
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        modalFondoBs.hide();
+                        // RECARGAR MANTENIENDO LOS FILTROS SELECCIONADOS EN PANTALLA
+                        filtrarTabla();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                })
+                .catch(err => {
+                    alert('Ocurrió un error al procesar la solicitud.');
+                });
         }
 
         function eliminarFondo(id) {
@@ -251,7 +346,8 @@
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        cargarGridFondos();
+                        // RECARGAR MANTENIENDO LOS FILTROS SELECCIONADOS EN PANTALLA
+                        filtrarTabla();
                     } else {
                         alert('Error al eliminar: ' + data.message);
                     }

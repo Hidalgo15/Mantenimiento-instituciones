@@ -1,0 +1,51 @@
+﻿@using Mantenimiento.Core.Application.DTOs.RequisitoContrato
+@model List<RequisitoContratoDto>
+
+@if (Model != null && Model.Any())
+{
+    <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="bg-light text-secondary border-bottom small text-uppercase fw-bold">
+                    <tr>
+                        <th class="py-3 px-3" style="width: 15%;">Código</th>
+                        <th class="py-3 px-3" style="width: 50%;">Descripción del Requisito</th>
+                        <th class="py-3 px-3" style="width: 15%;">Doc.</th>
+                        <th class="py-3 px-3 text-center" style="width: 20%;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody class="border-top-0">
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td class="px-3">
+                                <span class="badge bg-light text-dark border rounded-pill px-3 py-1 font-monospace">@item.CodigoRequisito</span>
+                            </td>
+                            <td class="px-3 fw-medium text-dark">@item.DescripcionRequisito</td>
+                            <td class="px-3 text-secondary">
+                                @(item.CodigoDocumentoTre.HasValue ? item.CodigoDocumentoTre.ToString() : "N/A")
+                            </td>
+                            <td class="px-3 text-center">
+                                <div class="d-inline-flex flex-wrap justify-content-center gap-2">
+                                    <button class="btn btn-sm btn-outline-primary rounded-pill px-3" onclick="abrirModalEditar(@item.CodigoRequisito)">
+                                        <i class="bi bi-pencil-square me-1"></i> Editar
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger rounded-pill px-3" onclick="eliminarRequisito(@item.CodigoRequisito)">
+                                        <i class="bi bi-trash me-1"></i> Eliminar
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-secondary border-0 shadow-sm text-center py-5 rounded-3 mb-0" style="background-color: #f8fafc;">
+        <i class="bi bi-file-earmark-text fs-2 text-secondary d-block mb-2"></i>
+        <span class="fw-semibold text-secondary">No se encontraron requisitos de contratos registrados.</span>
+    </div>
+}

@@ -1,6 +1,8 @@
-﻿namespace Mantenimiento.Core.Application.DTOs.CuentaInstitucion
+﻿using Mantenimiento.Core.Application.DTOs.Auditoria;
+
+namespace Mantenimiento.Core.Application.DTOs.CuentaInstitucion
 {
-    public record ActualizarCuentaInstitucionDto
+    public record ActualizarCuentaInstitucionDto : AuditableDto
     {
         public int Id { get; set; }
         public string InsCodigo { get; set; }

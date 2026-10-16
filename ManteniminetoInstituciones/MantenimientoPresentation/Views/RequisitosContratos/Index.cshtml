@@ -1,0 +1,284 @@
+﻿@{
+    ViewData["Title"] = "Gestión de Requisitos de Contratos";
+}
+
+<div class="container-fluid py-3">
+    <!-- CABECERA SUPERIOR -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h4 class="fw-bold mb-0 text-dark">Gestión de Requisitos de Contratos</h4>
+            <small class="text-muted">Administre y consulte los requisitos y documentos de contratos</small>
+        </div>
+        <span class="badge text-white py-2 px-3 fs-6 rounded-pill" style="background-color: #0d5493;">
+            <i class="bi bi-file-earmark-text me-1"></i> Contratos
+        </span>
+    </div>
+
+    <!-- TARJETA DE FILTRO Y BÚSQUEDA FLOTANTE -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-body p-4 bg-white rounded-3">
+            <div class="row align-items-end g-3">
+                <div class="col-md-9">
+                    <label for="txtFiltroBusqueda" class="form-label fw-bold text-dark mb-2">
+                        <i class="bi bi-search me-1" style="color: #0d5493;"></i> Buscar por Código, Descripción o Código del Documento
+                    </label>
+                    <div class="position-relative">
+                        <div class="input-group">
+                            <input type="text" id="txtFiltroBusqueda" class="form-control rounded-start-pill border-secondary-subtle"
+                                   placeholder="Escriba para buscar requisitos..." 
+                                   oninput="filtrarFiltroFlotante(this)" autocomplete="off" />
+                            <button type="button" class="btn btn-outline-secondary rounded-end-pill px-3"
+                                    onclick="limpiarFiltroBusqueda()" title="Limpiar búsqueda">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                        <!-- Lista flotante de sugerencias -->
+                        <div id="resultadosFiltroFlotante" class="list-group position-absolute top-100 start-0 w-100 shadow d-none"
+                             style="z-index: 1050; max-height: 15rem; overflow-y: auto; background-color: white;"></div>
+                    </div>
+                </div>
+
+                <div class="col-md-3 text-end">
+                    <button type="button" class="btn btn-cgr-primary btn-lg w-100 rounded-pill py-2" onclick="abrirModalCrear()">
+                        <i class="bi bi-plus-circle me-2"></i> Nuevo Requisito
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR DEL GRID -->
+    <div id="contenedorGrid">
+        <div class="text-center py-5 bg-white rounded-3 border shadow-sm">
+            <div class="spinner-border text-primary mb-3" style="width: 2.5rem; height: 2.5rem;" role="status"></div>
+            <p class="text-muted mb-0 fw-semibold">Cargando requisitos de contratos...</p>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CREAR / EDITAR REQUISITO -->
+<div class="modal fade" id="modalRequisito" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header text-white px-4 py-3" style="background-color: #0d5493;">
+                <h5 class="modal-title fw-bold" id="modalRequisitoTitle">
+                    <i class="bi bi-file-earmark-plus me-2"></i> Nuevo Requisito
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="formRequisito">
+                    <input type="hidden" id="txtCodigoRequisito" value="0" />
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark">Descripción del Requisito</label>
+                        <textarea id="txtDescripcionRequisito" class="form-control rounded-3" rows="3" required maxlength="300" placeholder="Ingrese la descripción del requisito..."></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-dark">Código de Documento</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light border-end-0 rounded-start-3"><i class="bi bi-hash text-muted"></i></span>
+                            <input type="number" id="txtCodigoDocumentoTre" class="form-control rounded-end-3" placeholder="Ej: 1024" />
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light border-top-0 px-4 py-3">
+                <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-cgr-primary px-4 rounded-pill" onclick="guardarRequisito()">
+                    <i class="bi bi-check-circle me-1"></i> Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let modalRequisitoBs;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            modalRequisitoBs = new bootstrap.Modal(document.getElementById('modalRequisito'));
+            cargarGridRequisitos();
+        });
+
+        function cargarGridRequisitos(busqueda = '') {
+            const contenedor = document.getElementById('contenedorGrid');
+            const params = new URLSearchParams({ busqueda: busqueda });
+
+            fetch(`/RequisitosContratos/ObtenerGrid?${params.toString()}`)
+                .then(res => res.text())
+                .then(html => {
+                    contenedor.innerHTML = html;
+                })
+                .catch(err => {
+                    contenedor.innerHTML = `
+                        <div class="alert alert-danger border shadow-sm text-center py-4 rounded-3 mb-0">
+                            <i class="bi bi-exclamation-octagon fs-3 d-block mb-2"></i>
+                            <span class="fw-semibold">Error al cargar los datos.</span>
+                        </div>`;
+                });
+        }
+
+        function filtrarFiltroFlotante(input) {
+            const query = input.value.trim().toLowerCase();
+            const contenedorResultados = document.getElementById('resultadosFiltroFlotante');
+            
+            cargarGridRequisitos(query);
+
+            contenedorResultados.innerHTML = '';
+            if (!query) {
+                contenedorResultados.classList.add('d-none');
+                return;
+            }
+
+            const filasTabla = document.querySelectorAll('#contenedorGrid table tbody tr');
+            const sugerenciasMap = new Map();
+
+            filasTabla.forEach(tr => {
+                const celdas = tr.querySelectorAll('td');
+                if (celdas.length >= 3) {
+                    const codigo = celdas[0].textContent.trim();
+                    const descripcion = celdas[1].textContent.trim();
+                    const textoCompleto = `${codigo} - ${descripcion}`;
+                    
+                    if (textoCompleto.toLowerCase().includes(query)) {
+                        sugerenciasMap.set(textoCompleto, textoCompleto);
+                    }
+                }
+            });
+
+            const sugerencias = Array.from(sugerenciasMap.values());
+
+            if (sugerencias.length === 0) {
+                contenedorResultados.innerHTML = `<div class="list-group-item text-muted small py-2">Sin coincidencias</div>`;
+            } else {
+                sugerencias.forEach(item => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'list-group-item list-group-item-action small py-2 text-start';
+                    btn.textContent = item;
+                    btn.onclick = () => {
+                        input.value = item.split(' - ')[0];
+                        contenedorResultados.classList.add('d-none');
+                        cargarGridRequisitos(input.value.trim());
+                    };
+                    contenedorResultados.appendChild(btn);
+                });
+            }
+            contenedorResultados.classList.remove('d-none');
+        }
+
+        function limpiarFiltroBusqueda() {
+            document.getElementById('txtFiltroBusqueda').value = '';
+            document.getElementById('resultadosFiltroFlotante').classList.add('d-none');
+            cargarGridRequisitos();
+        }
+
+        document.addEventListener('click', (e) => {
+            const contenedor = document.getElementById('resultadosFiltroFlotante');
+            const input = document.getElementById('txtFiltroBusqueda');
+            if (contenedor && !contenedor.contains(e.target) && e.target !== input) {
+                contenedor.classList.add('d-none');
+            }
+        });
+
+        function abrirModalCrear() {
+            document.getElementById('modalRequisitoTitle').innerHTML = '<i class="bi bi-file-earmark-plus me-2"></i> Nuevo Requisito';
+            document.getElementById('txtCodigoRequisito').value = '0';
+            document.getElementById('txtDescripcionRequisito').value = '';
+            document.getElementById('txtCodigoDocumentoTre').value = '';
+
+            modalRequisitoBs.show();
+        }
+
+        function abrirModalEditar(id) {
+            fetch(`/RequisitosContratos/ObtenerPorId?id=${id}`)
+                .then(res => res.json())
+                .then(res => {
+                    if (res.success) {
+                        const data = res.data;
+                        document.getElementById('modalRequisitoTitle').innerHTML = '<i class="bi bi-pencil-square me-2"></i> Editar Requisito';
+                        document.getElementById('txtCodigoRequisito').value = data.codigoRequisito;
+                        document.getElementById('txtDescripcionRequisito').value = data.descripcionRequisito || '';
+                        document.getElementById('txtCodigoDocumentoTre').value = data.codigoDocumentoTre ?? '';
+
+                        modalRequisitoBs.show();
+                    } else {
+                        alert('Error: ' + res.message);
+                    }
+                })
+                .catch(() => alert('Error al obtener la información del requisito.'));
+        }
+
+        function guardarRequisito() {
+            const codigoRequisito = parseInt(document.getElementById('txtCodigoRequisito').value) || 0;
+            const descripcionRequisito = document.getElementById('txtDescripcionRequisito').value.trim();
+            const codigoDocTreVal = document.getElementById('txtCodigoDocumentoTre').value;
+            const codigoDocumentoTre = codigoDocTreVal ? parseInt(codigoDocTreVal) : null;
+
+            if (!descripcionRequisito) {
+                alert('La descripción del requisito es obligatoria.');
+                return;
+            }
+
+            const dto = {
+                codigoRequisito: codigoRequisito,
+                descripcionRequisito: descripcionRequisito,
+                codigoDocumentoTre: codigoDocumentoTre
+            };
+
+            const endpoint = codigoRequisito > 0 ? '/RequisitosContratos/Actualizar' : '/RequisitosContratos/Crear';
+
+            fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dto)
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    modalRequisitoBs.hide();
+                    cargarGridRequisitos();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            })
+            .catch(() => alert('Ocurrió un error al procesar la solicitud.'));
+        }
+
+        function eliminarRequisito(id) {
+            if (!confirm('¿Desea eliminar este requisito de contrato?')) return;
+
+            fetch(`/RequisitosContratos/Eliminar?id=${id}`, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        cargarGridRequisitos();
+                    } else {
+                        mostrarAlertaError(data.message);
+                    }
+                })
+                .catch(() => {
+                    mostrarAlertaError('Ocurrió un error de red al intentar eliminar el requisito.');
+                });
+        }
+
+        function mostrarAlertaError(mensaje) {
+            const contenedor = document.getElementById('contenedorGrid');
+            const alertaHtml = `
+                <div class="alert alert-danger border-0 shadow-sm rounded-3 p-3 mb-3 d-flex align-items-center justify-content-between">
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-exclamation-triangle-fill fs-4 me-3 text-danger"></i>
+                        <div>
+                            <h6 class="fw-bold mb-1 text-dark">No se pudo completar la acción</h6>
+                            <p class="text-muted small mb-0">${mensaje}</p>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" onclick="cargarGridRequisitos()" aria-label="Close"></button>
+                </div>`;
+            contenedor.insertAdjacentHTML('afterbegin', alertaHtml);
+        }
+    </script>
+}

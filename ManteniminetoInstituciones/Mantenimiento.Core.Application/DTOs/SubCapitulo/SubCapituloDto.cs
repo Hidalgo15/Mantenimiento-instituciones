@@ -3,7 +3,6 @@ namespace Mantenimiento.Core.Application.DTOs.SubCapitulo
 {
     public record SubCapituloDto
     {
-       
         public int Id { get; set; }
         public int IdCapitulo { get; set; }
         public string? CodigoCapitulo { get; set; }
