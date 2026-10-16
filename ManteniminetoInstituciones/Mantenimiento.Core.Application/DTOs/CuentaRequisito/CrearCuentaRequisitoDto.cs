@@ -1,6 +1,8 @@
-﻿namespace Mantenimiento.Core.Application.DTOs.CuentaRequisito
+﻿using Mantenimiento.Core.Application.DTOs.Auditoria;
+
+namespace Mantenimiento.Core.Application.DTOs.CuentaRequisito
 {
-    public class CrearCuentaRequisitoDto
+    public record CrearCuentaRequisitoDto : AuditableDto
     {
         public double IdCuenta { get; set; }
         public int IdRequisito { get; set; }

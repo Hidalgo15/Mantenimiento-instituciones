@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Mantenimiento.Core.Application.DTOs.Auditoria;
 
 namespace Mantenimiento.Core.Application.DTOs.Cuenta.DboCuentasDTO
 {
-    public record CrearCuentaDto
+    public record CrearCuentaDto : AuditableDto
     {
         public int IdCuentaBase { get; set; } // Representa el id_cuenta de ct.cuentas
         public string? DescripcionCuenta { get; set; } // Opcional (si viene nulo toma la original)

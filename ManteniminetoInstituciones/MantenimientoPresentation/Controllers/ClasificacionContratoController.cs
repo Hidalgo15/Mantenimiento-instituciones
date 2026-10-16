@@ -8,11 +8,13 @@ namespace MantenimientoPresentation.Controllers
     {
         private readonly IClasificacionContratoService _service;
         private readonly ILogger<ClasificacionContratoController> _logger;
+        private readonly ICurrentUserService _currentUserService;
 
-        public ClasificacionContratoController(IClasificacionContratoService service, ILogger<ClasificacionContratoController> logger)
+        public ClasificacionContratoController(IClasificacionContratoService service, ILogger<ClasificacionContratoController> logger, ICurrentUserService currentUserService)
         {
             _service = service;
             _logger = logger;
+            _currentUserService = currentUserService;
         }
 
         public async Task<IActionResult> Index()
@@ -72,6 +74,7 @@ namespace MantenimientoPresentation.Controllers
         {
             try
             {
+                dto.Usuario = _currentUserService.GetUsername();
                 var idGenerado = await _service.CrearAsync(dto);
                 return Json(new { success = true, message = "Clasificación creada exitosamente.", id = idGenerado });
             }
@@ -87,6 +90,7 @@ namespace MantenimientoPresentation.Controllers
         {
             try
             {
+                dto.Usuario = _currentUserService.GetUsername();
                 await _service.ActualizarAsync(dto);
                 return Json(new { success = true, message = "Clasificación actualizada exitosamente." });
             }
@@ -102,6 +106,7 @@ namespace MantenimientoPresentation.Controllers
         {
             try
             {
+                var usuario = _currentUserService.GetUsername();
                 await _service.EliminarAsync(id);
                 return Json(new { success = true, message = "Clasificación eliminada exitosamente." });
             }

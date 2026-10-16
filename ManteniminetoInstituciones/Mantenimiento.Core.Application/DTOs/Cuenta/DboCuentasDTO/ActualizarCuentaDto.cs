@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Mantenimiento.Core.Application.DTOs.Auditoria;
 
 namespace Mantenimiento.Core.Application.DTOs.Cuenta.DboCuentasDTO
 {
-    public record ActualizarCuentaDto
+    public record ActualizarCuentaDto : AuditableDto
     {
         public int IdCuenta { get; set; }
         public string DescripcionCuenta { get; set; } = string.Empty;
