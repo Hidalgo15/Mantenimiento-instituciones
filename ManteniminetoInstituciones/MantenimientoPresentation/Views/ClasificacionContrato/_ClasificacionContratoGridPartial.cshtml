@@ -22,8 +22,8 @@
                             <td class="px-3 fw-bold text-secondary">#@item.CodigoClasificacion</td>
                             <td class="px-3 fw-semibold text-dark">@(item.ContratoTipo ?? "-")</td>
                             <td class="px-3 text-secondary">@(item.TipoOperacion ?? "-")</td>
-                            <td class="px-3">
-                                @if (!string.IsNullOrEmpty(item.ContratoProcesoSeleccion))
+                           <td class="px-3">
+                                @if (!string.IsNullOrEmpty(item.ContratoProcesoSeleccion) && item.ContratoProcesoSeleccion.ToUpper() != "NULL")
                                 {
                                     <span class="badge bg-light text-dark border rounded-pill px-3 py-1">@item.ContratoProcesoSeleccion</span>
                                 }
