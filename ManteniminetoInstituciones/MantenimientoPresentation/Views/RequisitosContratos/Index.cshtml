@@ -16,11 +16,11 @@
 
     <!-- TARJETA DE FILTRO Y BÚSQUEDA FLOTANTE -->
     <div class="card border-0 shadow-sm rounded-3 mb-4">
-        <div class="card-body p-4">
+        <div class="card-body p-4 bg-white rounded-3">
             <div class="row align-items-end g-3">
                 <div class="col-md-9">
                     <label for="txtFiltroBusqueda" class="form-label fw-bold text-dark mb-2">
-                        <i class="bi bi-search me-1" style="color: #0d5493;"></i> Buscar por Código, Descripción o Documento TRE
+                        <i class="bi bi-search me-1" style="color: #0d5493;"></i> Buscar por Código, Descripción o Código del Documento
                     </label>
                     <div class="position-relative">
                         <div class="input-group">
@@ -76,7 +76,7 @@
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label fw-bold text-dark">Código de Documento TRE (Opcional)</label>
+                        <label class="form-label fw-bold text-dark">Código de Documento</label>
                         <div class="input-group">
                             <span class="input-group-text bg-light border-end-0 rounded-start-3"><i class="bi bi-hash text-muted"></i></span>
                             <input type="number" id="txtCodigoDocumentoTre" class="form-control rounded-end-3" placeholder="Ej: 1024" />
@@ -125,7 +125,6 @@
             const query = input.value.trim().toLowerCase();
             const contenedorResultados = document.getElementById('resultadosFiltroFlotante');
             
-            // Actualiza el grid en tiempo real (o puedes comentarlo si solo quieres que filtre al hacer click en la lista)
             cargarGridRequisitos(query);
 
             contenedorResultados.innerHTML = '';
@@ -134,7 +133,6 @@
                 return;
             }
 
-            // Extrae las sugerencias de la tabla actual renderizada
             const filasTabla = document.querySelectorAll('#contenedorGrid table tbody tr');
             const sugerenciasMap = new Map();
 
@@ -162,7 +160,7 @@
                     btn.className = 'list-group-item list-group-item-action small py-2 text-start';
                     btn.textContent = item;
                     btn.onclick = () => {
-                        input.value = item.split(' - ')[0]; // Pone el código o descripción seleccionada
+                        input.value = item.split(' - ')[0];
                         contenedorResultados.classList.add('d-none');
                         cargarGridRequisitos(input.value.trim());
                     };
@@ -178,7 +176,6 @@
             cargarGridRequisitos();
         }
 
-        // Ocultar la lista flotante si se hace clic fuera de ella
         document.addEventListener('click', (e) => {
             const contenedor = document.getElementById('resultadosFiltroFlotante');
             const input = document.getElementById('txtFiltroBusqueda');

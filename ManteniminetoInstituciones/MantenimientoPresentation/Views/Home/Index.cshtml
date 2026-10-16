@@ -135,7 +135,7 @@
                     </div>
                 </div>
 
-                <!-- ACORDEÓN: GESTIÓN DE CUENTAS Y REQUISITOS -->
+                <!-- ACORDEÓN: CONTROL DE REQUISITOS Y SUS CUENTAS -->
                 <div class="accordion custom-nav-accordion shadow-sm rounded-4 overflow-hidden" id="accordionCuentas">
                     <div class="accordion-item border-0">
                         <div class="accordion-header p-3 bg-white d-flex align-items-center justify-content-between">
@@ -168,7 +168,7 @@
                         <div id="collapseCuentas" class="accordion-collapse collapse show" data-bs-parent="#accordionCuentas">
                             <div class="accordion-body bg-light-subtle p-3 border-top">
                                 <div class="nav-tree-wrapper d-flex flex-column gap-2 ms-md-2">
-                                    <!-- Cuentas requisitos ordenes de pago -->
+                                    <!-- Cuentas Requisitos Ordenes de Pago -->
                                     <a asp-controller="CuentaCt" asp-action="Index" class="menu-subitem-link text-decoration-none">
                                         <div class="menu-subitem p-3 bg-white rounded-3 border d-flex align-items-center justify-content-between transition-all">
                                             <div class="d-flex align-items-center gap-3">
@@ -177,14 +177,14 @@
                                                 </div>
                                                 <div>
                                                     <h6 class="fw-semibold mb-0 text-dark">Cuentas Requisitos Ordenes de Pago</h6>
-                                                    <small class="text-muted">Administración y control de cuentas requisitos </small>
+                                                    <small class="text-muted">Administración y control de cuentas requisitos</small>
                                                 </div>
                                             </div>
                                             <span class="subitem-arrow text-muted"><i class="bi bi-chevron-right fs-6"></i></span>
                                         </div>
                                     </a>
 
-                                    <!-- Requisitos -->
+                                    <!-- Requisitos Ordenes de Pago -->
                                     <a asp-controller="Requisito" asp-action="Index" class="menu-subitem-link text-decoration-none">
                                         <div class="menu-subitem p-3 bg-white rounded-3 border d-flex align-items-center justify-content-between transition-all">
                                             <div class="d-flex align-items-center gap-3">
@@ -200,7 +200,7 @@
                                         </div>
                                     </a>
 
-                                    <!-- Relación Cuentas y Requisitos -->
+                                    <!-- Cuentas Por Requisitos Ordenes de Pago -->
                                     <a asp-controller="CuentaRequisito" asp-action="Index" class="menu-subitem-link text-decoration-none">
                                         <div class="menu-subitem p-3 bg-white rounded-3 border d-flex align-items-center justify-content-between transition-all">
                                             <div class="d-flex align-items-center gap-3">
@@ -223,7 +223,7 @@
             </div>
         </div>
 
-        <!-- COLUMNA DERECHA: OTROS CATÁLOGOS -->
+        <!-- COLUMNA DERECHA: OTROS CATÁLOGOS Y GESTIÓN DE CONTRATOS -->
         <div class="col-12 col-lg-6">
             <div class="d-flex align-items-center justify-content-between mb-3">
                 <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
@@ -311,43 +311,91 @@
                     </div>
                 </a>
 
-                  <!-- Requisitos de Contratos -->
-                <a asp-controller="RequisitosContratos" asp-action="Index" class="text-decoration-none">
-                    <div class="card module-card border-0 shadow-sm rounded-4 p-3 transition-all">
-                        <div class="card-body p-0 d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="icon-shape bg-dark text-white rounded-3 shadow-sm">
-                                    <i class="bi bi-person-badge-fill fs-5"></i>
-                                </div>
-                                <div>
-                                    <h6 class="fw-bold text-dark mb-0">Gestion Requisitos de Contratos</h6>
-                                    <small class="text-muted">Configuración y gestión de requisitos</small>
-                                </div>
-                            </div>
-                            <span class="btn btn-light rounded-circle p-2 arrow-btn"><i class="bi bi-arrow-right fs-6"></i></span>
-                           </div>
-                    </div>
-                </a>
-              
-                <!-- Clasificacion Contrato -->
-                <a asp-controller="ClasificacionContrato" asp-action="Index" class="text-decoration-none">
-                    <div class="card module-card border-0 shadow-sm rounded-4 p-3 transition-all">
-                        <div class="card-body p-0 d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center gap-3">
+                <!-- NUEVO ACORDEÓN: GESTIÓN DE CONTRATOS Y REQUISITOS -->
+                <div class="accordion custom-nav-accordion shadow-sm rounded-4 overflow-hidden" id="accordionContratos">
+                    <div class="accordion-item border-0">
+                        <div class="accordion-header p-3 bg-white d-flex align-items-center justify-content-between">
+                            <div class="d-flex align-items-center gap-3 cursor-pointer flex-grow-1 me-2"
+                                 data-bs-toggle="collapse"
+                                 data-bs-target="#collapseContratos"
+                                 aria-expanded="true"
+                                 aria-controls="collapseContratos">
                                 <div class="icon-shape bg-purple text-white rounded-3 shadow-sm">
                                     <i class="bi bi-file-earmark-medical fs-5"></i>
                                 </div>
                                 <div>
-                                    <h6 class="fw-bold text-dark mb-0">Clasificación de Contratos</h6>
-                                    <small class="text-muted">Gestión de clasificaciones de contratos</small>
+                                    <h6 class="fw-bold mb-0 text-dark">Gestión de Contratos y Requisitos</h6>
+                                    <small class="text-muted">Requisitos, clasificaciones y vínculos de contratos</small>
                                 </div>
                             </div>
-                            <span class="btn btn-light rounded-circle p-2 arrow-btn">
-                                <i class="bi bi-arrow-right fs-6"></i>
-                            </span>
+                            <div class="d-flex align-items-center gap-2">
+                                <button class="btn btn-menu-toggle rounded-circle p-2 border-0"
+                                        type="button"
+                                        data-bs-toggle="collapse"
+                                        data-bs-target="#collapseContratos"
+                                        aria-expanded="true"
+                                        aria-controls="collapseContratos"
+                                        aria-label="Desplegar menú">
+                                    <i class="bi bi-chevron-down fs-6 toggle-icon"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="collapseContratos" class="accordion-collapse collapse show" data-bs-parent="#accordionContratos">
+                            <div class="accordion-body bg-light-subtle p-3 border-top">
+                                <div class="nav-tree-wrapper d-flex flex-column gap-2 ms-md-2">
+                                    <!-- Requisitos de Contratos -->
+                                    <a asp-controller="RequisitosContratos" asp-action="Index" class="menu-subitem-link text-decoration-none">
+                                        <div class="menu-subitem p-3 bg-white rounded-3 border d-flex align-items-center justify-content-between transition-all">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div class="sub-icon-shape icon-subtle-blue rounded-3">
+                                                    <i class="bi bi-file-earmark-check-fill fs-5"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="fw-semibold mb-0 text-dark">Requisitos de Contratos</h6>
+                                                    <small class="text-muted">Configuración y gestión de requisitos</small>
+                                                </div>
+                                            </div>
+                                            <span class="subitem-arrow text-muted"><i class="bi bi-chevron-right fs-6"></i></span>
+                                        </div>
+                                    </a>
+
+                                    <!-- Clasificación de Contratos -->
+                                    <a asp-controller="ClasificacionContrato" asp-action="Index" class="menu-subitem-link text-decoration-none">
+                                        <div class="menu-subitem p-3 bg-white rounded-3 border d-flex align-items-center justify-content-between transition-all">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div class="sub-icon-shape icon-subtle-blue rounded-3">
+                                                    <i class="bi bi-tags-fill fs-5"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="fw-semibold mb-0 text-dark">Clasificación de Contratos</h6>
+                                                    <small class="text-muted">Gestión de clasificaciones de contratos</small>
+                                                </div>
+                                            </div>
+                                            <span class="subitem-arrow text-muted"><i class="bi bi-chevron-right fs-6"></i></span>
+                                        </div>
+                                    </a>
+
+                                    <!-- Clasificación Por Contrato -->
+                                    <a asp-controller="RelacionContratoRequisito" asp-action="Index" class="menu-subitem-link text-decoration-none">
+                                        <div class="menu-subitem p-3 bg-white rounded-3 border d-flex align-items-center justify-content-between transition-all">
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div class="sub-icon-shape icon-subtle-blue rounded-3">
+                                                    <i class="bi bi-diagram-3-fill fs-5"></i>
+                                                </div>
+                                                <div>
+                                                    <h6 class="fw-semibold mb-0 text-dark">Clasificación Por Contrato</h6>
+                                                    <small class="text-muted">Vinculación entre clasificaciones y requisitos contractuales</small>
+                                                </div>
+                                            </div>
+                                            <span class="subitem-arrow text-muted"><i class="bi bi-chevron-right fs-6"></i></span>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </a>
+                </div>
 
             </div>
         </div>
@@ -397,6 +445,10 @@
 
     .bg-deep-teal {
         background-color: #0d9488;
+    }
+
+    .bg-purple {
+        background-color: #6b21a8 !important; /* Morado sobrio institucional */
     }
 
     /* Estilo Suave Uniforme para los Árboles */

@@ -12,18 +12,41 @@
             <h4 class="fw-bold mb-0 text-dark">Gestión de Clasificación de Contratos</h4>
             <small class="text-muted">Administre los tipos, operaciones y procesos de selección asociados</small>
         </div>
-        <button type="button" class="btn btn-cgr-primary rounded-pill px-4" onclick="abrirModalCrear()">
-            <i class="bi bi-plus-circle me-1"></i> Nueva Clasificación
-        </button>
+        <span class="badge text-white py-2 px-3 fs-6 rounded-pill" style="background-color: #0d5493;">
+            <i class="bi bi-diagram-3 me-1"></i> Contratos
+        </span>
     </div>
 
-    <!-- Filtros -->
+    <!-- TARJETA DE FILTROS Y BÚSQUEDA FLOTANTE -->
     <div class="card border-0 shadow-sm rounded-3 mb-4">
-        <div class="card-body p-4">
+        <div class="card-body p-4 bg-white rounded-3">
             <div class="row align-items-end g-3">
+                <!-- Buscador con lista flotante -->
+                <div class="col-md-12 mb-2">
+                    <label for="txtFiltroBusqueda" class="form-label fw-bold text-dark mb-2">
+                        <i class="bi bi-search me-1" style="color: #0d5493;"></i> Buscar por Tipo de Contrato, Operación o Proceso
+                    </label>
+                    <div class="position-relative">
+                        <div class="input-group">
+                            <input type="text" id="txtFiltroBusqueda" class="form-control rounded-start-pill border-secondary-subtle" 
+                                   placeholder="Escriba para buscar clasificaciones..." 
+                                   oninput="filtrarFiltroFlotante(this)" autocomplete="off" />
+                            <button type="button" class="btn btn-outline-secondary rounded-end-pill px-3" 
+                                    onclick="limpiarFiltroBusqueda()" title="Limpiar búsqueda">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                        <!-- Lista flotante de sugerencias -->
+                        <div id="resultadosFiltroFlotante" class="list-group position-absolute top-100 start-0 w-100 shadow d-none"
+                             style="z-index: 1050; max-height: 15rem; overflow-y: auto; background-color: white;"></div>
+                    </div>
+                </div>
+
                 <div class="col-md-4">
-                    <label class="form-label fw-bold text-dark mb-2">Tipo de Contrato</label>
-                    <select id="filtroContratoTipo" class="form-select rounded-pill" onchange="cargarGrid()">
+                    <label class="form-label fw-bold text-dark mb-2">
+                        <i class="bi bi-funnel me-1" style="color: #0d5493;"></i> Tipo de Contrato
+                    </label>
+                    <select id="filtroContratoTipo" class="form-select rounded-pill border-secondary-subtle" onchange="cargarGrid()">
                         <option value="">-- Todos --</option>
                         @foreach (var item in contratoTipos)
                         {
@@ -32,8 +55,10 @@
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label fw-bold text-dark mb-2">Tipo de Operación</label>
-                    <select id="filtroTipoOperacion" class="form-select rounded-pill" onchange="cargarGrid()">
+                    <label class="form-label fw-bold text-dark mb-2">
+                        <i class="bi bi-funnel me-1" style="color: #0d5493;"></i> Tipo de Operación
+                    </label>
+                    <select id="filtroTipoOperacion" class="form-select rounded-pill border-secondary-subtle" onchange="cargarGrid()">
                         <option value="">-- Todos --</option>
                         @foreach (var item in tiposOperacion)
                         {
@@ -42,8 +67,10 @@
                     </select>
                 </div>
                 <div class="col-md-3">
-                    <label class="form-label fw-bold text-dark mb-2">Proceso de Selección</label>
-                    <select id="filtroProceso" class="form-select rounded-pill" onchange="cargarGrid()">
+                    <label class="form-label fw-bold text-dark mb-2">
+                        <i class="bi bi-funnel me-1" style="color: #0d5493;"></i> Proceso de Selección
+                    </label>
+                    <select id="filtroProceso" class="form-select rounded-pill border-secondary-subtle" onchange="cargarGrid()">
                         <option value="">-- Todos --</option>
                         @foreach (var item in procesosSeleccion)
                         {
@@ -52,7 +79,7 @@
                     </select>
                 </div>
                 <div class="col-md-2 text-end">
-                    <button type="button" class="btn btn-outline-secondary w-100 rounded-pill" onclick="limpiarFiltros()">
+                    <button type="button" class="btn btn-outline-secondary w-100 rounded-pill py-2" onclick="limpiarFiltros()">
                         <i class="bi bi-arrow-counterclockwise me-1"></i> Limpiar
                     </button>
                 </div>
@@ -60,10 +87,17 @@
         </div>
     </div>
 
+    <!-- Botón Nueva Clasificación -->
+    <div class="mb-3 text-end">
+        <button type="button" class="btn btn-cgr-primary rounded-pill px-4 py-2" onclick="abrirModalCrear()">
+            <i class="bi bi-plus-circle me-1"></i> Nueva Clasificación
+        </button>
+    </div>
+
     <!-- Contenedor Grid -->
     <div id="contenedorGrid">
         <div class="text-center py-5 bg-white rounded-3 border shadow-sm">
-            <div class="spinner-border text-primary mb-3" role="status"></div>
+            <div class="spinner-border text-primary mb-3" style="width: 2.5rem; height: 2.5rem;" role="status"></div>
             <p class="text-muted mb-0 fw-semibold">Cargando clasificaciones...</p>
         </div>
     </div>
@@ -105,7 +139,9 @@
             </div>
             <div class="modal-footer bg-light border-top-0 px-4 py-3">
                 <button type="button" class="btn btn-outline-secondary px-4 rounded-pill" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-cgr-primary px-4 rounded-pill" onclick="guardarClasificacion()">Guardar</button>
+                <button type="button" class="btn btn-cgr-primary px-4 rounded-pill" onclick="guardarClasificacion()">
+                    <i class="bi bi-check-circle me-1"></i> Guardar
+                </button>
             </div>
         </div>
     </div>
@@ -119,22 +155,120 @@
             cargarGrid();
         });
 
-        function cargarGrid() {
+        function cargarGrid(busquedaFiltro = '') {
             const contratoTipo = document.getElementById('filtroContratoTipo').value;
             const tipoOperacion = document.getElementById('filtroTipoOperacion').value;
             const contratoProcesoSeleccion = document.getElementById('filtroProceso').value;
+            const busqueda = busquedaFiltro !== '' ? busquedaFiltro : document.getElementById('txtFiltroBusqueda').value.trim();
 
-            const params = new URLSearchParams({ contratoTipo, tipoOperacion, contratoProcesoSeleccion });
+            const params = new URLSearchParams({ contratoTipo, tipoOperacion, contratoProcesoSeleccion, busqueda });
 
             fetch(`/ClasificacionContrato/ObtenerGrid?${params.toString()}`)
                 .then(res => res.text())
                 .then(html => document.getElementById('contenedorGrid').innerHTML = html);
         }
 
+        function filtrarFiltroFlotante(input) {
+            // Función que busca en los tres selectores (tipo contrato, tipo operación, proceso)
+            // basándose en sus opciones disponibles
+            const normalizar = texto => texto
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLocaleLowerCase();
+
+            const query = normalizar(input.value.trim());
+            const contenedorResultados = document.getElementById('resultadosFiltroFlotante');
+            contenedorResultados.replaceChildren();
+
+            if (!query) {
+                contenedorResultados.classList.add('d-none');
+                return;
+            }
+
+            const sugerenciasMap = new Map();
+
+            // Buscar en las opciones de los tres selectores
+            const selectContratoTipo = document.getElementById('filtroContratoTipo');
+            Array.from(selectContratoTipo?.options || []).forEach(opt => {
+                if (opt.value && normalizar(opt.text).includes(query)) {
+                    sugerenciasMap.set(opt.text, { texto: opt.text, tipo: 'contratoTipo', valor: opt.value });
+                }
+            });
+
+            const selectTipoOperacion = document.getElementById('filtroTipoOperacion');
+            Array.from(selectTipoOperacion?.options || []).forEach(opt => {
+                if (opt.value && normalizar(opt.text).includes(query)) {
+                    sugerenciasMap.set(opt.text, { texto: opt.text, tipo: 'tipoOperacion', valor: opt.value });
+                }
+            });
+
+            const selectProceso = document.getElementById('filtroProceso');
+            Array.from(selectProceso?.options || []).forEach(opt => {
+                if (opt.value && normalizar(opt.text).includes(query)) {
+                    sugerenciasMap.set(opt.text, { texto: opt.text, tipo: 'proceso', valor: opt.value });
+                }
+            });
+
+            const sugerencias = Array.from(sugerenciasMap.values()).slice(0, 50);
+
+            if (sugerencias.length === 0) {
+                const vacio = document.createElement('div');
+                vacio.className = 'list-group-item text-muted small';
+                vacio.textContent = 'No se encontraron coincidencias.';
+                contenedorResultados.appendChild(vacio);
+            } else {
+                sugerencias.forEach(item => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'list-group-item list-group-item-action text-start';
+                    btn.textContent = item.texto;
+                    btn.addEventListener('click', () => {
+                        // Aplicar el filtro en el selector correspondiente
+                        if (item.tipo === 'contratoTipo') {
+                            document.getElementById('filtroContratoTipo').value = item.valor;
+                        } else if (item.tipo === 'tipoOperacion') {
+                            document.getElementById('filtroTipoOperacion').value = item.valor;
+                        } else if (item.tipo === 'proceso') {
+                            document.getElementById('filtroProceso').value = item.valor;
+                        }
+                        input.value = item.texto;
+                        contenedorResultados.classList.add('d-none');
+                        cargarGrid();
+                    });
+                    contenedorResultados.appendChild(btn);
+                });
+
+                if (sugerenciasMap.size > 50) {
+                    const aviso = document.createElement('div');
+                    aviso.className = 'list-group-item text-muted small';
+                    aviso.textContent = `Se muestran 50 de ${sugerenciasMap.size} coincidencias. Escriba más para acotar la búsqueda.`;
+                    contenedorResultados.appendChild(aviso);
+                }
+            }
+
+            contenedorResultados.classList.remove('d-none');
+        }
+
+        function limpiarFiltroBusqueda() {
+            document.getElementById('txtFiltroBusqueda').value = '';
+            document.getElementById('resultadosFiltroFlotante').classList.add('d-none');
+            input.focus();
+        }
+
+        document.addEventListener('click', (e) => {
+            const contenedor = document.getElementById('resultadosFiltroFlotante');
+            const input = document.getElementById('txtFiltroBusqueda');
+            if (contenedor && !contenedor.contains(e.target) && e.target !== input) {
+                contenedor.classList.add('d-none');
+            }
+        });
+
         function limpiarFiltros() {
             document.getElementById('filtroContratoTipo').value = '';
             document.getElementById('filtroTipoOperacion').value = '';
             document.getElementById('filtroProceso').value = '';
+            document.getElementById('txtFiltroBusqueda').value = '';
+            document.getElementById('resultadosFiltroFlotante').classList.add('d-none');
             cargarGrid();
         }
 
