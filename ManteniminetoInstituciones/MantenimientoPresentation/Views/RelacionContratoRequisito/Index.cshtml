@@ -16,11 +16,31 @@
         </span>
     </div>
 
-    <!-- Filtros -->
+    <!-- TARJETA DE FILTROS Y BÚSQUEDA FLOTANTE -->
     <div class="card border-0 shadow-sm rounded-3 mb-4">
         <div class="card-body p-4 bg-white rounded-3">
             <div class="row align-items-end g-3">
-                <!-- Filtro Clasificación -->
+                <!-- Buscador con lista flotante (Idéntico al ejemplo que funciona) -->
+                <div class="col-md-12 mb-2">
+                    <label for="txtFiltroBusqueda" class="form-label fw-bold text-dark mb-2">
+                        <i class="bi bi-search me-1" style="color: #0d5493;"></i> Buscar por Tipo de Contrato o Requisito
+                    </label>
+                    <div class="position-relative">
+                        <div class="input-group">
+                            <input type="text" id="txtFiltroBusqueda" class="form-control rounded-start-pill border-secondary-subtle" 
+                                   placeholder="Escriba para buscar..." 
+                                   oninput="filtrarFiltroFlotante(this)" autocomplete="off" />
+                            <button type="button" class="btn btn-outline-secondary rounded-end-pill px-3" 
+                                    onclick="limpiarFiltroBusqueda()" title="Limpiar búsqueda">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                        <!-- Lista flotante de sugerencias -->
+                        <div id="resultadosFiltroFlotante" class="list-group position-absolute top-100 start-0 w-100 shadow d-none"
+                             style="z-index: 1050; max-height: 15rem; overflow-y: auto; background-color: white;"></div>
+                    </div>
+                </div>
+
                 <div class="col-md-5">
                     <label class="form-label fw-bold text-dark mb-2">
                         <i class="bi bi-funnel me-1" style="color: #0d5493;"></i> Clasificación de Contrato
@@ -29,16 +49,10 @@
                         <option value="">-- Todas las clasificaciones --</option>
                         @foreach (var c in clasificaciones)
                         {
-                            var textoOpcion = !string.IsNullOrEmpty(c.ContratoProcesoSeleccion) 
-                                ? $"{c.ContratoTipo} - {c.TipoOperacion} ({c.ContratoProcesoSeleccion})" 
-                                : $"{c.ContratoTipo} - {c.TipoOperacion}";
-
-                            <option value="@c.CodigoClasificacion">@textoOpcion</option>
+                            <option value="@c.CodigoClasificacion">@c.ContratoTipo - @c.TipoOperacion (@c.ContratoProcesoSeleccion)</option>
                         }
                     </select>
                 </div>
-
-                <!-- Filtro Requisito -->
                 <div class="col-md-5">
                     <label class="form-label fw-bold text-dark mb-2">
                         <i class="bi bi-funnel me-1" style="color: #0d5493;"></i> Requisito
@@ -51,8 +65,6 @@
                         }
                     </select>
                 </div>
-
-                <!-- Botón Limpiar -->
                 <div class="col-md-2 text-end">
                     <button type="button" class="btn btn-outline-secondary w-100 rounded-pill py-2" onclick="limpiarFiltros()">
                         <i class="bi bi-arrow-counterclockwise me-1"></i> Limpiar
@@ -96,11 +108,7 @@
                             <option value="">-- Seleccione una clasificación --</option>
                             @foreach (var c in clasificaciones)
                             {
-                                var textoOpcion = !string.IsNullOrEmpty(c.ContratoProcesoSeleccion) 
-                                    ? $"{c.ContratoTipo} - {c.TipoOperacion} ({c.ContratoProcesoSeleccion})" 
-                                    : $"{c.ContratoTipo} - {c.TipoOperacion}";
-
-                                <option value="@c.CodigoClasificacion">@textoOpcion</option>
+                                <option value="@c.CodigoClasificacion">@c.ContratoTipo - @c.TipoOperacion (@c.ContratoProcesoSeleccion)</option>
                             }
                         </select>
                     </div>
@@ -135,20 +143,107 @@
             cargarGrid();
         });
 
-        function cargarGrid() {
+        function cargarGrid(busqueda = '') {
             const codigoClasificacion = document.getElementById('filtroCodigoClasificacion').value;
             const codigoRequisito = document.getElementById('filtroCodigoRequisito').value;
 
-            const params = new URLSearchParams({ codigoClasificacion, codigoRequisito });
+            const params = new URLSearchParams({ codigoClasificacion, codigoRequisito, busqueda });
 
             fetch(`/RelacionContratoRequisito/ObtenerGrid?${params.toString()}`)
                 .then(res => res.text())
                 .then(html => document.getElementById('contenedorGrid').innerHTML = html);
         }
 
+        // Función de búsqueda flotante robusta basada en las opciones de los selectores
+        function filtrarFiltroFlotante(input) {
+            const normalizar = texto => texto
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLocaleLowerCase();
+
+            const query = normalizar(input.value.trim());
+            const contenedorResultados = document.getElementById('resultadosFiltroFlotante');
+            contenedorResultados.replaceChildren();
+
+            if (!query) {
+                contenedorResultados.classList.add('d-none');
+                return;
+            }
+
+            // Recopilamos sugerencias directamente de los elementos del DOM disponibles en los selects (Clasificaciones y Requisitos)
+            const sugerenciasMap = new Map();
+
+            const selectClasificacion = document.getElementById('filtroCodigoClasificacion');
+            Array.from(selectClasificacion?.options || []).forEach(opt => {
+                if (opt.value && normalizar(opt.text).includes(query)) {
+                    sugerenciasMap.set(opt.text, { texto: opt.text, tipo: 'clasificacion', valor: opt.value });
+                }
+            });
+
+            const selectRequisito = document.getElementById('filtroCodigoRequisito');
+            Array.from(selectRequisito?.options || []).forEach(opt => {
+                if (opt.value && normalizar(opt.text).includes(query)) {
+                    sugerenciasMap.set(opt.text, { texto: opt.text, tipo: 'requisito', valor: opt.value });
+                }
+            });
+
+            const sugerencias = Array.from(sugerenciasMap.values()).slice(0, 50);
+
+            if (sugerencias.length === 0) {
+                const vacio = document.createElement('div');
+                vacio.className = 'list-group-item text-muted small';
+                vacio.textContent = 'No se encontraron coincidencias.';
+                contenedorResultados.appendChild(vacio);
+            } else {
+                sugerencias.forEach(item => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'list-group-item list-group-item-action text-start';
+                    btn.textContent = item.texto;
+                    btn.addEventListener('click', () => {
+                        // Aplicar el filtro en el selector correspondiente
+                        if (item.tipo === 'clasificacion') {
+                            document.getElementById('filtroCodigoClasificacion').value = item.valor;
+                        } else if (item.tipo === 'requisito') {
+                            document.getElementById('filtroCodigoRequisito').value = item.valor;
+                        }
+                        input.value = item.texto;
+                        contenedorResultados.classList.add('d-none');
+                        cargarGrid();
+                    });
+                    contenedorResultados.appendChild(btn);
+                });
+
+                if (sugerenciasMap.size > 50) {
+                    const aviso = document.createElement('div');
+                    aviso.className = 'list-group-item text-muted small';
+                    aviso.textContent = `Se muestran 50 de ${sugerenciasMap.size} coincidencias. Escriba más para acotar la búsqueda.`;
+                    contenedorResultados.appendChild(aviso);
+                }
+            }
+
+            contenedorResultados.classList.remove('d-none');
+        }
+
+        function limpiarFiltroBusqueda() {
+            document.getElementById('txtFiltroBusqueda').value = '';
+            document.getElementById('resultadosFiltroFlotante').classList.add('d-none');
+            document.getElementById('txtFiltroBusqueda').focus();
+        }
+
+        document.addEventListener('click', (e) => {
+            const contenedor = document.getElementById('resultadosFiltroFlotante');
+            const input = document.getElementById('txtFiltroBusqueda');
+            if (contenedor && !contenedor.contains(e.target) && e.target !== input) {
+                contenedor.classList.add('d-none');
+            }
+        });
+
         function limpiarFiltros() {
             document.getElementById('filtroCodigoClasificacion').value = '';
             document.getElementById('filtroCodigoRequisito').value = '';
+            document.getElementById('txtFiltroBusqueda').value = '';
+            document.getElementById('resultadosFiltroFlotante').classList.add('d-none');
             cargarGrid();
         }
 
