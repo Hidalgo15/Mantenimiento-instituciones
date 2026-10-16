@@ -8,11 +8,13 @@ namespace MantenimientoPresentation.Controllers
     {
         private readonly ICuentaRequisitoService _service;
         private readonly ILogger<CuentaRequisitoController> _logger;
+        private readonly ICurrentUserService _currentUserService;
 
-        public CuentaRequisitoController(ICuentaRequisitoService service, ILogger<CuentaRequisitoController> logger)
+        public CuentaRequisitoController(ICuentaRequisitoService service, ILogger<CuentaRequisitoController> logger, ICurrentUserService currentUserService)
         {
             _service = service;
             _logger = logger;
+            _currentUserService = currentUserService;
         }
 
         public async Task<IActionResult> Index()
@@ -48,6 +50,7 @@ namespace MantenimientoPresentation.Controllers
 
             try
             {
+                dto.Usuario = _currentUserService.GetUsername();
                 var resultado = await _service.AsignarAsync(dto);
                 return Json(new { success = resultado.CodigoResultado == 1, message = resultado.Mensaje });
             }
@@ -66,6 +69,7 @@ namespace MantenimientoPresentation.Controllers
 
             try
             {
+                dto.Usuario = _currentUserService.GetUsername();
                 var resultado = await _service.ActualizarAsync(dto);
                 return Json(new { success = resultado.CodigoResultado == 1, message = resultado.Mensaje });
             }
@@ -81,6 +85,7 @@ namespace MantenimientoPresentation.Controllers
         {
             try
             {
+                var usuario = _currentUserService.GetUsername();
                 var resultado = await _service.EliminarAsync(cuentaRequisitosID);
                 return Json(new { success = resultado.CodigoResultado == 1, message = resultado.Mensaje });
             }

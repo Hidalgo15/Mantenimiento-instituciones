@@ -9,13 +9,16 @@ namespace MantenimientoPresentation.Controllers
     {
         private readonly ICuentaMapeoService _cuentaMapeoService;
         private readonly ITipoTramitePagoService _tipoTramitePagoService; // Servicio que lista dbo.tipo_tramite_pago
+        private readonly ICurrentUserService _currentUserService;
 
         public CuentaMapeoController(
             ICuentaMapeoService cuentaMapeoService,
-            ITipoTramitePagoService tipoTramitePagoService)
+            ITipoTramitePagoService tipoTramitePagoService,
+            ICurrentUserService currentUserService)
         {
             _cuentaMapeoService = cuentaMapeoService;
             _tipoTramitePagoService = tipoTramitePagoService;
+            _currentUserService = currentUserService;
         }
 
         [HttpGet("")]
@@ -68,6 +71,7 @@ namespace MantenimientoPresentation.Controllers
 
             try
             {
+                dto.Usuario = _currentUserService.GetUsername();
                 await _cuentaMapeoService.CrearCuentaAsync(dto);
                 return Json(new { success = true, message = "Cuenta registrada exitosamente." });
             }
@@ -91,6 +95,7 @@ namespace MantenimientoPresentation.Controllers
 
             try
             {
+                dto.Usuario = _currentUserService.GetUsername();
                 await _cuentaMapeoService.ActualizarCuentaAsync(dto);
                 return Json(new { success = true, message = "Cuenta actualizada exitosamente." });
             }
@@ -105,6 +110,7 @@ namespace MantenimientoPresentation.Controllers
         {
             try
             {
+                var usuario = _currentUserService.GetUsername();
                 await _cuentaMapeoService.EliminarCuentaAsync(id);
                 return Json(new { success = true, message = "Cuenta eliminada exitosamente." });
             }

@@ -1,5 +1,6 @@
 ﻿using Mantenimiento.Core.Application.DTOs.RelacionContratoRequisito;
 using Mantenimiento.Core.Application.InterfaceServices;
+using MantenimientoPresentation.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MantenimientoPresentation.Controllers
@@ -8,11 +9,13 @@ namespace MantenimientoPresentation.Controllers
     {
         private readonly IRelacionContratoRequisitoService _service;
         private readonly ILogger<RelacionContratoRequisitoController> _logger;
+        private readonly ICurrentUserService _currentUserService;
 
-        public RelacionContratoRequisitoController(IRelacionContratoRequisitoService service, ILogger<RelacionContratoRequisitoController> logger)
+        public RelacionContratoRequisitoController(IRelacionContratoRequisitoService service, ILogger<RelacionContratoRequisitoController> logger, ICurrentUserService currentUserService)
         {
             _service = service;
             _logger = logger;
+            _currentUserService = currentUserService;
         }
 
         public async Task<IActionResult> Index()
@@ -52,6 +55,7 @@ namespace MantenimientoPresentation.Controllers
         {
             try
             {
+                dto.Usuario = _currentUserService.GetUsername();
                 var resultado = await _service.AsignarAsync(dto);
                 return Json(new { success = resultado.CodigoResultado == 1, message = resultado.Mensaje });
             }
@@ -67,6 +71,7 @@ namespace MantenimientoPresentation.Controllers
         {
             try
             {
+                dto.Usuario = _currentUserService.GetUsername();
                 var resultado = await _service.ActualizarAsync(dto);
                 return Json(new { success = resultado.CodigoResultado == 1, message = resultado.Mensaje });
             }
@@ -82,6 +87,7 @@ namespace MantenimientoPresentation.Controllers
         {
             try
             {
+                var usuario = _currentUserService.GetUsername();
                 var resultado = await _service.EliminarAsync(id);
                 return Json(new { success = resultado.CodigoResultado == 1, message = resultado.Mensaje });
             }

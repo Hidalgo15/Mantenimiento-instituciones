@@ -1,4 +1,6 @@
-﻿namespace Mantenimiento.Core.Application.DTOs.RelacionContratoRequisito
+﻿using Mantenimiento.Core.Application.DTOs.Auditoria;
+
+namespace Mantenimiento.Core.Application.DTOs.RelacionContratoRequisito
 {
     public record RelacionContratoRequisitoDto
     {
@@ -12,13 +14,13 @@
         public int? CodigoDocumentoTre { get; set; }
     }
 
-    public record CrearRelacionContratoRequisitoDto
+    public record CrearRelacionContratoRequisitoDto : AuditableDto
     {
         public int CodigoClasificacion { get; set; }
         public int CodigoRequisito { get; set; }
     }
 
-    public record ActualizarRelacionContratoRequisitoDto
+    public record ActualizarRelacionContratoRequisitoDto : AuditableDto
     {
         public int Id { get; set; }
         public int CodigoClasificacion { get; set; }

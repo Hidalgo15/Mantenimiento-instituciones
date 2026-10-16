@@ -1,6 +1,8 @@
-﻿namespace Mantenimiento.Core.Application.DTOs.Cuenta.CtCuentasDTO
+﻿using Mantenimiento.Core.Application.DTOs.Auditoria;
+
+namespace Mantenimiento.Core.Application.DTOs.Cuenta.CtCuentasDTO
 {
-    public record CrearCuentaCtDto
+    public record CrearCuentaCtDto : AuditableDto
     { 
         public double? IdCuenta { get; set; }
         public string? CodigoCuenta { get; set; }

@@ -1,5 +1,6 @@
 ﻿using Mantenimiento.Core.Application.DTOs.Requisito;
 using Mantenimiento.Core.Application.InterfaceServices;
+using MantenimientoPresentation.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MantenimientoPresentation.Controllers
@@ -8,11 +9,13 @@ namespace MantenimientoPresentation.Controllers
     {
         private readonly IRequisitoService _service;
         private readonly ILogger<RequisitoController> _logger;
+        private readonly ICurrentUserService _currentUserService;
 
-        public RequisitoController(IRequisitoService service, ILogger<RequisitoController> logger)
+        public RequisitoController(IRequisitoService service, ILogger<RequisitoController> logger, ICurrentUserService currentUserService)
         {
             _service = service;
             _logger = logger;
+            _currentUserService = currentUserService;
         }
 
         public IActionResult Index()
@@ -44,6 +47,7 @@ namespace MantenimientoPresentation.Controllers
 
             try
             {
+                dto.Usuario = _currentUserService.GetUsername();
                 var resultado = await _service.CrearAsync(dto);
                 return Json(new { success = resultado.CodigoResultado == 1, message = resultado.Mensaje });
             }
@@ -62,6 +66,7 @@ namespace MantenimientoPresentation.Controllers
 
             try
             {
+                dto.Usuario = _currentUserService.GetUsername();
                 var resultado = await _service.ActualizarAsync(dto);
                 return Json(new { success = resultado.CodigoResultado == 1, message = resultado.Mensaje });
             }
@@ -77,6 +82,7 @@ namespace MantenimientoPresentation.Controllers
         {
             try
             {
+                var usuario = _currentUserService.GetUsername();
                 var resultado = await _service.EliminarAsync(requisitosID);
                 return Json(new { success = resultado.CodigoResultado == 1, message = resultado.Mensaje });
             }

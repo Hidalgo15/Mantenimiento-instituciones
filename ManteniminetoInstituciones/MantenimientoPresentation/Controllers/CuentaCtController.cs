@@ -7,10 +7,12 @@ namespace MantenimientoPresentation.Controllers
     public class CuentaCtController : Controller
     {
         private readonly ICuentaCtService _cuentaCtService;
+        private readonly ICurrentUserService _currentUserService;
 
-        public CuentaCtController(ICuentaCtService cuentaCtService)
+        public CuentaCtController(ICuentaCtService cuentaCtService, ICurrentUserService currentUserService)
         {
             _cuentaCtService = cuentaCtService;
+            _currentUserService = currentUserService;
         }
 
         [HttpGet]
@@ -48,6 +50,7 @@ namespace MantenimientoPresentation.Controllers
         {
             try
             {
+                dto.Usuario = _currentUserService.GetUsername();
                 await _cuentaCtService.CrearCuentaAsync(dto);
                 return Json(new { success = true, message = "Cuenta creada exitosamente." });
             }
@@ -62,6 +65,7 @@ namespace MantenimientoPresentation.Controllers
         {
             try
             {
+                dto.Usuario = _currentUserService.GetUsername();
                 await _cuentaCtService.ActualizarCuentaAsync(dto);
                 return Json(new { success = true, message = "Cuenta actualizada exitosamente." });
             }
@@ -76,6 +80,7 @@ namespace MantenimientoPresentation.Controllers
         {
             try
             {
+                var usuario = _currentUserService.GetUsername();
                 await _cuentaCtService.EliminarCuentaAsync(id);
                 return Json(new { success = true, message = "Cuenta eliminada exitosamente." });
             }
