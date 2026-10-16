@@ -1,6 +1,8 @@
-﻿namespace Mantenimiento.Core.Application.DTOs.ClasificacionContrato
+﻿using Mantenimiento.Core.Application.DTOs.Auditoria;
+
+namespace Mantenimiento.Core.Application.DTOs.ClasificacionContrato
 {
-    public record ActualizarClasificacionContratoDto
+    public record ActualizarClasificacionContratoDto : AuditableDto
     {
         public int CodigoClasificacion { get; set; }
         public string? ContratoTipo { get; set; }

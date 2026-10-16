@@ -1,12 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Mantenimiento.Core.Application.DTOs.Auditoria;
 
 namespace Mantenimiento.Core.Application.DTOs.RequisitoContrato
 {
-    public record ActualizarRequisitoContratoDto
+    public record ActualizarRequisitoContratoDto : AuditableDto
     {
         public int CodigoRequisito { get; set; }
         public string? DescripcionRequisito { get; set; }

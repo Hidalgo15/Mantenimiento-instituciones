@@ -72,6 +72,7 @@ namespace MantenimientoPresentation.Controllers
 
             try
             {
+                dto.Usuario = _currentUserService.GetUsername();
                 await _service.CrearRequisitoContratoAsync(dto);
                 _logger.LogInformation("Requisito de contrato registrado exitosamente.");
                 return Json(new { success = true, message = "Requisito registrado exitosamente." });
@@ -97,6 +98,7 @@ namespace MantenimientoPresentation.Controllers
 
             try
             {
+                dto.Usuario = _currentUserService.GetUsername();
                 await _service.ActualizarRequisitoContratoAsync(dto);
                 _logger.LogInformation("Requisito de contrato con código {Id} actualizado exitosamente.", dto.CodigoRequisito);
                 return Json(new { success = true, message = "Requisito actualizado exitosamente." });
@@ -116,6 +118,7 @@ namespace MantenimientoPresentation.Controllers
 
             try
             {
+                var usuario = _currentUserService.GetUsername();
                 await _service.EliminarRequisitoContratoAsync(id);
                 _logger.LogInformation("Requisito de contrato con código {Id} eliminado exitosamente.", id);
                 return Json(new { success = true, message = "Requisito eliminado exitosamente." });
