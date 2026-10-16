@@ -73,7 +73,8 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
                 .ToListAsync();
 
             // Filtramos para omitir registros que no tengan tipo de contrato u operación válidos
-            return lista.Where(c => !string.IsNullOrWhiteSpace(c.ContratoTipo) && !string.IsNullOrWhiteSpace(c.TipoOperacion)).ToList();
+            //return lista.Where(c => !string.IsNullOrWhiteSpace(c.ContratoTipo) && !string.IsNullOrWhiteSpace(c.TipoOperacion)).ToList();
+            return lista;
         }
 
         public async Task<List<CatalogoRequisitoContrato>> ObtenerCatalogoRequisitosAsync()
