@@ -1,10 +1,12 @@
 ﻿using Mantenimiento.Core.Application.DTOs.Capitulo;
 using Mantenimiento.Core.Application.DTOs.SubCapitulo;
 using Mantenimiento.Core.Application.InterfaceServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MantenimientoPresentation.Controllers
 {
+    [Authorize]
     public class SubCapituloController : Controller
     {
         private readonly ISubCapituloService _service;

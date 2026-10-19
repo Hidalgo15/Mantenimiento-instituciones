@@ -1,9 +1,11 @@
 ﻿using Mantenimiento.Core.Application.DTOs.Cuenta.CtCuentasDTO;
 using Mantenimiento.Core.Application.InterfaceServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MantenimientoPresentation.Controllers
 {
+    [Authorize]
     public class CuentaCtController : Controller
     {
         private readonly ICuentaCtService _cuentaCtService;

@@ -6,7 +6,7 @@ using Microsoft.Data.SqlClient;
 
 namespace MantenimientoPresentation.Controllers
 {
-    //[Authorize]
+    [Authorize]
     public class CapituloController : Controller
     {
         private readonly ICapituloService _service;
