@@ -4,6 +4,7 @@ using Mantenimiento.Core.Domain.RepositoryInterfaces;
 using Mantenimiento.Infraestructure.Persistence;
 using Mantenimiento.Infraestructure.Persistence.Repositories;
 using MantenimientoPresentation.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
 
 namespace MantenimientoPresentation
@@ -81,6 +82,13 @@ namespace MantenimientoPresentation
             builder.Services.AddScoped<IRelacionContratoRequisitoRepository, RelacionContratoRequisitoRepository>();
             builder.Services.AddScoped<IRelacionContratoRequisitoService, RelacionContratoRequisitoService>();
 
+            builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+            .AddCookie(options =>
+            {
+                options.LoginPath = "/Auth/Login";
+                options.ExpireTimeSpan = TimeSpan.FromMinutes(20);
+            });
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -95,11 +103,12 @@ namespace MantenimientoPresentation
 
             app.UseRouting();
 
+            app.UseAuthentication();
             app.UseAuthorization();
 
             app.MapControllerRoute(
                 name: "default",
-                pattern: "{controller=Home}/{action=Index}/{id?}");
+                pattern: "{controller=Auth}/{action=Login}/{id?}");
 
             app.Run();
         }

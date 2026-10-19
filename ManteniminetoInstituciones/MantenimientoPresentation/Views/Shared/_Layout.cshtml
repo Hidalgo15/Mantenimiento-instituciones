@@ -19,7 +19,7 @@
         <nav class="navbar navbar-expand-lg navbar-dark style-cgr-navbar py-3">
             <div class="container-fluid px-4">
                 <a class="navbar-brand d-flex align-items-center" asp-area="" asp-controller="Home" asp-action="Index">
-                  
+
                     <!-- Logo transparente sin fondo ni bordes -->
                     <img src="~/images/logo_contraloria_blanco.png"
                          alt="Logo CGR"
@@ -31,6 +31,33 @@
                         <small class="text-white-50 mt-1" style="font-size: 0.85rem;">Contraloría General de la República Dominicana.</small>
                     </div>
                 </a>
+
+                <!-- USUARIO Y MENÚ DE CERRAR SESIÓN A LA DERECHA -->
+                @if (User.Identity != null && User.Identity.IsAuthenticated)
+                {
+                    <div class="dropdown ms-auto">
+                        <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle gap-2 px-3 py-1 rounded-pill transition-all" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false" style="background: rgba(255, 255, 255, 0.1);">
+                            <div class="text-end d-none d-sm-block">
+                                <span class="d-block fw-bold text-white lh-1" style="font-size: 0.9rem;">@User.Identity.Name</span>
+                                <small class="text-white-50" style="font-size: 0.75rem;">
+                                    @(User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value ?? "Administrador")
+                                </small>
+                            </div>
+                            <div class="bg-white text-primary rounded-circle d-flex align-items-center justify-content-center shadow-sm" style="width: 38px; height: 38px;">
+                                <i class="bi bi-person-fill fs-5 text-dark"></i>
+                            </div>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 rounded-3 mt-2 p-1" aria-labelledby="userDropdown" style="min-width: 180px;">
+                            <li>
+                                <form asp-controller="Auth" asp-action="Logout" method="post" class="m-0">
+                                    <button type="submit" class="dropdown-item text-danger rounded-2 d-flex align-items-center gap-2 py-2 px-3 fw-medium transition-all" style="font-size: 0.9rem;">
+                                        <i class="bi bi-box-arrow-right fs-5"></i> Cerrar sesión
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </div>
+                }
             </div>
         </nav>
     </header>
