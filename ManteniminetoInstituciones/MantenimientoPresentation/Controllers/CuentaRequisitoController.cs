@@ -1,9 +1,11 @@
 ﻿using Mantenimiento.Core.Application.DTOs.CuentaRequisito;
 using Mantenimiento.Core.Application.InterfaceServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MantenimientoPresentation.Controllers
 {
+    [Authorize]
     public class CuentaRequisitoController : Controller
     {
         private readonly ICuentaRequisitoService _service;

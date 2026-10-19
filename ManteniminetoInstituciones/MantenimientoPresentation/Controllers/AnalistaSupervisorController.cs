@@ -1,9 +1,11 @@
 ﻿using Mantenimiento.Core.Application.DTOs.AnalistaSupervisor;
 using Mantenimiento.Core.Application.InterfaceServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MantenimientoPresentation.Controllers
 {
+    [Authorize]
     public class AnalistaSupervisorController : Controller
     {
         private readonly IAnalistaSupervisorService _service;

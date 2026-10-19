@@ -2,10 +2,12 @@ using Mantenimiento.Core.Application.DTOs.Fondos;
 using Mantenimiento.Core.Application.DTOs.Institucion;
 using Mantenimiento.Core.Application.DTOs.TipoTramite;
 using Mantenimiento.Core.Application.InterfaceServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MantenimientoPresentation.Controllers
 {
+    [Authorize]
     [Route("FondoEspeciales/[action]/{id?}")]
     public class FondoEspecialesController : Controller
     {

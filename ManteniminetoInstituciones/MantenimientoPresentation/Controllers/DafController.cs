@@ -1,10 +1,12 @@
 ﻿using Mantenimiento.Core.Application.DTOs.Daf;
 using Mantenimiento.Core.Application.DTOs.SubCapitulo;
 using Mantenimiento.Core.Application.InterfaceServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MantenimientoPresentation.Controllers
 {
+    [Authorize]
     public class DafController : Controller
     {
         private readonly IDafService _dafService;
