@@ -82,6 +82,9 @@ namespace MantenimientoPresentation
             builder.Services.AddScoped<IRelacionContratoRequisitoRepository, RelacionContratoRequisitoRepository>();
             builder.Services.AddScoped<IRelacionContratoRequisitoService, RelacionContratoRequisitoService>();
 
+            builder.Services.AddScoped<IResponsableActividadRepository, ResponsableActividadRepository>();
+            builder.Services.AddScoped<IResponsableActividadService, ResponsableActividadService>();
+
             builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
             .AddCookie(options =>
             {
