@@ -1,6 +1,7 @@
 ﻿using Mantenimiento.Core.Domain.Entities;
 using Mantenimiento.Core.Domain.Entities.ClasificacionContrato;
 using Mantenimiento.Core.Domain.Entities.RelacionContratoRequisito;
+using Mantenimiento.Core.Domain.Entities.ResponsableActividad;
 using Microsoft.EntityFrameworkCore;
 
 namespace Mantenimiento.Infraestructure.Persistence
@@ -9,6 +10,8 @@ namespace Mantenimiento.Infraestructure.Persistence
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
 
+        // Define propiedades DbSet para cada entidad
+        #region DbSet Properties
         public DbSet<Institucion> Instituciones { get; set; }
         public DbSet<CuentaInstitucion> CuentasInstitucion { get; set; }
         public DbSet<Capitulo> Capitulos { get; set; }
@@ -36,6 +39,13 @@ namespace Mantenimiento.Infraestructure.Persistence
         public DbSet<RelacionContratoRequisito> RelacionContratoRequisitoTbl { get; set; }
         public DbSet<CatalogoClasificacionContrato> CatalogoClasificacionContratoTbl { get; set; }
         public DbSet<CatalogoRequisitoContrato> CatalogoRequisitoContratoTbl { get; set; }
+        public DbSet<MoldeCatalogo> MoldeCatalogosTbl { get; set; }
+        public DbSet<SubtipoMolde> SubtipoMoldesTbl { get; set; }
+        public DbSet<UsuarioSubtipo> UsuarioSubtiposTbl { get; set; }
+        public DbSet<ActividadSubtipo> ActividadSubtiposTbl { get; set; }
+        public DbSet<ResponsableActividad> ResponsableActividadesTbl { get; set; }
+
+        #endregion
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -395,6 +405,52 @@ namespace Mantenimiento.Infraestructure.Persistence
             });
             #endregion
 
+            #region ResponsableActividades y Catálogos
+            modelBuilder.Entity<MoldeCatalogo>(entity =>
+            {
+                entity.HasNoKey();
+                entity.Property(e => e.CodigoTre).HasColumnName("codigo_tre");
+                entity.Property(e => e.ArbolAsociado).HasColumnName("arbol_asociado");
+                entity.Property(e => e.NombreTre).HasColumnName("nombre_tre");
+            });
+
+            modelBuilder.Entity<SubtipoMolde>(entity =>
+            {
+                entity.HasNoKey();
+                entity.Property(e => e.CodigoTipoTre).HasColumnName("codigo_tipo_tre");
+                entity.Property(e => e.CodigoTre).HasColumnName("codigo_tre");
+                entity.Property(e => e.Descripcion).HasColumnName("descripcion");
+                entity.Property(e => e.Abreviatura).HasColumnName("abreviatura");
+            });
+
+            modelBuilder.Entity<UsuarioSubtipo>(entity =>
+            {
+                entity.HasNoKey();
+                entity.Property(e => e.CodigoDespa).HasColumnName("codigo_despa");
+                entity.Property(e => e.Nombre).HasColumnName("NOMBRE");
+                entity.Property(e => e.Institucion).HasColumnName("INSTITUCION");
+                entity.Property(e => e.DescArea).HasColumnName("descarea");
+                entity.Property(e => e.Cargo).HasColumnName("cargo");
+                entity.Property(e => e.Email).HasColumnName("email");
+            });
+
+            modelBuilder.Entity<ActividadSubtipo>(entity =>
+            {
+                entity.HasNoKey();
+                entity.Property(e => e.CodigoActividad).HasColumnName("codigo_actividad");
+                entity.Property(e => e.CodigoTipoTre).HasColumnName("codigo_tipo_tre");
+                entity.Property(e => e.DescripcionActividad).HasColumnName("descripcion_actividad");
+                entity.Property(e => e.DescripcionSubtipo).HasColumnName("descripcion_subtipo");
+            });
+
+            modelBuilder.Entity<ResponsableActividad>(entity =>
+            {
+                entity.HasNoKey();
+                entity.Property(e => e.CodigoDespa).HasColumnName("codigo_despa");
+                entity.Property(e => e.CodigoActividad).HasColumnName("codigo_actividad");
+                entity.Property(e => e.DescripcionActividad).HasColumnName("descripcion_actividad");
+            });
+            #endregion
 
 
         }

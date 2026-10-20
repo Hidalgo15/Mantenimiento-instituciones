@@ -1,0 +1,43 @@
+﻿@model (List<Mantenimiento.Core.Application.DTOs.ResponsableActividad.ActividadSubtipoDto> Disponibles, List<int> AsignadasIds)
+
+@if (Model.Disponibles != null && Model.Disponibles.Any())
+{
+    <div class="card border-0 shadow-sm rounded-3 overflow-hidden">
+        <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
+            <!-- IMPORTANTE: Se agregó el id="tablaActividadesAsignacion" -->
+            <table class="table table-hover align-middle mb-0" id="tablaActividadesAsignacion">
+                <thead class="bg-light text-secondary border-bottom small text-uppercase fw-bold sticky-top">
+                    <tr>
+                        <th class="py-3 px-3 text-center" style="width: 70px;">Asignar</th>
+                        <th class="py-3 px-3" style="width: 100px;">Código Act.</th>
+                        <th class="py-3 px-3">Subtipo Asociado</th>
+                        <th class="py-3 px-3">Descripción de la Actividad</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var act in Model.Disponibles)
+                    {
+                        var estaAsignada = Model.AsignadasIds.Contains(act.CodigoActividad);
+                        <tr>
+                            <td class="text-center px-3">
+                                <div class="form-check d-flex justify-content-center">
+                                    <input class="form-check-input chk-actividad fs-5" type="checkbox" value="@act.CodigoActividad" @(estaAsignada ? "checked" : "") onchange="evaluarCambiosPendientes(); aplicarFiltrosTablaActividades();" />
+                                </div>
+                            </td>
+                            <td class="px-3 fw-bold text-secondary">#@act.CodigoActividad</td>
+                            <td class="px-3 text-muted small">@act.DescripcionSubtipo</td>
+                            <td class="px-3 fw-semibold text-dark">@act.DescripcionActividad</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}
+else
+{
+    <div class="alert alert-secondary border-0 shadow-sm text-center py-4 rounded-3 mb-0" style="background-color: #f8fafc;">
+        <i class="bi bi-exclamation-circle fs-3 text-secondary d-block mb-2"></i>
+        <span class="fw-semibold text-secondary">No hay actividades disponibles para los subtipos seleccionados.</span>
+    </div>
+}
