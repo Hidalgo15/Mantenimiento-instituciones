@@ -737,4 +737,87 @@ BEGIN
 END;
 GO
 
+-- =========================================================================
+-- 15. TRIGGER AUDITORÍA: responsable_actividad
+-- =========================================================================
+
+USE [SIGOB];
+GO
+
+CREATE OR ALTER TRIGGER [dbo].[TR_responsable_actividad_Auditoria]
+ON [dbo].[responsable_actividad]
+AFTER INSERT, UPDATE, DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    IF TRIGGER_NESTLEVEL() > 1 RETURN;
+    IF NOT EXISTS (SELECT 1 FROM inserted) AND NOT EXISTS (SELECT 1 FROM deleted) RETURN;
+
+    DECLARE @tabla VARCHAR(128) = 'responsable_actividad';
+    DECLARE @app_name VARCHAR(256) = APP_NAME();
+    DECLARE @host_name VARCHAR(128) = HOST_NAME();
+    DECLARE @usuario VARCHAR(128) = ISNULL(CAST(SESSION_CONTEXT(N'UsuarioApp') AS VARCHAR(128)), SUSER_SNAME());
+
+    -------------------------------------------------------------------------
+    -- INSERT
+    -------------------------------------------------------------------------
+    IF EXISTS (SELECT 1 FROM inserted) AND NOT EXISTS (SELECT 1 FROM deleted)
+    BEGIN
+        INSERT INTO [SIGOB_CONTRALORIA].[dbo].[auditoria_mantenimientos] 
+            ([tabla_nombre], [id_registro], [operacion], [usuario], [app_name], [host_name], [datos_anteriores], [datos_nuevos])
+        SELECT 
+            @tabla, 
+            CONCAT(i.codigo_despa, ' - ', i.codigo_actividad), 
+            'INSERT', 
+            @usuario, 
+            @app_name, 
+            @host_name, 
+            NULL,
+            (SELECT i.* FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)
+        FROM inserted i;
+    END
+
+    -------------------------------------------------------------------------
+    -- DELETE
+    -------------------------------------------------------------------------
+    ELSE IF EXISTS (SELECT 1 FROM deleted) AND NOT EXISTS (SELECT 1 FROM inserted)
+    BEGIN
+        INSERT INTO [SIGOB_CONTRALORIA].[dbo].[auditoria_mantenimientos] 
+            ([tabla_nombre], [id_registro], [operacion], [usuario], [app_name], [host_name], [datos_anteriores], [datos_nuevos])
+        SELECT 
+            @tabla, 
+            CONCAT(d.codigo_despa, ' - ', d.codigo_actividad), 
+            'DELETE', 
+            @usuario, 
+            @app_name, 
+            @host_name,
+            (SELECT d.* FOR JSON PATH, WITHOUT_ARRAY_WRAPPER), 
+            NULL
+        FROM deleted d;
+    END
+
+    -------------------------------------------------------------------------
+    -- UPDATE
+    -------------------------------------------------------------------------
+    ELSE IF EXISTS (SELECT 1 FROM inserted) AND EXISTS (SELECT 1 FROM deleted)
+    BEGIN
+        INSERT INTO [SIGOB_CONTRALORIA].[dbo].[auditoria_mantenimientos] 
+            ([tabla_nombre], [id_registro], [operacion], [usuario], [app_name], [host_name], [datos_anteriores], [datos_nuevos])
+        SELECT 
+            @tabla, 
+            CONCAT(i.codigo_despa, ' - ', i.codigo_actividad), 
+            'UPDATE', 
+            @usuario, 
+            @app_name, 
+            @host_name,
+            (SELECT d.* FOR JSON PATH, WITHOUT_ARRAY_WRAPPER),
+            (SELECT i.* FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)
+        FROM inserted i
+        INNER JOIN deleted d 
+            ON i.codigo_despa = d.codigo_despa 
+           AND i.codigo_actividad = d.codigo_actividad;
+    END
+END;
+GO
+
 ---
