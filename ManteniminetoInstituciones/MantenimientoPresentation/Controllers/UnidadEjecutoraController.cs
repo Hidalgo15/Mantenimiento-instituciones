@@ -1,11 +1,13 @@
 ﻿using Mantenimiento.Core.Application.DTOs.Daf;
 using Mantenimiento.Core.Application.DTOs.UnidadEjecutora;
 using Mantenimiento.Core.Application.InterfaceServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
 
 namespace MantenimientoPresentation.Controllers
 {
+    [Authorize]
     public class UnidadEjecutoraController : Controller
     {
         private readonly IUnidadEjecutoraService _service;
