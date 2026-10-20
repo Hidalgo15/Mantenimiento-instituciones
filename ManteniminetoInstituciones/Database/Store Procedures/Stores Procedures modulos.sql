@@ -2917,3 +2917,188 @@ BEGIN
     ORDER BY d.[daf] ASC, ue.[codigo_unidad_ejecutora] ASC;
 END;
 GO
+
+---------------------------------
+--Stores responsable_actividad
+---------------------------------
+-- Obtener Catálogo de Moldes
+
+CREATE OR ALTER PROCEDURE [dbo].[sp_Obtener_Catalogo_Moldes]
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        codigo_tre,
+        arbol_asociado,
+        nombre_tre
+    FROM [SIGOB].[dbo].[tre] WITH (NOLOCK)
+    ORDER BY nombre_tre ASC;
+END;
+GO
+
+-- Obtener Subtipos por Molde
+
+CREATE OR ALTER PROCEDURE [dbo].[sp_Obtener_Subtipos_Por_Molde]
+    @CodigoTre INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        codigo_tipo_tre,
+        codigo_tre,
+        descripcion,
+        abreviatura
+    FROM [SIGOB].[dbo].[tipos_tre] WITH (NOLOCK)
+    WHERE codigo_tre = @CodigoTre 
+      AND activo = 1
+    ORDER BY descripcion ASC;
+END;
+GO
+
+-- Obtener Usuarios por Subtipo(s)
+
+CREATE OR ALTER PROCEDURE [dbo].[sp_Obtener_Usuarios_Por_Subtipos]
+    @CodigosSubtipos VARCHAR(MAX) -- Lista de códigos separados por coma, ej: '1088,1098,1099'
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Tabla temporal para parsear los IDs recibidos
+    DECLARE @T_Subtipos TABLE (codigo_tipo_tre INT);
+    
+    INSERT INTO @T_Subtipos (codigo_tipo_tre)
+    SELECT TRY_CAST(value AS INT)
+    FROM STRING_SPLIT(@CodigosSubtipos, ',')
+    WHERE TRY_CAST(value AS INT) IS NOT NULL;
+
+    SELECT DISTINCT 
+        da.codigo_despa,
+        da.NOMBRE,
+        da.INSTITUCION,
+        da.descarea,
+        da.cargo,
+        da.email
+    FROM [SIGOB].[dbo].[v_DespachoAreaActivos] da WITH (NOLOCK)
+    INNER JOIN [SIGOB].[dbo].[usuario_tipos_tre] utt WITH (NOLOCK) 
+        ON utt.codigo_despa = da.codigo_despa
+    WHERE utt.codigo_tipo_tre IN (SELECT codigo_tipo_tre FROM @T_Subtipos)
+    ORDER BY da.NOMBRE ASC;
+END;
+GO
+
+-- Obtener Actividades Disponibles por Subtipo(s)
+
+CREATE OR ALTER PROCEDURE [dbo].[sp_Obtener_Actividades_Por_Subtipos]
+    @CodigosSubtipos VARCHAR(MAX) -- Ej: '1088,1098,1099'
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    DECLARE @T_Subtipos TABLE (codigo_tipo_tre INT);
+    
+    INSERT INTO @T_Subtipos (codigo_tipo_tre)
+    SELECT TRY_CAST(value AS INT)
+    FROM STRING_SPLIT(@CodigosSubtipos, ',')
+    WHERE TRY_CAST(value AS INT) IS NOT NULL;
+
+    SELECT DISTINCT 
+        att.codigo_actividad,
+        att.codigo_tipo_tre,
+        a.descripcion AS descripcion_actividad,
+        tt.descripcion AS descripcion_subtipo
+    FROM [SIGOB].[dbo].[actividad_tipo_tre] att WITH (NOLOCK)
+    INNER JOIN [SIGOB].[dbo].[actividad] a WITH (NOLOCK) 
+        ON a.codigo_actividad = att.codigo_actividad
+    INNER JOIN [SIGOB].[dbo].[tipos_tre] tt WITH (NOLOCK) 
+        ON tt.codigo_tipo_tre = att.codigo_tipo_tre
+    WHERE att.codigo_tipo_tre IN (SELECT codigo_tipo_tre FROM @T_Subtipos)
+    ORDER BY descripcion_actividad ASC;
+END;
+GO
+
+-- Consultar Actividades Actuales del Usuario
+
+CREATE OR ALTER PROCEDURE [dbo].[sp_Obtener_Actividades_Usuario]
+    @CodigoDespa CHAR(5)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT 
+        ra.codigo_despa,
+        ra.codigo_actividad,
+        a.descripcion AS descripcion_actividad
+    FROM [SIGOB].[dbo].[responsable_actividad] ra WITH (NOLOCK)
+    INNER JOIN [SIGOB].[dbo].[actividad] a WITH (NOLOCK) 
+        ON a.codigo_actividad = ra.codigo_actividad
+    WHERE ra.codigo_despa = @CodigoDespa
+    ORDER BY a.descripcion ASC;
+END;
+GO
+
+-- Gestionar / Sincronizar Actividades del Responsable
+
+CREATE OR ALTER PROCEDURE [dbo].[sp_Gestionar_Responsable_Actividades]
+    @CodigoDespa CHAR(5),
+    @ListaCodigosActividades VARCHAR(MAX) -- Lista separada por comas de actividades seleccionadas, ej: '968440,1878226,2083535'
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    BEGIN TRY
+        -- Validar existencia del usuario en despacho
+        IF NOT EXISTS (SELECT 1 FROM [SIGOB].[dbo].[v_DespachoAreaActivos] WITH (NOLOCK) WHERE codigo_despa = @CodigoDespa)
+        BEGIN
+            RAISERROR('El código de despacho del usuario no es válido.', 16, 1);
+            RETURN;
+        END
+
+        -- Parsear la lista de actividades entrantes en una tabla temporal
+        DECLARE @T_NuevasActividades TABLE (codigo_actividad INT);
+        
+        IF @ListaCodigosActividades IS NOT NULL AND LTRIM(RTRIM(@ListaCodigosActividades)) <> ''
+        BEGIN
+            INSERT INTO @T_NuevasActividades (codigo_actividad)
+            SELECT TRY_CAST(value AS INT)
+            FROM STRING_SPLIT(@ListaCodigosActividades, ',')
+            WHERE TRY_CAST(value AS INT) IS NOT NULL;
+        END
+
+        BEGIN TRANSACTION;
+
+        -- 1. Eliminar las actividades que el usuario tenía antes pero ya no fueron seleccionadas en la nueva lista
+        DELETE FROM [SIGOB].[dbo].[responsable_actividad]
+        WHERE codigo_despa = @CodigoDespa
+          AND codigo_actividad NOT IN (SELECT codigo_actividad FROM @T_NuevasActividades);
+
+        -- 2. Insertar las nuevas actividades que no existían previamente para este usuario
+        INSERT INTO [SIGOB].[dbo].[responsable_actividad] (codigo_despa, codigo_actividad)
+        SELECT @CodigoDespa, na.codigo_actividad
+        FROM @T_NuevasActividades na
+        WHERE NOT EXISTS (
+            SELECT 1 
+            FROM [SIGOB].[dbo].[responsable_actividad] ra 
+            WHERE ra.codigo_despa = @CodigoDespa 
+              AND ra.codigo_actividad = na.codigo_actividad
+        );
+
+        COMMIT TRANSACTION;
+
+        SELECT 1 AS CodigoResultado, 'Asignación de actividades actualizada exitosamente.' AS Mensaje;
+
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE(),
+                @ErrorSeverity INT = ERROR_SEVERITY(),
+                @ErrorState INT = ERROR_STATE();
+
+        RAISERROR(@ErrorMessage, @ErrorSeverity, @ErrorState);
+    END CATCH
+END;
+GO

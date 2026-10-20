@@ -80,7 +80,7 @@
                         </h5>
                         <p class="text-muted small mb-0">Marque las casillas de las actividades deseadas y guarde los cambios.</p>
                     </div>
-                    <button type="button" class="btn btn-cgr-primary rounded-pill px-4 py-2" onclick="guardarAsignacionActividades()">
+                    <button type="button" id="btnGuardarCambios" class="btn btn-cgr-primary rounded-pill px-4 py-2 opacity-50" onclick="guardarAsignacionActividades()" disabled>
                         <i class="bi bi-save me-1"></i> Guardar Cambios
                     </button>
                 </div>
@@ -108,7 +108,7 @@
                             <span class="input-group-text bg-white border-secondary-subtle text-muted">
                                 <i class="bi bi-search"></i>
                             </span>
-                            <input type="text" id="txtBuscarActividadGrid" class="form-control border-secondary-subtle" 
+                            <input type="text" id="txtBuscarActividadGrid" class="form-control border-secondary-subtle"
                                    placeholder="Filtrar actividades por descripción..." oninput="filtrarTextoActividades()" />
                             <button type="button" class="btn btn-outline-secondary" onclick="limpiarBusquedaActividad()">
                                 <i class="bi bi-x-lg"></i>
@@ -129,14 +129,22 @@
     <script>
         let subtiposSeleccionadosGlobal = [];
         let filtroEstadoActual = 'todas';
-        let listaUsuariosGlobal = []; // Almacena los usuarios para el buscador flotante
+        let listaUsuariosGlobal = [];
+        let estadoInicialCheckboxes = new Set(); // Almacena el estado original de los checkboxes
+
+        // Delegación de eventos para detectar cambios en los checkboxes cargados por AJAX
+        document.addEventListener('change', function(e) {
+            if (e.target && e.target.classList.contains('chk-actividad')) {
+                evaluarCambiosPendientes();
+                aplicarFiltrosTablaActividades();
+            }
+        });
 
         function cargarSubtiposMolde() {
             const codigoTre = document.getElementById('selectMolde').value;
             const contenedorSubtipos = document.getElementById('contenedorSubtipos');
             const inputBusqUsuario = document.getElementById('txtBusquedaUsuario');
-            
-            // Limpiar dependientes
+
             contenedorSubtipos.innerHTML = '<span class="text-muted small fst-italic">Cargando subtipos...</span>';
             inputBusqUsuario.value = '';
             inputBusqUsuario.disabled = true;
@@ -157,12 +165,12 @@
                         let html = '';
                         res.data.forEach(sub => {
                             html += `
-                                <div class="form-check">
-                                    <input class="form-check-input chk-subtipo" type="checkbox" value="${sub.codigoTipoTre}" id="sub_${sub.codigoTipoTre}" onchange="procesarCambioSubtipos()">
-                                    <label class="form-check-label small fw-semibold text-dark" for="sub_${sub.codigoTipoTre}">
-                                        ${sub.descripcion} <span class="text-muted">(${sub.abreviatura || 'N/A'})</span>
-                                    </label>
-                                </div>`;
+                                                <div class="form-check">
+                                                    <input class="form-check-input chk-subtipo" type="checkbox" value="${sub.codigoTipoTre}" id="sub_${sub.codigoTipoTre}" onchange="procesarCambioSubtipos()">
+                                                    <label class="form-check-label small fw-semibold text-dark" for="sub_${sub.codigoTipoTre}">
+                                                        ${sub.descripcion} <span class="text-muted">(${sub.abreviatura || 'N/A'})</span>
+                                                    </label>
+                                                </div>`;
                         });
                         contenedorSubtipos.innerHTML = html;
                     } else {
@@ -177,7 +185,7 @@
 
             const inputBusqUsuario = document.getElementById('txtBusquedaUsuario');
             const contenedorResultados = document.getElementById('resultadosUsuarioFlotante');
-            
+
             inputBusqUsuario.value = '';
             inputBusqUsuario.disabled = true;
             document.getElementById('selectUsuario').value = '';
@@ -209,7 +217,6 @@
                 });
         }
 
-        // Buscador flotante en tiempo real para usuarios
         function filtrarUsuariosFlotante(input) {
             const normalizar = texto => texto
                 .normalize('NFD')
@@ -241,7 +248,7 @@
                     btn.type = 'button';
                     btn.className = 'list-group-item list-group-item-action text-start py-2';
                     btn.innerHTML = `<strong>${u.nombre}</strong> <span class="text-muted small">(${u.cargo || 'Sin cargo'} - <code>${u.codigoDespa}</code>)</span>`;
-                    
+
                     btn.addEventListener('click', () => {
                         input.value = `${u.nombre} - ${u.cargo || 'Sin cargo'} (${u.codigoDespa})`;
                         document.getElementById('selectUsuario').value = u.codigoDespa;
@@ -263,7 +270,6 @@
             document.getElementById('txtBusquedaUsuario').focus();
         }
 
-        // Ocultar lista flotante al hacer clic fuera
         document.addEventListener('click', (e) => {
             const contenedor = document.getElementById('resultadosUsuarioFlotante');
             const input = document.getElementById('txtBusquedaUsuario');
@@ -288,7 +294,43 @@
                 .then(html => {
                     document.getElementById('gridActividadesContenedor').innerHTML = html;
                     contenedorGestion.classList.remove('d-none');
+
+                    // Capturar el estado inicial al cargar los datos y bloquear botón
+                    capturarEstadoInicial();
+                    evaluarCambiosPendientes();
                 });
+        }
+
+        function capturarEstadoInicial() {
+            estadoInicialCheckboxes.clear();
+            const checkboxes = document.querySelectorAll('.chk-actividad');
+            checkboxes.forEach(chk => {
+                if (chk.checked) {
+                    estadoInicialCheckboxes.add(chk.value);
+                }
+            });
+        }
+
+        function evaluarCambiosPendientes() {
+            const checkboxes = document.querySelectorAll('.chk-actividad');
+            let hayCambios = false;
+
+            checkboxes.forEach(chk => {
+                const estabaMarcado = estadoInicialCheckboxes.has(chk.value);
+                if (chk.checked !== estabaMarcado) {
+                    hayCambios = true;
+                }
+            });
+
+            const btnGuardar = document.getElementById('btnGuardarCambios');
+            if (btnGuardar) {
+                btnGuardar.disabled = !hayCambios;
+                if (hayCambios) {
+                    btnGuardar.classList.remove('opacity-50');
+                } else {
+                    btnGuardar.classList.add('opacity-50');
+                }
+            }
         }
 
         function guardarAsignacionActividades() {
@@ -311,22 +353,47 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dto)
             })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    alert(data.message);
-                } else {
-                    alert('Error: ' + data.message);
-                }
-            });
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        // Actualizar el estado inicial con lo guardado y desactivar el botón
+                        capturarEstadoInicial();
+                        evaluarCambiosPendientes();
+                        aplicarFiltrosTablaActividades();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                });
         }
 
-        function filtrarEstadoActividades(estado) {
-            filtroEstadoActual = estado;
+        function filtrarEstadoActividades(nuevoEstado) {
+            if (filtroEstadoActual === nuevoEstado) return;
 
-            document.getElementById('btnFiltroTodas').className = `btn btn-outline-secondary btn-sm ${estado === 'todas' ? 'active' : ''}`;
-            document.getElementById('btnFiltroAsignadas').className = `btn btn-outline-success btn-sm ${estado === 'asignadas' ? 'active' : ''}`;
-            document.getElementById('btnFiltroNoAsignadas').className = `btn btn-outline-danger btn-sm ${estado === 'no-asignadas' ? 'active' : ''}`;
+            // Comprobar si hay cambios sin guardar
+            const checkboxes = document.querySelectorAll('.chk-actividad');
+            let hayCambios = false;
+            checkboxes.forEach(chk => {
+                if (chk.checked !== estadoInicialCheckboxes.has(chk.value)) {
+                    hayCambios = true;
+                }
+            });
+
+            if (hayCambios) {
+                const confirmar = confirm('Tiene modificaciones sin guardar. Si cambia de filtro, se descartarán los cambios pendientes. ¿Desea continuar?');
+                if (!confirmar) {
+                    return; // Mantiene el filtro actual y preserva los cambios
+                } else {
+                    // Si acepta descartar, recargamos los datos originales del usuario
+                    cargarActividadesUsuario();
+                }
+            }
+
+            filtroEstadoActual = nuevoEstado;
+
+            document.getElementById('btnFiltroTodas').className = `btn btn-outline-secondary btn-sm ${nuevoEstado === 'todas' ? 'active' : ''}`;
+            document.getElementById('btnFiltroAsignadas').className = `btn btn-outline-success btn-sm ${nuevoEstado === 'asignadas' ? 'active' : ''}`;
+            document.getElementById('btnFiltroNoAsignadas').className = `btn btn-outline-danger btn-sm ${nuevoEstado === 'no-asignadas' ? 'active' : ''}`;
 
             aplicarFiltrosTablaActividades();
         }
