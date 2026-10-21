@@ -65,9 +65,37 @@
     <!-- CONTENIDO PRINCIPAL -->
     <div class="container-fluid px-4">
         <main role="main" class="pb-4">
+            <div id="messageBannerRegion" class="message-banner-region" aria-live="polite" aria-atomic="true"></div>
             @RenderBody()
         </main>
     </div>
+
+    <div class="modal fade" id="confirmationModal" tabindex="-1" aria-labelledby="confirmationModalTitle" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+                <div class="modal-header confirmation-modal__header">
+                    <span class="confirmation-modal__icon" aria-hidden="true">
+                        <i class="bi bi-question-circle-fill"></i>
+                    </span>
+                    <h5 class="modal-title fw-bold" id="confirmationModalTitle">Confirmar acción</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body px-4 py-3">
+                    <p id="confirmationModalMessage" class="mb-0 text-secondary"></p>
+                </div>
+                <div class="modal-footer border-0 px-4 pb-4">
+                    <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-cgr-primary rounded-pill px-4" id="confirmationModalAccept">Continuar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="requestStatus" class="request-status" role="status" aria-live="polite" aria-hidden="true">
+        <span class="request-status__spinner" aria-hidden="true"></span>
+        <span>Actualizando información…</span>
+    </div>
+    <div id="notificationRegion" class="notification-region" aria-live="polite" aria-atomic="false"></div>
 
     <!-- FOOTER -->
     <footer class="bg-white border-top footer text-muted py-3 mt-auto">

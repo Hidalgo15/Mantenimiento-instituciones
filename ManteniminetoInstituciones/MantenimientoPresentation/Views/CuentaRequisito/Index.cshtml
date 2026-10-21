@@ -194,8 +194,8 @@
             });
         }
 
-        function eliminarRelacion(id) {
-            if (!confirm('¿Está seguro de eliminar esta relación?')) return;
+        async function eliminarRelacion(id) {
+            if (!await confirmarAccion('¿Está seguro de eliminar esta relación?', { kind: 'danger', confirmText: 'Sí, eliminar' })) return;
 
             fetch('/CuentaRequisito/Eliminar', {
                 method: 'POST',

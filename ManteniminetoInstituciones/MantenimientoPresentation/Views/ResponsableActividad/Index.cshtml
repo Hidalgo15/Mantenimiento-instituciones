@@ -367,7 +367,7 @@
                 });
         }
 
-        function filtrarEstadoActividades(nuevoEstado) {
+        async function filtrarEstadoActividades(nuevoEstado) {
             if (filtroEstadoActual === nuevoEstado) return;
 
             // Comprobar si hay cambios sin guardar
@@ -380,7 +380,10 @@
             });
 
             if (hayCambios) {
-                const confirmar = confirm('Tiene modificaciones sin guardar. Si cambia de filtro, se descartarán los cambios pendientes. ¿Desea continuar?');
+                const confirmar = await confirmarAccion(
+                    'Tiene modificaciones sin guardar. Si cambia de filtro, se descartarán los cambios pendientes. ¿Desea continuar?',
+                    { kind: 'warning', title: 'Cambios sin guardar', confirmText: 'Descartar cambios' }
+                );
                 if (!confirmar) {
                     return; // Mantiene el filtro actual y preserva los cambios
                 } else {
