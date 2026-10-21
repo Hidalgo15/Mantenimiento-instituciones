@@ -232,8 +232,8 @@
                 });
         }
 
-        function desvincularAnalista(despachoAnalista, nombreAnalista) {
-            if (!confirm(`¿Desea desvincular al supervisor del analista "${nombreAnalista}"?`)) return;
+        async function desvincularAnalista(despachoAnalista, nombreAnalista) {
+            if (!await confirmarAccion(`¿Desea desvincular al supervisor del analista "${nombreAnalista}"?`, { kind: 'danger', confirmText: 'Sí, desvincular' })) return;
 
             const dto = { despachoAnalista: despachoAnalista };
 

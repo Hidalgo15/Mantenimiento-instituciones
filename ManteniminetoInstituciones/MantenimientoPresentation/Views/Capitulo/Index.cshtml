@@ -239,7 +239,7 @@
         }
 
         async function eliminarCapitulo(id) {
-            if (!confirm('¿Desea eliminar este registro?')) return;
+            if (!await confirmarAccion('¿Desea eliminar este registro?', { kind: 'danger', confirmText: 'Sí, eliminar' })) return;
 
             let eliminado = false;
             try {

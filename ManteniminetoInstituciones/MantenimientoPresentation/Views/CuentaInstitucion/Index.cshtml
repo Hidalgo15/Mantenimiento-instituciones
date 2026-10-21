@@ -227,8 +227,8 @@
                 });
         }
 
-        function eliminarCuenta(id) {
-            if (!confirm('¿Desea eliminar este registro?')) return;
+        async function eliminarCuenta(id) {
+            if (!await confirmarAccion('¿Desea eliminar este registro?', { kind: 'danger', confirmText: 'Sí, eliminar' })) return;
 
             fetch(`/CuentaInstitucion/Eliminar?id=${id}`, { method: 'POST' })
                 .then(res => res.json())

@@ -280,8 +280,8 @@
             .catch(() => alert('Ocurrió un error al procesar la solicitud.'));
         }
 
-        function eliminarCuenta(id) {
-            if (!confirm('¿Desea eliminar la asignación de esta cuenta?')) return;
+        async function eliminarCuenta(id) {
+            if (!await confirmarAccion('¿Desea eliminar la asignación de esta cuenta?', { kind: 'danger', confirmText: 'Sí, eliminar' })) return;
 
             fetch(`/CuentaMapeo/Eliminar?id=${id}`, { method: 'POST' })
                 .then(res => res.json())

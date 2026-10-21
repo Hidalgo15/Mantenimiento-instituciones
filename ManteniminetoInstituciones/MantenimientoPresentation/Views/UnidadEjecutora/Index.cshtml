@@ -293,8 +293,8 @@
             });
         }
 
-        function eliminarUnidad(id) {
-            if (!confirm('¿Desea desactivar esta unidad ejecutora?')) return;
+        async function eliminarUnidad(id) {
+            if (!await confirmarAccion('¿Desea desactivar esta unidad ejecutora?', { kind: 'danger', confirmText: 'Sí, desactivar' })) return;
 
             fetch(`/UnidadEjecutora/Eliminar?id=${id}`, { method: 'POST' })
                 .then(res => res.json())

@@ -198,8 +198,8 @@
             .catch(() => alert('Ocurrió un error al procesar la solicitud.'));
         }
 
-        function eliminarCuentaCt(id) {
-            if (!confirm('¿Desea eliminar esta cuenta del catálogo base?')) return;
+        async function eliminarCuentaCt(id) {
+            if (!await confirmarAccion('¿Desea eliminar esta cuenta del catálogo base?', { kind: 'danger', confirmText: 'Sí, eliminar' })) return;
 
             fetch(`/CuentaCt/Eliminar?id=${id}`, { method: 'POST' })
                 .then(res => res.json())
