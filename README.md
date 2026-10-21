@@ -1,214 +1,111 @@
-# Mantenimiento Instituciones — Documentación técnica
+# Sistema de Mantenimiento Institucional
 
-Resumen técnico breve del proyecto.
+Aplicación web para consultar y mantener información institucional y catálogos relacionados con la gestión de cuentas y contratos. Esta guía explica qué permite hacer el sistema, qué se necesita para ejecutarlo y cómo está organizado el código.
 
-## Descripción
-Aplicación web ASP.NET Core (Razor/Controllers+Views) para el mantenimiento de catálogo de instituciones, cuentas y elementos relacionados. Está organizada en capas: Presentation (interfaz), Core.Domain (entidades e interfaces), Core.Application (servicios y DTOs) e Infraestructure (DbContext y repositorios).
+## Para las personas usuarias
 
-## Tecnologías principales
-- .NET 8
-- ASP.NET Core (MVC Controllers + Views)
-- Entity Framework Core (sin migraciones incluidas en el repositorio)
-- SQL Server (procedimientos almacenados utilizados desde los repositorios)
+### ¿Qué permite hacer?
 
-## Estructura del repositorio
-- MantenimientoPresentation: proyecto web (Controllers, Views, Program.cs, configuración). Punto de entrada: MantenimientoPresentation/Program.cs
-- Mantenimiento.Core: entidades de dominio y las interfaces de repositorio.
-- Mantenimiento.Core.Application: DTOs, servicios de aplicación y mapeos entre entidades y DTOs.
-- Mantenimiento.Infraestructure: ApplicationDbContext (mapeos a tablas y vistas) y repositorios que implementan las interfaces del Core.
+Desde el panel principal se accede a estos módulos:
 
-## Arquitectura y patrones
-- Separación por capas (Presentation / Application / Domain / Infrastructure).
-- Repositorios implementados en Infrastructure consumen procedimientos almacenados mediante FromSqlRaw y ExecuteSqlRawAsync.
-- Servicios de aplicación (Core.Application) exponen la lógica usada por los controladores.
-- Inyección de dependencias configurada en Program.cs: todos los repositorios y servicios se registran con AddScoped.
+- **Estructura institucional:** capítulos, subcapítulos, DAF y unidades ejecutoras.
+- **Cuentas y requisitos:** cuentas CT, requisitos, asignación de requisitos a cuentas, cuentas de instituciones y mapeo de cuentas.
+- **Gestión complementaria:** asignación de analistas y supervisores, fondos especiales y responsables de actividades.
+- **Contratos:** clasificación de contratos, requisitos de contratos y relación entre contratos y requisitos.
+
+Las opciones disponibles dependen de la información de la base de datos a la que se conecte la aplicación. Para utilizar los módulos se requiere iniciar sesión y que el entorno tenga acceso a SQL Server.
+
+### Inicio de sesión
+
+El inicio de sesión actual es **temporal y simulado**: el código acepta el usuario `admin` y la contraseña `123456`, definidos en `MantenimientoPresentation/Controllers/AuthController.cs`; no consulta un directorio institucional ni una tabla de usuarios. Úsalos solo para desarrollo local: **no son una cuenta segura y no deben usarse en producción**. Véase [Seguridad y limitaciones](#seguridad-y-limitaciones).
+
+## Requisitos previos
+
+- Windows y .NET 8 SDK.
+- Visual Studio 2022 o posterior con las herramientas de desarrollo de ASP.NET y web, o PowerShell/terminal con `dotnet`.
+- Acceso a una instancia de **SQL Server** y a una base compatible con las tablas, vistas y procedimientos almacenados que utiliza la aplicación.
+- Una cadena de conexión autorizada por la persona responsable de la base de datos.
+
+## Ejecutar localmente
+
+Los siguientes comandos se ejecutan desde la carpeta `ManteniminetoInstituciones`, donde está `ManteniminetoInstituciones.sln`.
+
+1. Abre la solución `ManteniminetoInstituciones.sln` en Visual Studio, o abre PowerShell en esa carpeta.
+2. Configura la cadena de conexión **en la sesión de PowerShell**. Sustituye los valores de ejemplo por los datos proporcionados para tu entorno:
+
+   ```powershell
+	 $env:ConnectionStrings__ConexionSIGOB = "Server=<servidor>;Database=<base_de_datos>;User Id=<usuario>;Password=<contraseña>;"
+   ```
+
+	  `ConexionSIGOB` es el nombre de configuración que lee la aplicación. La variable de entorno sobrescribe el valor de `appsettings.json` para los procesos iniciados desde esa sesión. Para ejecutar desde Visual Studio, define esta variable en el entorno de Windows antes de abrir el IDE o inicia Visual Studio desde esta sesión de PowerShell. No guardes contraseñas en el repositorio ni las compartas.
+
+3. Restaura y compila la solución:
+
+   ```powershell
+   dotnet restore .\ManteniminetoInstituciones.sln
+   dotnet build .\ManteniminetoInstituciones.sln
+   ```
+
+4. Inicia la aplicación con el perfil HTTPS:
+
+   ```powershell
+   dotnet run --project .\MantenimientoPresentation\MantenimientoPresentation.csproj --launch-profile https
+   ```
+
+5. Abre `https://localhost:7149` si el navegador no se abre automáticamente.
+
+El perfil HTTPS y la URL proceden de `MantenimientoPresentation/Properties/launchSettings.json`. La aplicación puede mostrar la pantalla de acceso sin consultar SQL Server, pero las funciones que leen o modifican datos necesitan una conexión válida y los objetos de base de datos correspondientes.
 
 ## Base de datos
-- La aplicación usa SQL Server. La clave de conexión esperada en appsettings.json se llama: `ConexionSIGOB`.
-- Muchos repositorios llaman a procedimientos almacenados (ejemplo: ct.sp_CuentasCt_Obtener, ct.sp_CuentasCt_Insertar, etc.). Revisar los repositorios en Mantenimiento.Infraestructure/Repositories para ver los nombres.
-- ApplicationDbContext mapea tablas y vistas usando Fluent API en OnModelCreating; algunas entidades usan .HasNoKey() para vistas o resultados de SP.
 
-## Endpoints y controladores clave
-Los controladores están en MantenimientoPresentation/Controllers. Algunos controladores importantes:
-- HomeController
-- InstitucionController (consultas y mantenimiento de instituciones)
-- CuentaInstitucionController
-- CuentaCtController (gestiona cuentas CT, usa procedimientos en schema `ct`)
-- CapituloController, SubCapituloController, DafController, UnidadEjecutoraController
-- CuentaRequisitoController, CuentaMapeoController, RequisitoController
+La aplicación usa SQL Server a través de Entity Framework Core y repositorios que ejecutan procedimientos almacenados. La cadena se obtiene de `ConnectionStrings:ConexionSIGOB`.
 
-## Nuevos módulos añadidos
-Se han incorporado módulos para gestión de contratos y su relación con requisitos. Archivo principales y ubicación:
-- Controladores: MantenimientoPresentation/Controllers
-  - ClasificacionContratoController.cs
-  - RequisitosContratosController.cs
-  - RelacionContratoRequisitoController.cs
-- Vistas: MantenimientoPresentation/Views/{ClasificacionContrato,RequisitosContratos,RelacionContratoRequisito} (Index y parciales de grid)
-- DTOs: Mantenimiento.Core.Application/DTOs/{ClasificacionContrato,RequisitoContrato,RelacionContratoRequisito}
-- Entidades: Mantenimiento.Core/Entities (nuevas entidades bajo carpetas ClasificacionContrato y RelacionContratoRequisito)
-- Repositorios: Mantenimiento.Infraestructure/Repositories
-  - ClasificacionContratoRepository.cs
-  - RequisitoContratoRepository.cs
-  - RelacionContratoRequisitoRepository.cs
-- Servicios de aplicación: Mantenimiento.Core.Application/Services
-  - ClasificacionContratoService.cs
-  - RequisitoContratoService.cs
-  - RelacionContratoRequisitoService.cs
+El repositorio contiene el archivo `Database/Store Procedures/Stores Procedures modulos.sql`, con procedimientos de algunos módulos. **No es un instalador completo de la base de datos**: no crea por sí solo la base, todas sus tablas, vistas ni datos de referencia. El proyecto tampoco ejecuta migraciones ni inicializa la base al arrancar. Antes de usar un entorno nuevo, la persona responsable de SQL Server debe verificar y preparar el esquema, las vistas, los procedimientos y los permisos requeridos. No ejecutes scripts sobre una base compartida o de producción sin autorización y revisión.
 
-Estas piezas permiten:
-- Administrar clasificaciones de contrato (catálogos y CRUD básico).
-- Gestionar requisitos específicos de contratos (crear, actualizar, eliminar, listar).
-- Relacionar contratos con requisitos y obtener catálogos para selección en vistas.
+## Para desarrolladores
 
-## Registro en la DI (Program.cs)
-Los nuevos servicios y repositorios se registran en `MantenimientoPresentation/Program.cs` con AddScoped, por ejemplo:
+### Tecnologías y arquitectura
 
-- IClasificacionContratoRepository -> ClasificacionContratoRepository
-- IClasificacionContratoService -> ClasificacionContratoService
-- IRequisitoContratoRepository -> RequisitoContratoRepository
-- IRequisitoContratoService -> RequisitoContratoService
-- IRelacionContratoRequisitoRepository -> RelacionContratoRequisitoRepository
-- IRelacionContratoRequisitoService -> RelacionContratoRequisitoService
+La solución apunta a **.NET 8** y la interfaz usa **ASP.NET Core MVC con vistas Razor** (controladores y `Views`; no Razor Pages). Está separada en cuatro proyectos:
 
-## Notas específicas sobre los nuevos módulos
-- Los repositorios usan los mismos patrones que el resto del proyecto: ejecución de procedimientos almacenados con parámetros (FromSqlRaw / ExecuteSqlRawAsync) y mapeos en ApplicationDbContext cuando corresponda.
-- Se proveen DTOs y mapeos (Mappers) en Core.Application/Mappings para convertir entre entidades y DTOs usados por los controladores y vistas.
-- Ver las vistas parciales (_ClasificacionContratoGridPartial.cshtml, _RequisitosContratosGridPartial.cshtml, _RelacionContratoRequisitoGridPartial.cshtml) para ejemplos de interacción UI -> endpoints JSON.
+| Proyecto | Responsabilidad |
+| --- | --- |
+| `MantenimientoPresentation` | Aplicación web: controladores, vistas, configuración, autenticación y punto de entrada (`Program.cs`). |
+| `Mantenimiento.Core.Application` | Servicios de aplicación, interfaces de servicio, DTO y mapeos. |
+| `Mantenimiento.Core` (`Mantenimiento.Core.Domain.csproj`) | Entidades de dominio e interfaces de repositorio. |
+| `Mantenimiento.Infraestructure` (`Mantenimiento.Infraestructure.Persistence.csproj`) | `ApplicationDbContext`, mapeos de Entity Framework Core y repositorios de acceso a datos. |
 
+El flujo habitual es **controlador → servicio → interfaz de repositorio → repositorio → SQL Server**. Las dependencias se registran en `MantenimientoPresentation/Program.cs`. Parte de los repositorios consulta tablas o vistas mediante Entity Framework Core; otros invocan procedimientos almacenados, especialmente con `FromSqlRaw` y `ExecuteSqlRawAsync`.
 
-## Cómo ejecutar el proyecto (desarrollo)
-1. Abrir la solución `ManteniminetoInstituciones.sln` en Visual Studio 2022/2026 o VS Code.
-2. Asegurarse de tener .NET 8 SDK instalado.
-3. Configurar la cadena de conexión `ConexionSIGOB` en `MantenimientoPresentation/appsettings.json` o en secrets:
+### Puntos de entrada y configuración
 
-   "ConnectionStrings": {
-	 "ConexionSIGOB": "Server=...;Database=...;User Id=...;Password=...;TrustServerCertificate=True;"
-   }
+- Solución: `ManteniminetoInstituciones.sln`.
+- Proyecto web: `MantenimientoPresentation/MantenimientoPresentation.csproj`.
+- Arranque, registro de dependencias y rutas: `MantenimientoPresentation/Program.cs`.
+- Configuración: `MantenimientoPresentation/appsettings.json` y `appsettings.Development.json`.
+- Perfil local: `MantenimientoPresentation/Properties/launchSettings.json`.
+- Entidades y contratos: `Mantenimiento.Core/Entities` y `Mantenimiento.Core/RepositoryInterfaces`.
+- Servicios, DTO y mapeos: `Mantenimiento.Core.Application`.
+- Persistencia: `Mantenimiento.Infraestructure/DbContext` y `Mantenimiento.Infraestructure/Repositories`.
+- Interfaz: `MantenimientoPresentation/Controllers` y `MantenimientoPresentation/Views`.
+- Procedimientos SQL incluidos: `Database/Store Procedures/Stores Procedures modulos.sql`.
 
-4. Ejecutar el proyecto `MantenimientoPresentation` (como proyecto de inicio) desde Visual Studio o con `dotnet run --project ManteniminetoInstituciones/MantenimientoPresentation`.
+Para incorporar o modificar un módulo, revisa las capas relacionadas y registra sus servicios y repositorios en `Program.cs`. Mantén sincronizados los nombres y tipos de columnas entre entidades, mapeos de `ApplicationDbContext`, resultados de procedimientos y DTO que utiliza la vista.
 
-## Consideraciones técnicas y notas de implementación
-- Repositorios usan ADO/EF Core SQL parameters (SqlParameter) para evitar inyección SQL; se usan FromSqlRaw y ExecuteSqlRawAsync.
-- Muchos DTOs y mapeos están en Core.Application/Mappings. Mantener sincronía entre los nombres de columna en ApplicationDbContext y las propiedades de las entidades.
-- Vistas y procedimientos: algunas entidades están mapeadas a vistas con HasNoKey(); su uso es de solo lectura.
-- No se incluyen migraciones EF en el repo; si se requieren, crear migraciones en el proyecto Infrastructure apuntando a ApplicationDbContext.
+### Compilación y pruebas
 
-## Buenas prácticas y mejoras sugeridas
-- Añadir manejo centralizado de errores y logging (por ejemplo, Serilog). Actualmente Program.cs configura manejo básico de excepciones para producción.
-- Añadir pruebas unitarias e integración para servicios y repositorios.
-- Documentar los procedimientos almacenados (parámetros esperados y esquemas) fuera del código para facilitar mantenimiento.
-- Considerar uso de Dapper para procedimientos almacenados si se busca rendimiento en consultas muy complejas.
+Desde la carpeta de la solución:
 
-- Revisar permisos y validaciones en los nuevos controladores para evitar que operaciones de modificación queden sin restricciones.
+```powershell
+dotnet build .\ManteniminetoInstituciones.sln
+```
 
-## Contribución
-- Trabajar en una rama por feature/bugfix.
-- Mantener la convención de capas y registrar nuevos servicios/repositorios en `Program.cs`.
+La solución actual contiene los cuatro proyectos de aplicación indicados, pero no incluye un proyecto de pruebas automatizadas.
 
-## Licencia y autores
-Repositorio privado / sin license especificada. Contactar al mantenedor para detalles.
+## Seguridad y limitaciones
 
-## Procedimientos almacenados (listado por repositorio)
-A continuación se listan los procedimientos almacenados referenciados en los repositorios (según el código) agrupados por archivo/repo. Se incluyen plantillas SQL básicas (sólo esqueleto) para crear cada SP en la base de datos; completar la lógica según la necesidad.
-
-Nota: los esquemas aparecen tal como en el código (dbo, ct, etc.). Revise permisos y tipos de datos en la base real.
-
-### Repositorio: AnalistaSupervisorRepository.cs
-- dbo.sp_Obtener_Mantenimiento_Analistas_Supervisores
-- dbo.sp_Obtener_Supervisores_Disponibles
-- dbo.sp_Asignar_Supervisor_Analista
-- dbo.sp_Reasignar_Supervisor_Analista
-- dbo.sp_Eliminar_Asignacion_Analista
-
-### Repositorio: CapituloRepository.cs
-- dbo.sp_capitulo_Obtener
-- dbo.sp_capitulo_Insertar
-- dbo.sp_capitulo_Actualizar
-- dbo.sp_capitulo_Eliminar
-
-### Repositorio: SubCapituloRepository.cs
-- dbo.sp_subcapitulo_Obtener
-- dbo.sp_subcapitulo_Crear
-- dbo.sp_subcapitulo_Actualizar
-- dbo.sp_subcapitulo_Eliminar
-
-### Repositorio: DafRepository.cs
-- dbo.sp_daf_Obtener
-- dbo.sp_daf_Crear
-- dbo.sp_daf_Actualizar
-- dbo.sp_daf_Eliminar (referenciado como sp_daf_Eliminar)
-
-### Repositorio: CategoriaTramiteRepository.cs
-- No usa stored procedures; consulta la vista 'v_categoria_tramite' mediante SQL directo en el repositorio.
-
-### Repositorio: FondoEspecialesRepository.cs
-- dbo.sp_FondoEspeciales_Insertar
-- dbo.sp_FondoEspeciales_Actualizar
-
-### Repositorio: InstitucionRepository.cs
-- No usa stored procedures; consulta la vista 'v_institucion' mapeada en ApplicationDbContext.
-
-### Repositorio: TipoTramiteContratoRepository.cs
-- No usa stored procedures; consulta tabla/vista TipoTramiteContratos vía DbSet.
-
-### Repositorio: UnidadEjecutoraRepository.cs
-- dbo.sp_unidad_ejecutora_Obtener
-- dbo.sp_unidad_ejecutora_Crear
-- dbo.sp_unidad_ejecutora_Actualizar
-- dbo.sp_unidad_ejecutora_Eliminar
-
-### Repositorio: TipoTramitePagoRepository.cs
-- dbo.sp_TipoTramitePago_Obtener
-
-### Repositorio: CuentaMapeoRepository.cs
-- dbo.sp_Cuentas_Obtener
-- dbo.sp_Cuentas_Insertar
-- dbo.sp_Cuentas_Actualizar
-- dbo.sp_Cuentas_Eliminar
-
-### Repositorio: CuentaCtRepository.cs (schema ct)
-- ct.sp_CuentasCt_Obtener
-- ct.sp_CuentasCt_Insertar
-- ct.sp_CuentasCt_Actualizar
-- ct.sp_CuentasCt_Eliminar
-
-### Repositorio: CuentaInstitucionRepository.cs
-- dbo.sp_cta_institucion_ObtenerPorEstructura
-- dbo.sp_cta_institucion_Insertar
-- dbo.sp_cta_institucion_Actualizar
-- dbo.sp_cta_institucion_Eliminar
-
-### Repositorio: CuentaRequisitoRepository.cs (schema ct)
-- ct.sp_Obtener_Relacion_Cuenta_Requisitos
-- ct.sp_Asignar_Cuenta_Requisito
-- ct.sp_Actualizar_Relacion_Cuenta_Requisitos
-- ct.sp_Eliminar_Relacion_Cuenta_Requisitos
-- ct.sp_Obtener_Catalogo_ctCuentas
-- ct.sp_Obtener_Catalogo_ctRequisitos
-
-### Repositorio: RequisitoRepository.cs (schema ct)
-- [ct].[sp_Obtener_Requisitos]
-- [ct].[sp_Crear_Requisito]
-- [ct].[sp_Actualizar_Requisito]
-- [ct].[sp_Eliminar_Requisito]
-
-### Repositorio: RequisitoContratoRepository.cs
-- dbo.sp_requisitos_contratos_Obtener
-- dbo.sp_requisitos_contratos_Crear
-- dbo.sp_requisitos_contratos_Actualizar
-- dbo.sp_requisitos_contratos_Eliminar
-
-### Repositorio: RelacionContratoRequisitoRepository.cs
-- dbo.sp_Obtener_Relacion_Contrato_Requisito
-- dbo.sp_Asignar_Contrato_Requisito
-- dbo.sp_Actualizar_Relacion_Contrato_Requisito
-- dbo.sp_Eliminar_Relacion_Contrato_Requisito
-- dbo.sp_Obtener_Catalogo_Clasificacion_Contratos
-- dbo.sp_Obtener_Catalogo_Requisitos_Contratos
-
-### Repositorio: ClasificacionContratoRepository.cs
-- dbo.sp_clasificacion_contratos_Obtener
-- dbo.sp_clasificacion_contratos_Crear
-- dbo.sp_clasificacion_contratos_Actualizar
-- dbo.sp_clasificacion_contratos_Eliminar
-- dbo.sp_Obtener_Catalogo_Proceso_Seleccion
+- `appsettings.json` contiene actualmente una cadena de conexión con credenciales. No publiques ni reutilices esos valores. Si corresponden a credenciales activas, solicita su rotación y mantenlas fuera del control de versiones; usa una variable de entorno como la descrita arriba.
+- El inicio de sesión está simulado con credenciales fijas en el código. Sustituye este mecanismo por autenticación institucional antes de cualquier despliegue real. No despliegues la aplicación con las credenciales de desarrollo.
+- La autenticación mediante cookies expira a los 20 minutos según la configuración actual; esto no reemplaza un diseño completo de identidad, autorización por roles ni gestión de usuarios.
+- La aplicación depende de procedimientos, vistas, tablas y permisos propios de la base institucional. Un error de conexión o la ausencia de esos objetos puede impedir que los módulos de datos funcionen.
+- No se encontraron migraciones de Entity Framework Core en los proyectos actuales.
