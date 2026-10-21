@@ -133,7 +133,10 @@
 
         <!-- FORMULARIO DE LOGIN -->
         <form asp-controller="Auth" asp-action="Login" method="post">
-            <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small mb-3" role="alert"></div>
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small mb-3" role="alert"></div>
+            }
 
             <!-- CAMPO USUARIO -->
             <div class="mb-3">
@@ -174,5 +177,15 @@
         </div>
     </div>
 
+    <script>
+        document.querySelector('form').addEventListener('submit', event => {
+            const boton = event.currentTarget.querySelector('button[type="submit"]');
+            if (!boton || boton.disabled) return;
+
+            boton.disabled = true;
+            boton.setAttribute('aria-busy', 'true');
+            boton.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span><span>Verificando credenciales…</span>';
+        });
+    </script>
 </body>
 </html>

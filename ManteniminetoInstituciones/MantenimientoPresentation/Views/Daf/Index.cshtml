@@ -246,8 +246,8 @@
             });
         }
 
-        function eliminarDaf(id) {
-            if (!confirm('¿Desea eliminar este DAF?')) return;
+        async function eliminarDaf(id) {
+            if (!await confirmarAccion('¿Desea eliminar este DAF?', { kind: 'danger', confirmText: 'Sí, eliminar' })) return;
 
             fetch(`/Daf/Eliminar?id=${id}`, { method: 'POST' })
                 .then(res => res.json())
