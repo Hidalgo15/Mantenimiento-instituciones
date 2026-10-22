@@ -7,7 +7,7 @@ namespace Mantenimiento.Core.Application.InterfaceServices
     {
         Task<List<MoldeCatalogoDto>> ObtenerCatalogosMoldesAsync();
         Task<List<SubtipoMoldeDto>> ObtenerSubtiposPorMoldeAsync(int codigoTre);
-        Task<List<UsuarioSubtipoDto>> ObtenerUsuariosPorSubtiposAsync(string codigosSubtipos);
+        Task<List<UsuarioSubtipoDto>> ObtenerUsuariosPorMoldeAsync(int codigoTre);
         Task<List<ActividadSubtipoDto>> ObtenerActividadesPorSubtiposAsync(string codigosSubtipos);
         Task<List<ResponsableActividadDto>> ObtenerActividadesUsuarioAsync(string codigoDespa);
         Task<ResultadoOperacionDto> GestionarActividadesAsync(GestionarResponsableActividadDto dto);

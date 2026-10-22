@@ -51,7 +51,7 @@
                     </label>
                     <div class="input-group">
                         <input type="text" id="txtBusquedaUsuario" class="form-control rounded-start-pill border-secondary-subtle py-2"
-                               placeholder="Seleccione subtipos primero..."
+                               placeholder="Seleccione un molde primero..."
                                oninput="filtrarUsuariosFlotante(this)" autocomplete="off" disabled />
                         <button type="button" class="btn btn-outline-secondary rounded-end-pill px-3"
                                 onclick="limpiarSeleccionUsuario()" title="Limpiar usuario">
@@ -73,7 +73,7 @@
     <div id="contenedorGestionActividades" class="d-none">
         <div class="card border-0 shadow-sm rounded-4">
             <div class="card-body p-4">
-                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-3">
                     <div>
                         <h5 class="fw-bold text-dark mb-1">
                             <i class="bi bi-list-check me-2" style="color: #0d5493;"></i> Gestión de Actividades por Asignar
@@ -83,6 +83,13 @@
                     <button type="button" id="btnGuardarCambios" class="btn btn-cgr-primary rounded-pill px-4 py-2 opacity-50" onclick="guardarAsignacionActividades()" disabled>
                         <i class="bi bi-save me-1"></i> Guardar Cambios
                     </button>
+                </div>
+
+                <!-- INFO DEL USUARIO SELECCIONADO -->
+                <div class="alert alert-light border border-secondary-subtle rounded-3 py-2 px-3 mb-3 d-flex align-items-center gap-2">
+                    <i class="bi bi-person-circle fs-5 text-primary"></i>
+                    <span class="small text-secondary">Responsable actual:</span>
+                    <strong id="lblUsuarioSeleccionadoInfo" class="text-dark small">-</strong>
                 </div>
 
                 <!-- BARRA DE FILTROS Y BÚSQUEDA RÁPIDA DE ACTIVIDADES -->
@@ -130,7 +137,7 @@
         let subtiposSeleccionadosGlobal = [];
         let filtroEstadoActual = 'todas';
         let listaUsuariosGlobal = [];
-        let estadoInicialCheckboxes = new Set(); // Almacena el estado original de los checkboxes
+        let estadoInicialCheckboxes = new Set();
 
         // Delegación de eventos para detectar cambios en los checkboxes cargados por AJAX
         document.addEventListener('change', function(e) {
@@ -148,16 +155,18 @@
             contenedorSubtipos.innerHTML = '<span class="text-muted small fst-italic">Cargando subtipos...</span>';
             inputBusqUsuario.value = '';
             inputBusqUsuario.disabled = true;
-            inputBusqUsuario.placeholder = 'Seleccione subtipos primero...';
+            inputBusqUsuario.placeholder = 'Cargando usuarios...';
             document.getElementById('selectUsuario').value = '';
             document.getElementById('resultadosUsuarioFlotante').classList.add('d-none');
             document.getElementById('contenedorGestionActividades').classList.add('d-none');
 
             if (!codigoTre) {
                 contenedorSubtipos.innerHTML = '<span class="text-muted small fst-italic">Seleccione un molde primero...</span>';
+                inputBusqUsuario.placeholder = 'Seleccione un molde primero...';
                 return;
             }
 
+            // 1. Cargar subtipos asociados al molde
             fetch(`/ResponsableActividad/ObtenerSubtipos?codigoTre=${codigoTre}`)
                 .then(res => res.json())
                 .then(res => {
@@ -177,30 +186,9 @@
                         contenedorSubtipos.innerHTML = '<span class="text-danger small">No se encontraron subtipos para este molde.</span>';
                     }
                 });
-        }
 
-        function procesarCambioSubtipos() {
-            const checkboxes = document.querySelectorAll('.chk-subtipo:checked');
-            subtiposSeleccionadosGlobal = Array.from(checkboxes).map(chk => chk.value);
-
-            const inputBusqUsuario = document.getElementById('txtBusquedaUsuario');
-            const contenedorResultados = document.getElementById('resultadosUsuarioFlotante');
-
-            inputBusqUsuario.value = '';
-            inputBusqUsuario.disabled = true;
-            document.getElementById('selectUsuario').value = '';
-            contenedorResultados.classList.add('d-none');
-            document.getElementById('contenedorGestionActividades').classList.add('d-none');
-
-            if (subtiposSeleccionadosGlobal.length === 0) {
-                inputBusqUsuario.placeholder = 'Seleccione subtipos primero...';
-                return;
-            }
-
-            inputBusqUsuario.placeholder = 'Cargando usuarios...';
-            const codigosSubtiposStr = subtiposSeleccionadosGlobal.join(',');
-
-            fetch(`/ResponsableActividad/ObtenerUsuariosYActividades?codigosSubtipos=${encodeURIComponent(codigosSubtiposStr)}`)
+            // 2. Cargar usuarios directamente filtrados por el molde (codigoTre)
+            fetch(`/ResponsableActividad/ObtenerUsuariosPorMolde?codigoTre=${codigoTre}`)
                 .then(res => res.json())
                 .then(res => {
                     if (res.success) {
@@ -209,12 +197,26 @@
                             inputBusqUsuario.disabled = false;
                             inputBusqUsuario.placeholder = 'Escriba el nombre, cargo o código del usuario para buscar...';
                         } else {
-                            inputBusqUsuario.placeholder = 'No hay usuarios asociados a estos subtipos.';
+                            inputBusqUsuario.placeholder = 'No hay usuarios asociados a este molde.';
                         }
                     } else {
                         inputBusqUsuario.placeholder = 'Error al cargar usuarios.';
                     }
                 });
+        }
+
+        function procesarCambioSubtipos() {
+            const checkboxes = document.querySelectorAll('.chk-subtipo:checked');
+            subtiposSeleccionadosGlobal = Array.from(checkboxes).map(chk => chk.value);
+
+            const codigoDespa = document.getElementById('selectUsuario').value;
+
+            // Si ya hay un usuario seleccionado y modifica los subtipos, actualizamos el grid
+            if (codigoDespa && subtiposSeleccionadosGlobal.length > 0) {
+                cargarActividadesUsuario();
+            } else if (subtiposSeleccionadosGlobal.length === 0) {
+                document.getElementById('contenedorGestionActividades').classList.add('d-none');
+            }
         }
 
         function filtrarUsuariosFlotante(input) {
@@ -250,8 +252,13 @@
                     btn.innerHTML = `<strong>${u.nombre}</strong> <span class="text-muted small">(${u.cargo || 'Sin cargo'} - <code>${u.codigoDespa}</code>)</span>`;
 
                     btn.addEventListener('click', () => {
-                        input.value = `${u.nombre} - ${u.cargo || 'Sin cargo'} (${u.codigoDespa})`;
+                        const textoUsuario = `${u.nombre} - ${u.cargo || 'Sin cargo'} (${u.codigoDespa})`;
+                        input.value = textoUsuario;
                         document.getElementById('selectUsuario').value = u.codigoDespa;
+
+                        // Actualizar etiqueta informativa superior de la tabla
+                        document.getElementById('lblUsuarioSeleccionadoInfo').textContent = textoUsuario;
+
                         contenedorResultados.classList.add('d-none');
                         cargarActividadesUsuario();
                     });
@@ -282,7 +289,7 @@
             const codigoDespa = document.getElementById('selectUsuario').value;
             const contenedorGestion = document.getElementById('contenedorGestionActividades');
 
-            if (!codigoDespa) {
+            if (!codigoDespa || subtiposSeleccionadosGlobal.length === 0) {
                 contenedorGestion.classList.add('d-none');
                 return;
             }
@@ -295,7 +302,6 @@
                     document.getElementById('gridActividadesContenedor').innerHTML = html;
                     contenedorGestion.classList.remove('d-none');
 
-                    // Capturar el estado inicial al cargar los datos y bloquear botón
                     capturarEstadoInicial();
                     evaluarCambiosPendientes();
                 });
@@ -357,7 +363,6 @@
                 .then(data => {
                     if (data.success) {
                         alert(data.message);
-                        // Actualizar el estado inicial con lo guardado y desactivar el botón
                         capturarEstadoInicial();
                         evaluarCambiosPendientes();
                         aplicarFiltrosTablaActividades();
@@ -367,10 +372,9 @@
                 });
         }
 
-        async function filtrarEstadoActividades(nuevoEstado) {
+        function filtrarEstadoActividades(nuevoEstado) {
             if (filtroEstadoActual === nuevoEstado) return;
 
-            // Comprobar si hay cambios sin guardar
             const checkboxes = document.querySelectorAll('.chk-actividad');
             let hayCambios = false;
             checkboxes.forEach(chk => {
@@ -380,14 +384,10 @@
             });
 
             if (hayCambios) {
-                const confirmar = await confirmarAccion(
-                    'Tiene modificaciones sin guardar. Si cambia de filtro, se descartarán los cambios pendientes. ¿Desea continuar?',
-                    { kind: 'warning', title: 'Cambios sin guardar', confirmText: 'Descartar cambios' }
-                );
+                const confirmar = confirm('Tiene modificaciones sin guardar. Si cambia de filtro, se descartarán los cambios pendientes. ¿Desea continuar?');
                 if (!confirmar) {
-                    return; // Mantiene el filtro actual y preserva los cambios
+                    return;
                 } else {
-                    // Si acepta descartar, recargamos los datos originales del usuario
                     cargarActividadesUsuario();
                 }
             }
