@@ -34,12 +34,12 @@
                     </select>
                 </div>
 
-                <!-- 2. Subtipos (Múltiples / Cascada) -->
+                <!-- 2. Subtipos (Múltiples / Cascada - Actualizado a Pills) -->
                 <div class="col-md-6">
                     <label class="form-label fw-bold text-dark mb-2">
                         <i class="bi bi-diagram-2-fill me-1" style="color: #0d5493;"></i> 2. Subtipos Asociados
                     </label>
-                    <div id="contenedorSubtipos" class="border border-secondary-subtle rounded-3 p-2 bg-light-subtle" style="max-height: 130px; overflow-y: auto;">
+                    <div id="contenedorSubtipos" class="border border-secondary-subtle rounded-3 p-3 bg-light-subtle" style="max-height: 150px; overflow-y: auto;">
                         <span class="text-muted small fst-italic">Seleccione un molde primero...</span>
                     </div>
                 </div>
@@ -85,16 +85,9 @@
                     </button>
                 </div>
 
-                <!-- INFO DEL USUARIO SELECCIONADO -->
-                <div class="alert alert-light border border-secondary-subtle rounded-3 py-2 px-3 mb-3 d-flex align-items-center gap-2">
-                    <i class="bi bi-person-circle fs-5 text-primary"></i>
-                    <span class="small text-secondary">Responsable actual:</span>
-                    <strong id="lblUsuarioSeleccionadoInfo" class="text-dark small">-</strong>
-                </div>
-
                 <!-- BARRA DE FILTROS Y BÚSQUEDA RÁPIDA DE ACTIVIDADES -->
                 <div class="row g-3 align-items-center mb-3 bg-light p-3 rounded-3">
-                    <!-- Filtros por Estado (Todas / Asignadas / No Asignadas) -->
+                    <!-- Filtros por Estado -->
                     <div class="col-md-6">
                         <div class="btn-group w-100" role="group" aria-label="Filtro de asignación">
                             <button type="button" class="btn btn-outline-secondary btn-sm active" id="btnFiltroTodas" onclick="filtrarEstadoActividades('todas')">
@@ -115,7 +108,7 @@
                             <span class="input-group-text bg-white border-secondary-subtle text-muted">
                                 <i class="bi bi-search"></i>
                             </span>
-                            <input type="text" id="txtBuscarActividadGrid" class="form-control border-secondary-subtle"
+                            <input type="text" id="txtBuscarActividadGrid" class="form-control border-secondary-subtle" 
                                    placeholder="Filtrar actividades por descripción..." oninput="filtrarTextoActividades()" />
                             <button type="button" class="btn btn-outline-secondary" onclick="limpiarBusquedaActividad()">
                                 <i class="bi bi-x-lg"></i>
@@ -138,12 +131,15 @@
         let filtroEstadoActual = 'todas';
         let listaUsuariosGlobal = [];
         let estadoInicialCheckboxes = new Set();
+        let nombreUsuarioSeleccionado = '';
+        let cargoUsuarioSeleccionado = '';
 
-        // Delegación de eventos para detectar cambios en los checkboxes cargados por AJAX
+        // Delegación de eventos para detectar cambios en los checkboxes de actividades
         document.addEventListener('change', function(e) {
             if (e.target && e.target.classList.contains('chk-actividad')) {
                 evaluarCambiosPendientes();
-                aplicarFiltrosTablaActividades();
+                // Opcional: si quieres que al marcar/desmarcar se recalcule el contenedor vacío en tiempo real sin ocultar filas a la fuerza
+                actualizarVisibilidadTablaVacia();
             }
         });
 
@@ -166,7 +162,6 @@
                 return;
             }
 
-            // 1. Cargar subtipos asociados al molde
             fetch(`/ResponsableActividad/ObtenerSubtipos?codigoTre=${codigoTre}`)
                 .then(res => res.json())
                 .then(res => {
@@ -174,12 +169,12 @@
                         let html = '';
                         res.data.forEach(sub => {
                             html += `
-                                                <div class="form-check">
-                                                    <input class="form-check-input chk-subtipo" type="checkbox" value="${sub.codigoTipoTre}" id="sub_${sub.codigoTipoTre}" onchange="procesarCambioSubtipos()">
-                                                    <label class="form-check-label small fw-semibold text-dark" for="sub_${sub.codigoTipoTre}">
-                                                        ${sub.descripcion} <span class="text-muted">(${sub.abreviatura || 'N/A'})</span>
-                                                    </label>
-                                                </div>`;
+                                <div class="form-check">
+                                    <input class="form-check-input chk-subtipo" type="checkbox" value="${sub.codigoTipoTre}" id="sub_${sub.codigoTipoTre}" onchange="procesarCambioSubtipos()">
+                                    <label class="form-check-label small fw-semibold text-dark" for="sub_${sub.codigoTipoTre}">
+                                        ${sub.descripcion} <span class="text-muted">(${sub.abreviatura || 'N/A'})</span>
+                                    </label>
+                                </div>`;
                         });
                         contenedorSubtipos.innerHTML = html;
                     } else {
@@ -187,7 +182,6 @@
                     }
                 });
 
-            // 2. Cargar usuarios directamente filtrados por el molde (codigoTre)
             fetch(`/ResponsableActividad/ObtenerUsuariosPorMolde?codigoTre=${codigoTre}`)
                 .then(res => res.json())
                 .then(res => {
@@ -208,10 +202,8 @@
         function procesarCambioSubtipos() {
             const checkboxes = document.querySelectorAll('.chk-subtipo:checked');
             subtiposSeleccionadosGlobal = Array.from(checkboxes).map(chk => chk.value);
-
             const codigoDespa = document.getElementById('selectUsuario').value;
 
-            // Si ya hay un usuario seleccionado y modifica los subtipos, actualizamos el grid
             if (codigoDespa && subtiposSeleccionadosGlobal.length > 0) {
                 cargarActividadesUsuario();
             } else if (subtiposSeleccionadosGlobal.length === 0) {
@@ -252,12 +244,11 @@
                     btn.innerHTML = `<strong>${u.nombre}</strong> <span class="text-muted small">(${u.cargo || 'Sin cargo'} - <code>${u.codigoDespa}</code>)</span>`;
 
                     btn.addEventListener('click', () => {
-                        const textoUsuario = `${u.nombre} - ${u.cargo || 'Sin cargo'} (${u.codigoDespa})`;
-                        input.value = textoUsuario;
+                        input.value = `${u.nombre} - ${u.cargo || 'Sin cargo'} (${u.codigoDespa})`;
                         document.getElementById('selectUsuario').value = u.codigoDespa;
 
-                        // Actualizar etiqueta informativa superior de la tabla
-                        document.getElementById('lblUsuarioSeleccionadoInfo').textContent = textoUsuario;
+                        nombreUsuarioSeleccionado = u.nombre;
+                        cargoUsuarioSeleccionado = u.cargo || 'Sin cargo';
 
                         contenedorResultados.classList.add('d-none');
                         cargarActividadesUsuario();
@@ -296,7 +287,7 @@
 
             const codigosSubtiposStr = subtiposSeleccionadosGlobal.join(',');
 
-            fetch(`/ResponsableActividad/ObtenerGrid?codigoDespa=${codigoDespa}&codigosSubtipos=${encodeURIComponent(codigosSubtiposStr)}`)
+            fetch(`/ResponsableActividad/ObtenerGrid?codigoDespa=${codigoDespa}&codigosSubtipos=${encodeURIComponent(codigosSubtiposStr)}&nombreUsuario=${encodeURIComponent(nombreUsuarioSeleccionado)}&cargoUsuario=${encodeURIComponent(cargoUsuarioSeleccionado)}`)
                 .then(res => res.text())
                 .then(html => {
                     document.getElementById('gridActividadesContenedor').innerHTML = html;
@@ -304,6 +295,7 @@
 
                     capturarEstadoInicial();
                     evaluarCambiosPendientes();
+                    aplicarFiltrosTablaActividades();
                 });
         }
 
@@ -359,20 +351,20 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dto)
             })
-                .then(res => res.json())
-                .then(data => {
-                    if (data.success) {
-                        alert(data.message);
-                        capturarEstadoInicial();
-                        evaluarCambiosPendientes();
-                        aplicarFiltrosTablaActividades();
-                    } else {
-                        alert('Error: ' + data.message);
-                    }
-                });
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    alert(data.message);
+                    capturarEstadoInicial();
+                    evaluarCambiosPendientes();
+                    aplicarFiltrosTablaActividades();
+                } else {
+                    alert('Error: ' + data.message);
+                }
+            });
         }
 
-        function filtrarEstadoActividades(nuevoEstado) {
+        async function filtrarEstadoActividades(nuevoEstado) {
             if (filtroEstadoActual === nuevoEstado) return;
 
             const checkboxes = document.querySelectorAll('.chk-actividad');
@@ -384,11 +376,16 @@
             });
 
             if (hayCambios) {
-                const confirmar = confirm('Tiene modificaciones sin guardar. Si cambia de filtro, se descartarán los cambios pendientes. ¿Desea continuar?');
+                const confirmar = await confirmarAccion(
+                    'Tiene modificaciones sin guardar. Si cambia de filtro, se descartarán los cambios pendientes. ¿Desea continuar?',
+                    { kind: 'warning', title: 'Cambios sin guardar', confirmText: 'Descartar cambios', cancelText: 'Cancelar' }
+                );
+
                 if (!confirmar) {
                     return;
                 } else {
                     cargarActividadesUsuario();
+                    return;
                 }
             }
 
@@ -410,27 +407,53 @@
             aplicarFiltrosTablaActividades();
         }
 
+        // FILTRADO ESTABLE: Se basa en el estado inicial para que el elemento no desaparezca al marcar/desmarcar
         function aplicarFiltrosTablaActividades() {
             const textoFiltro = document.getElementById('txtBuscarActividadGrid').value.toLowerCase().trim();
             const filas = document.querySelectorAll('#tablaActividadesAsignacion tbody tr');
+            let visiblesCount = 0;
 
             filas.forEach(fila => {
                 const checkbox = fila.querySelector('.chk-actividad');
-                const estaAsignada = checkbox ? checkbox.checked : false;
+                const codigoAct = checkbox ? checkbox.value : '';
+                // Usamos el estado inicial original para el filtrado de pestañas
+                const estabaAsignadaOriginal = estadoInicialCheckboxes.has(codigoAct);
                 const textoFila = fila.innerText.toLowerCase();
 
                 let cumpleEstado = true;
-                if (filtroEstadoActual === 'asignadas' && !estaAsignada) cumpleEstado = false;
-                if (filtroEstadoActual === 'no-asignadas' && estaAsignada) cumpleEstado = false;
+                if (filtroEstadoActual === 'asignadas' && !estabaAsignadaOriginal) cumpleEstado = false;
+                if (filtroEstadoActual === 'no-asignadas' && estabaAsignadaOriginal) cumpleEstado = false;
 
                 const cumpleTexto = textoFila.includes(textoFiltro);
 
                 if (cumpleEstado && cumpleTexto) {
                     fila.style.display = '';
+                    visiblesCount++;
                 } else {
                     fila.style.display = 'none';
                 }
             });
+
+            // Control de mensaje cuando no hay resultados en el filtro actual
+            let alertVacio = document.getElementById('alertaFiltroVacio');
+            const tablaContainer = document.querySelector('#tablaActividadesAsignacion')?.closest('.table-responsive');
+
+            if (visiblesCount === 0) {
+                if (!alertVacio && tablaContainer) {
+                    alertVacio = document.createElement('div');
+                    alertVacio.id = 'alertaFiltroVacio';
+                    alertVacio.className = 'alert alert-secondary border-0 shadow-sm text-center py-3 rounded-3 mt-2 mb-0';
+                    alertVacio.style.backgroundColor = '#f8fafc';
+                    alertVacio.innerHTML = '<i class="bi bi-info-circle fs-5 text-secondary d-block mb-1"></i><span class="fw-semibold text-secondary small">No hay actividades para mostrar en este filtro.</span>';
+                    tablaContainer.parentNode.appendChild(alertVacio);
+                } else if (alertVacio) {
+                    alertVacio.style.display = '';
+                }
+            } else {
+                if (alertVacio) {
+                    alertVacio.style.display = 'none';
+                }
+            }
         }
     </script>
 }

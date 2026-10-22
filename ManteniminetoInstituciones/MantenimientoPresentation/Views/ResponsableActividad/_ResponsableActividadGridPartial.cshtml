@@ -1,4 +1,4 @@
-﻿@model (List<Mantenimiento.Core.Application.DTOs.ResponsableActividad.ActividadSubtipoDto> Disponibles, List<int> AsignadasIds)
+﻿@model (List<Mantenimiento.Core.Application.DTOs.ResponsableActividad.ActividadSubtipoDto> Disponibles, List<int> AsignadasIds, string NombreUsuario, string CargoUsuario)
 
 @if (Model.Disponibles != null && Model.Disponibles.Any())
 {
@@ -9,6 +9,7 @@
                     <tr>
                         <th class="py-3 px-3 text-center" style="width: 70px;">Asignar</th>
                         <th class="py-3 px-3" style="width: 100px;">Código Act.</th>
+                        <th class="py-3 px-3">Responsable / Cargo</th>
                         <th class="py-3 px-3">Subtipo Asociado</th>
                         <th class="py-3 px-3">Descripción de la Actividad</th>
                     </tr>
@@ -24,6 +25,19 @@
                                 </div>
                             </td>
                             <td class="px-3 fw-bold text-secondary">#@act.CodigoActividad</td>
+
+                            <!-- COLUMNA RESPONSABLE Y CARGO -->
+                            <td class="px-3">
+                                <div class="d-flex flex-column">
+                                    <span class="fw-bold text-dark small">
+                                        @(string.IsNullOrEmpty(Model.NombreUsuario) ? "N/A" : Model.NombreUsuario)
+                                    </span>
+                                    <span class="text-muted fw-semibold" style="font-size: 0.85rem;">
+                                        @(string.IsNullOrEmpty(Model.CargoUsuario) ? "Sin cargo" : Model.CargoUsuario)
+                                    </span>
+                                </div>
+                            </td>
+
                             <td class="px-3 text-muted small">@act.DescripcionSubtipo</td>
                             <td class="px-3 fw-semibold text-dark">@act.DescripcionActividad</td>
                         </tr>
@@ -37,6 +51,6 @@ else
 {
     <div class="alert alert-secondary border-0 shadow-sm text-center py-4 rounded-3 mb-0" style="background-color: #f8fafc;">
         <i class="bi bi-exclamation-circle fs-3 text-secondary d-block mb-2"></i>
-        <span class="fw-semibold text-secondary">No hay actividades disponibles para los subtipos seleccionados.</span>
+        <span class="fw-semibold text-secondary">No hay actividades disponibles para los subtipos seleccionados o el usuario no tiene registros.</span>
     </div>
 }

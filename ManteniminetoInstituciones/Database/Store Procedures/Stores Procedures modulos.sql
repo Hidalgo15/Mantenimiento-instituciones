@@ -2957,21 +2957,13 @@ BEGIN
 END;
 GO
 
--- Obtener Usuarios por Subtipo(s)
+-- Obtener Usuarios por Molde
 
-CREATE OR ALTER PROCEDURE [dbo].[sp_Obtener_Usuarios_Por_Subtipos]
-    @CodigosSubtipos VARCHAR(MAX) -- Lista de códigos separados por coma, ej: '1088,1098,1099'
+CREATE OR ALTER PROCEDURE [dbo].[sp_Obtener_Usuarios_Por_Molde]
+    @CodigoTre INT -- Recibe el código del molde seleccionado (ej. 1)
 AS
 BEGIN
     SET NOCOUNT ON;
-
-    -- Tabla temporal para parsear los IDs recibidos
-    DECLARE @T_Subtipos TABLE (codigo_tipo_tre INT);
-    
-    INSERT INTO @T_Subtipos (codigo_tipo_tre)
-    SELECT TRY_CAST(value AS INT)
-    FROM STRING_SPLIT(@CodigosSubtipos, ',')
-    WHERE TRY_CAST(value AS INT) IS NOT NULL;
 
     SELECT DISTINCT 
         da.codigo_despa,
@@ -2981,9 +2973,9 @@ BEGIN
         da.cargo,
         da.email
     FROM [SIGOB].[dbo].[v_DespachoAreaActivos] da WITH (NOLOCK)
-    INNER JOIN [SIGOB].[dbo].[usuario_tipos_tre] utt WITH (NOLOCK) 
-        ON utt.codigo_despa = da.codigo_despa
-    WHERE utt.codigo_tipo_tre IN (SELECT codigo_tipo_tre FROM @T_Subtipos)
+    INNER JOIN [SIGOB].[dbo].[usuario_tre] ut WITH (NOLOCK) 
+        ON ut.codigo_despa = da.codigo_despa
+    WHERE ut.codigo_tre = @CodigoTre
     ORDER BY da.NOMBRE ASC;
 END;
 GO
@@ -3014,6 +3006,9 @@ BEGIN
     INNER JOIN [SIGOB].[dbo].[tipos_tre] tt WITH (NOLOCK) 
         ON tt.codigo_tipo_tre = att.codigo_tipo_tre
     WHERE att.codigo_tipo_tre IN (SELECT codigo_tipo_tre FROM @T_Subtipos)
+	-- Filtros de exclusión solicitados
+      AND a.descripcion NOT LIKE 'RI%'
+      AND a.descripcion <> 'Inicio trámite'
     ORDER BY descripcion_actividad ASC;
 END;
 GO

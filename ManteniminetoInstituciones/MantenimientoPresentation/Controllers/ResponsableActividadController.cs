@@ -38,7 +38,7 @@ namespace MantenimientoPresentation.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ObtenerGrid(string codigoDespa, string codigosSubtipos)
+        public async Task<IActionResult> ObtenerGrid(string codigoDespa, string codigosSubtipos, string nombreUsuario = "", string cargoUsuario = "")
         {
             try
             {
@@ -46,7 +46,7 @@ namespace MantenimientoPresentation.Controllers
                 var actuales = await _service.ObtenerActividadesUsuarioAsync(codigoDespa);
                 var actualesIds = actuales.Select(a => a.CodigoActividad).ToList();
 
-                return PartialView("_ResponsableActividadGridPartial", (disponibles, actualesIds));
+                return PartialView("_ResponsableActividadGridPartial", (disponibles, actualesIds, nombreUsuario, cargoUsuario));
             }
             catch (Exception ex)
             {
