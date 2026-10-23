@@ -42,15 +42,15 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
         }
 
         /// <summary>
-        /// Obtiene la lista de usuarios asociados a los subtipos de moldes especificados desde la base de datos mediante un procedimiento almacenado.
+        /// Obtiene la lista de usuarios asociados a los moldes especificados desde la base de datos mediante un procedimiento almacenado.
         /// </summary>
-        /// <param name="codigosSubtipos"></param>
+        /// <param name="codigoTre"></param>
         /// <returns></returns>
-        public async Task<List<UsuarioSubtipo>> ObtenerUsuariosPorSubtiposAsync(string codigosSubtipos)
+        public async Task<List<UsuarioSubtipo>> ObtenerUsuariosPorMoldeAsync(int codigoTre)
         {
-            var pSubtipos = new SqlParameter("@CodigosSubtipos", codigosSubtipos);
+            var pTre = new SqlParameter("@CodigoTre", codigoTre);
             return await _context.Set<UsuarioSubtipo>()
-                .FromSqlRaw("EXEC [SIGOB].[dbo].[sp_Obtener_Usuarios_Por_Subtipos] @CodigosSubtipos", pSubtipos)
+                .FromSqlRaw("EXEC [SIGOB].[dbo].[sp_Obtener_Usuarios_Por_Molde] @CodigoTre", pTre)
                 .AsNoTracking()
                 .ToListAsync();
         }

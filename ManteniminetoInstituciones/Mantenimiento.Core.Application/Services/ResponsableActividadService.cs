@@ -41,9 +41,9 @@ namespace Mantenimiento.Core.Application.Services
         /// </summary>
         /// <param name="codigosSubtipos"></param>
         /// <returns></returns>
-        public async Task<List<UsuarioSubtipoDto>> ObtenerUsuariosPorSubtiposAsync(string codigosSubtipos)
+        public async Task<List<UsuarioSubtipoDto>> ObtenerUsuariosPorMoldeAsync(int codigoTre)
         {
-            var data = await _repository.ObtenerUsuariosPorSubtiposAsync(codigosSubtipos);
+            var data = await _repository.ObtenerUsuariosPorMoldeAsync(codigoTre);
             return data.Select(ResponsableActividadMapper.ToDto).ToList();
         }
 
