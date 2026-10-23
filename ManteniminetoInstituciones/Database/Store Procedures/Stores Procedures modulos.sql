@@ -2945,15 +2945,39 @@ AS
 BEGIN
     SET NOCOUNT ON;
 
+    WITH SubtiposRank AS (
+        SELECT 
+            codigo_tipo_tre,
+            codigo_tre,
+            descripcion,
+            abreviatura,
+            -- Numera los registros duplicados según su ID (del más antiguo al más nuevo)
+            ROW_NUMBER() OVER (PARTITION BY descripcion, abreviatura ORDER BY codigo_tipo_tre ASC) AS version_num,
+            -- Cuenta el total de duplicados que tiene ese grupo
+            COUNT(*) OVER (PARTITION BY descripcion, abreviatura) AS total_duplicados
+        FROM [SIGOB].[dbo].[tipos_tre] WITH (NOLOCK)
+        WHERE codigo_tre = @CodigoTre 
+          AND activo = 1
+    )
     SELECT 
         codigo_tipo_tre,
         codigo_tre,
-        descripcion,
+        descripcion + 
+            CASE 
+                -- Si no tiene duplicados, se queda tal cual
+                WHEN total_duplicados = 1 THEN ''
+                -- El registro más nuevo (último ID) siempre es el Actual
+                WHEN version_num = total_duplicados THEN ' (Actual)'
+                -- Si exactamente son 2 registros, al primero se le llama simplemente (Anterior)
+                WHEN total_duplicados = 2 AND version_num = 1 THEN ' (Anterior)'
+                -- Si hay 3 o más, al penúltimo se le llama (Anterior 1)
+                WHEN version_num = total_duplicados - 1 THEN ' (Anterior 1)'
+                -- Si hay más hacia atrás, se numeran de forma progresiva
+                ELSE ' (Anterior ' + CAST(total_duplicados - version_num AS VARCHAR(10)) + ')'
+            END AS descripcion,
         abreviatura
-    FROM [SIGOB].[dbo].[tipos_tre] WITH (NOLOCK)
-    WHERE codigo_tre = @CodigoTre 
-      AND activo = 1
-    ORDER BY descripcion ASC;
+    FROM SubtiposRank
+    ORDER BY descripcion ASC, codigo_tipo_tre ASC;
 END;
 GO
 

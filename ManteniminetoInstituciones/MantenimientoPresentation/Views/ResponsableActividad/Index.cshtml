@@ -34,12 +34,18 @@
                     </select>
                 </div>
 
-                <!-- 2. Subtipos (Múltiples / Cascada - Actualizado a Pills) -->
+                <!-- 2. Subtipos (Múltiples / Cascada) -->
                 <div class="col-md-6">
-                    <label class="form-label fw-bold text-dark mb-2">
-                        <i class="bi bi-diagram-2-fill me-1" style="color: #0d5493;"></i> 2. Subtipos Asociados
-                    </label>
-                    <div id="contenedorSubtipos" class="border border-secondary-subtle rounded-3 p-3 bg-light-subtle" style="max-height: 150px; overflow-y: auto;">
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <label class="form-label fw-bold text-dark mb-0">
+                            <i class="bi bi-diagram-2-fill me-1" style="color: #0d5493;"></i> 2. Subtipos Asociados
+                        </label>
+                        <!-- Botón de Select All / Inverso -->
+                        <button type="button" id="btnSelectAllSubtipos" class="btn btn-sm btn-outline-primary rounded-pill px-2 py-0 fs-7 d-none" onclick="toggleSelectAllSubtipos()">
+                            <i class="bi bi-check-all me-1"></i> Seleccionar todos
+                        </button>
+                    </div>
+                    <div id="contenedorSubtipos" class="border border-secondary-subtle rounded-3 p-3 bg-light-subtle" style="max-height: 180px; overflow-y: auto;">
                         <span class="text-muted small fst-italic">Seleccione un molde primero...</span>
                     </div>
                 </div>
@@ -108,7 +114,7 @@
                             <span class="input-group-text bg-white border-secondary-subtle text-muted">
                                 <i class="bi bi-search"></i>
                             </span>
-                            <input type="text" id="txtBuscarActividadGrid" class="form-control border-secondary-subtle" 
+                            <input type="text" id="txtBuscarActividadGrid" class="form-control border-secondary-subtle"
                                    placeholder="Filtrar actividades por descripción..." oninput="filtrarTextoActividades()" />
                             <button type="button" class="btn btn-outline-secondary" onclick="limpiarBusquedaActividad()">
                                 <i class="bi bi-x-lg"></i>
@@ -147,8 +153,10 @@
             const codigoTre = document.getElementById('selectMolde').value;
             const contenedorSubtipos = document.getElementById('contenedorSubtipos');
             const inputBusqUsuario = document.getElementById('txtBusquedaUsuario');
+            const btnSelectAll = document.getElementById('btnSelectAllSubtipos');
 
             contenedorSubtipos.innerHTML = '<span class="text-muted small fst-italic">Cargando subtipos...</span>';
+            btnSelectAll.classList.add('d-none');
             inputBusqUsuario.value = '';
             inputBusqUsuario.disabled = true;
             inputBusqUsuario.placeholder = 'Cargando usuarios...';
@@ -169,14 +177,16 @@
                         let html = '';
                         res.data.forEach(sub => {
                             html += `
-                                <div class="form-check">
-                                    <input class="form-check-input chk-subtipo" type="checkbox" value="${sub.codigoTipoTre}" id="sub_${sub.codigoTipoTre}" onchange="procesarCambioSubtipos()">
-                                    <label class="form-check-label small fw-semibold text-dark" for="sub_${sub.codigoTipoTre}">
-                                        ${sub.descripcion} <span class="text-muted">(${sub.abreviatura || 'N/A'})</span>
-                                    </label>
-                                </div>`;
+                                                        <div class="form-check py-1 my-1">
+                                                            <input class="form-check-input chk-subtipo fs-5 border-secondary" type="checkbox" value="${sub.codigoTipoTre}" id="sub_${sub.codigoTipoTre}" onchange="procesarCambioSubtipos()">
+                                                            <label class="form-check-label fs-6 fw-semibold text-dark ms-1" style="cursor: pointer;" for="sub_${sub.codigoTipoTre}">
+                                                                ${sub.descripcion} <span class="text-muted fw-normal">(${sub.abreviatura || 'N/A'})</span>
+                                                            </label>
+                                                        </div>`;
                         });
                         contenedorSubtipos.innerHTML = html;
+                        btnSelectAll.classList.remove('d-none');
+                        btnSelectAll.textContent = 'Seleccionar todos';
                     } else {
                         contenedorSubtipos.innerHTML = '<span class="text-danger small">No se encontraron subtipos para este molde.</span>';
                     }
@@ -199,10 +209,43 @@
                 });
         }
 
+        // Función para el Select All / Des seleccionar todos de los Subtipos
+        function toggleSelectAllSubtipos() {
+            const checkboxes = document.querySelectorAll('.chk-subtipo');
+            const btnSelectAll = document.getElementById('btnSelectAllSubtipos');
+
+            // Verificamos si todos están marcados para decidir si marcamos todos o los desmarcamos
+            const todosMarcados = Array.from(checkboxes).every(chk => chk.checked);
+
+            checkboxes.forEach(chk => {
+                chk.checked = !todosMarcados;
+            });
+
+            if (!todosMarcados) {
+                btnSelectAll.innerHTML = '<i class="bi bi-dash-circle me-1"></i> Desmarcar todos';
+            } else {
+                btnSelectAll.innerHTML = '<i class="bi bi-check-all me-1"></i> Seleccionar todos';
+            }
+
+            procesarCambioSubtipos();
+        }
+
         function procesarCambioSubtipos() {
             const checkboxes = document.querySelectorAll('.chk-subtipo:checked');
+            const checkboxesTotales = document.querySelectorAll('.chk-subtipo');
+            const btnSelectAll = document.getElementById('btnSelectAllSubtipos');
+
             subtiposSeleccionadosGlobal = Array.from(checkboxes).map(chk => chk.value);
             const codigoDespa = document.getElementById('selectUsuario').value;
+
+            // Actualizar texto del botón dinámicamente si el usuario los marca/desmarca manual
+            if (btnSelectAll && checkboxesTotales.length > 0) {
+                if (checkboxes.length === checkboxesTotales.length) {
+                    btnSelectAll.innerHTML = '<i class="bi bi-dash-circle me-1"></i> Desmarcar todos';
+                } else {
+                    btnSelectAll.innerHTML = '<i class="bi bi-check-all me-1"></i> Seleccionar todos';
+                }
+            }
 
             if (codigoDespa && subtiposSeleccionadosGlobal.length > 0) {
                 cargarActividadesUsuario();
@@ -351,34 +394,44 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(dto)
             })
-            .then(res => res.json())
-            .then(data => {
-                if (data.success) {
-                    alert(data.message);
-                    capturarEstadoInicial();
-                    evaluarCambiosPendientes();
-                    aplicarFiltrosTablaActividades();
-                } else {
-                    alert('Error: ' + data.message);
-                }
-            });
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        capturarEstadoInicial();
+                        evaluarCambiosPendientes();
+                        aplicarFiltrosTablaActividades();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                });
         }
 
         async function filtrarEstadoActividades(nuevoEstado) {
             if (filtroEstadoActual === nuevoEstado) return;
 
             const checkboxes = document.querySelectorAll('.chk-actividad');
-            let hayCambios = false;
+            let cambiosPendientesCount = 0;
+
             checkboxes.forEach(chk => {
-                if (chk.checked !== estadoInicialCheckboxes.has(chk.value)) {
-                    hayCambios = true;
+                const estabaMarcado = estadoInicialCheckboxes.has(chk.value);
+                if (chk.checked !== estabaMarcado) {
+                    cambiosPendientesCount++;
                 }
             });
 
-            if (hayCambios) {
+            if (cambiosPendientesCount > 0) {
+                // Mensaje descriptivo indicando exactamente cuántas modificaciones se perderían
+                const mensajeDetallado = `Tiene ${cambiosPendientesCount} ${cambiosPendientesCount === 1 ? 'modificación pendiente' : 'modificaciones pendientes'} sin guardar.\n\nSi cambia de filtro en este momento, se perderán los cambios realizados. ¿Desea continuar?`;
+
                 const confirmar = await confirmarAccion(
-                    'Tiene modificaciones sin guardar. Si cambia de filtro, se descartarán los cambios pendientes. ¿Desea continuar?',
-                    { kind: 'warning', title: 'Cambios sin guardar', confirmText: 'Descartar cambios', cancelText: 'Cancelar' }
+                    mensajeDetallado,
+                    {
+                        kind: 'warning',
+                        title: 'Cambios sin guardar (' + cambiosPendientesCount + ')',
+                        confirmText: 'Sí, descartar cambios',
+                        cancelText: 'Seguir editando'
+                    }
                 );
 
                 if (!confirmar) {
