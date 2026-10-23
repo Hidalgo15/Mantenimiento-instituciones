@@ -7,7 +7,7 @@ namespace Mantenimiento.Core.Domain.RepositoryInterfaces
     {
         Task<List<MoldeCatalogo>> ObtenerCatalogosMoldesAsync();
         Task<List<SubtipoMolde>> ObtenerSubtiposPorMoldeAsync(int codigoTre);
-        Task<List<UsuarioSubtipo>> ObtenerUsuariosPorSubtiposAsync(string codigosSubtipos);
+        Task<List<UsuarioSubtipo>> ObtenerUsuariosPorMoldeAsync(int codigoTre);
         Task<List<ActividadSubtipo>> ObtenerActividadesPorSubtiposAsync(string codigosSubtipos);
         Task<List<ResponsableActividad>> ObtenerActividadesUsuarioAsync(string codigoDespa);
         Task<ResultadoOperacion> GestionarActividadesAsync(string codigoDespa, string? listaCodigosActividades);

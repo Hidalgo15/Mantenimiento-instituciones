@@ -38,7 +38,7 @@ namespace MantenimientoPresentation.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ObtenerGrid(string codigoDespa, string codigosSubtipos)
+        public async Task<IActionResult> ObtenerGrid(string codigoDespa, string codigosSubtipos, string nombreUsuario = "", string cargoUsuario = "")
         {
             try
             {
@@ -46,7 +46,7 @@ namespace MantenimientoPresentation.Controllers
                 var actuales = await _service.ObtenerActividadesUsuarioAsync(codigoDespa);
                 var actualesIds = actuales.Select(a => a.CodigoActividad).ToList();
 
-                return PartialView("_ResponsableActividadGridPartial", (disponibles, actualesIds));
+                return PartialView("_ResponsableActividadGridPartial", (disponibles, actualesIds, nombreUsuario, cargoUsuario));
             }
             catch (Exception ex)
             {
@@ -71,21 +71,34 @@ namespace MantenimientoPresentation.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ObtenerUsuariosYActividades(string codigosSubtipos)
+        public async Task<IActionResult> ObtenerUsuariosPorMolde(int codigoTre)
+        {
+            try
+            {
+                var usuarios = await _service.ObtenerUsuariosPorMoldeAsync(codigoTre);
+                return Json(new { success = true, usuarios });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener los usuarios por molde.");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ObtenerActividadesPorSubtipos(string codigosSubtipos)
         {
             try
             {
                 if (string.IsNullOrWhiteSpace(codigosSubtipos))
                     return Json(new { success = false, message = "Debe seleccionar al menos un subtipo." });
 
-                var usuarios = await _service.ObtenerUsuariosPorSubtiposAsync(codigosSubtipos);
                 var actividades = await _service.ObtenerActividadesPorSubtiposAsync(codigosSubtipos);
-
-                return Json(new { success = true, usuarios, actividades });
+                return Json(new { success = true, actividades });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al obtener usuarios y actividades por subtipos.");
+                _logger.LogError(ex, "Error al obtener actividades por subtipos.");
                 return Json(new { success = false, message = ex.Message });
             }
         }
