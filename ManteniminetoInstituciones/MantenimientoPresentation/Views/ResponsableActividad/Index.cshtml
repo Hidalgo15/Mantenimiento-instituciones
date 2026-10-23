@@ -1,0 +1,436 @@
+﻿@using Mantenimiento.Core.Application.DTOs.ResponsableActividad
+@{
+    ViewData["Title"] = "Responsables y Actividades";
+    var moldes = ViewBag.Moldes as List<MoldeCatalogoDto> ?? new List<MoldeCatalogoDto>();
+}
+
+<div class="container-fluid py-3">
+    <!-- CABECERA -->
+    <div class="d-flex justify-content-between align-items-center mb-4 pb-2 border-bottom">
+        <div>
+            <h4 class="fw-bold mb-0 text-dark">Asignación de Actividades por Responsable</h4>
+            <small class="text-muted">Seleccione un molde, sus subtipos y el usuario para gestionar las actividades asignadas</small>
+        </div>
+        <span class="badge text-white py-2 px-3 fs-6 rounded-pill" style="background-color: #0d5493;">
+            <i class="bi bi-person-check-fill me-1"></i> Responsables y Actividades
+        </span>
+    </div>
+
+    <!-- SELECCIÓN EN CASCADA -->
+    <div class="card border-0 shadow-sm rounded-4 mb-4">
+        <div class="card-body p-4 bg-white rounded-4">
+            <div class="row g-3">
+                <!-- 1. Molde -->
+                <div class="col-md-6">
+                    <label for="selectMolde" class="form-label fw-bold text-dark mb-2">
+                        <i class="bi bi-folder-fill me-1" style="color: #0d5493;"></i> 1. Seleccione un Molde
+                    </label>
+                    <select id="selectMolde" class="form-select rounded-pill border-secondary-subtle py-2" onchange="cargarSubtiposMolde()">
+                        <option value="">-- Seleccione un Molde --</option>
+                        @foreach (var molde in moldes)
+                        {
+                            <option value="@molde.CodigoTre">@molde.NombreTre (@molde.ArbolAsociado)</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- 2. Subtipos (Múltiples / Cascada) -->
+                <div class="col-md-6">
+                    <label class="form-label fw-bold text-dark mb-2">
+                        <i class="bi bi-diagram-2-fill me-1" style="color: #0d5493;"></i> 2. Subtipos Asociados
+                    </label>
+                    <div id="contenedorSubtipos" class="border border-secondary-subtle rounded-3 p-2 bg-light-subtle" style="max-height: 130px; overflow-y: auto;">
+                        <span class="text-muted small fst-italic">Seleccione un molde primero...</span>
+                    </div>
+                </div>
+
+                <!-- 3. Usuario del Despacho con Buscador Flotante -->
+                <div class="col-md-12 mt-3 position-relative">
+                    <label for="txtBusquedaUsuario" class="form-label fw-bold text-dark mb-2">
+                        <i class="bi bi-person-badge-fill me-1" style="color: #0d5493;"></i> 3. Usuario Responsable
+                    </label>
+                    <div class="input-group">
+                        <input type="text" id="txtBusquedaUsuario" class="form-control rounded-start-pill border-secondary-subtle py-2"
+                               placeholder="Seleccione subtipos primero..."
+                               oninput="filtrarUsuariosFlotante(this)" autocomplete="off" disabled />
+                        <button type="button" class="btn btn-outline-secondary rounded-end-pill px-3"
+                                onclick="limpiarSeleccionUsuario()" title="Limpiar usuario">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                    </div>
+                    <!-- Input oculto para almacenar el codigo_despa real seleccionado -->
+                    <input type="hidden" id="selectUsuario" value="" />
+
+                    <!-- Lista flotante de sugerencias de usuarios -->
+                    <div id="resultadosUsuarioFlotante" class="list-group position-absolute top-100 start-0 w-100 shadow d-none"
+                         style="z-index: 1050; max-height: 16rem; overflow-y: auto; background-color: white;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR DE ACTIVIDADES DISPONIBLES Y ASIGNADAS -->
+    <div id="contenedorGestionActividades" class="d-none">
+        <div class="card border-0 shadow-sm rounded-4">
+            <div class="card-body p-4">
+                <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4">
+                    <div>
+                        <h5 class="fw-bold text-dark mb-1">
+                            <i class="bi bi-list-check me-2" style="color: #0d5493;"></i> Gestión de Actividades por Asignar
+                        </h5>
+                        <p class="text-muted small mb-0">Marque las casillas de las actividades deseadas y guarde los cambios.</p>
+                    </div>
+                    <button type="button" id="btnGuardarCambios" class="btn btn-cgr-primary rounded-pill px-4 py-2 opacity-50" onclick="guardarAsignacionActividades()" disabled>
+                        <i class="bi bi-save me-1"></i> Guardar Cambios
+                    </button>
+                </div>
+
+                <!-- BARRA DE FILTROS Y BÚSQUEDA RÁPIDA DE ACTIVIDADES -->
+                <div class="row g-3 align-items-center mb-3 bg-light p-3 rounded-3">
+                    <!-- Filtros por Estado (Todas / Asignadas / No Asignadas) -->
+                    <div class="col-md-6">
+                        <div class="btn-group w-100" role="group" aria-label="Filtro de asignación">
+                            <button type="button" class="btn btn-outline-secondary btn-sm active" id="btnFiltroTodas" onclick="filtrarEstadoActividades('todas')">
+                                <i class="bi bi-collection me-1"></i> Todas
+                            </button>
+                            <button type="button" class="btn btn-outline-success btn-sm" id="btnFiltroAsignadas" onclick="filtrarEstadoActividades('asignadas')">
+                                <i class="bi bi-check-circle me-1"></i> Asignadas
+                            </button>
+                            <button type="button" class="btn btn-outline-danger btn-sm" id="btnFiltroNoAsignadas" onclick="filtrarEstadoActividades('no-asignadas')">
+                                <i class="bi bi-x-circle me-1"></i> No Asignadas
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Buscador Instantáneo por Texto -->
+                    <div class="col-md-6">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text bg-white border-secondary-subtle text-muted">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="text" id="txtBuscarActividadGrid" class="form-control border-secondary-subtle"
+                                   placeholder="Filtrar actividades por descripción..." oninput="filtrarTextoActividades()" />
+                            <button type="button" class="btn btn-outline-secondary" onclick="limpiarBusquedaActividad()">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="gridActividadesContenedor">
+                    <!-- Aquí se inyecta el Partial Grid mediante AJAX -->
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let subtiposSeleccionadosGlobal = [];
+        let filtroEstadoActual = 'todas';
+        let listaUsuariosGlobal = [];
+        let estadoInicialCheckboxes = new Set(); // Almacena el estado original de los checkboxes
+
+        // Delegación de eventos para detectar cambios en los checkboxes cargados por AJAX
+        document.addEventListener('change', function(e) {
+            if (e.target && e.target.classList.contains('chk-actividad')) {
+                evaluarCambiosPendientes();
+                aplicarFiltrosTablaActividades();
+            }
+        });
+
+        function cargarSubtiposMolde() {
+            const codigoTre = document.getElementById('selectMolde').value;
+            const contenedorSubtipos = document.getElementById('contenedorSubtipos');
+            const inputBusqUsuario = document.getElementById('txtBusquedaUsuario');
+
+            contenedorSubtipos.innerHTML = '<span class="text-muted small fst-italic">Cargando subtipos...</span>';
+            inputBusqUsuario.value = '';
+            inputBusqUsuario.disabled = true;
+            inputBusqUsuario.placeholder = 'Seleccione subtipos primero...';
+            document.getElementById('selectUsuario').value = '';
+            document.getElementById('resultadosUsuarioFlotante').classList.add('d-none');
+            document.getElementById('contenedorGestionActividades').classList.add('d-none');
+
+            if (!codigoTre) {
+                contenedorSubtipos.innerHTML = '<span class="text-muted small fst-italic">Seleccione un molde primero...</span>';
+                return;
+            }
+
+            fetch(`/ResponsableActividad/ObtenerSubtipos?codigoTre=${codigoTre}`)
+                .then(res => res.json())
+                .then(res => {
+                    if (res.success && res.data.length > 0) {
+                        let html = '';
+                        res.data.forEach(sub => {
+                            html += `
+                                                <div class="form-check">
+                                                    <input class="form-check-input chk-subtipo" type="checkbox" value="${sub.codigoTipoTre}" id="sub_${sub.codigoTipoTre}" onchange="procesarCambioSubtipos()">
+                                                    <label class="form-check-label small fw-semibold text-dark" for="sub_${sub.codigoTipoTre}">
+                                                        ${sub.descripcion} <span class="text-muted">(${sub.abreviatura || 'N/A'})</span>
+                                                    </label>
+                                                </div>`;
+                        });
+                        contenedorSubtipos.innerHTML = html;
+                    } else {
+                        contenedorSubtipos.innerHTML = '<span class="text-danger small">No se encontraron subtipos para este molde.</span>';
+                    }
+                });
+        }
+
+        function procesarCambioSubtipos() {
+            const checkboxes = document.querySelectorAll('.chk-subtipo:checked');
+            subtiposSeleccionadosGlobal = Array.from(checkboxes).map(chk => chk.value);
+
+            const inputBusqUsuario = document.getElementById('txtBusquedaUsuario');
+            const contenedorResultados = document.getElementById('resultadosUsuarioFlotante');
+
+            inputBusqUsuario.value = '';
+            inputBusqUsuario.disabled = true;
+            document.getElementById('selectUsuario').value = '';
+            contenedorResultados.classList.add('d-none');
+            document.getElementById('contenedorGestionActividades').classList.add('d-none');
+
+            if (subtiposSeleccionadosGlobal.length === 0) {
+                inputBusqUsuario.placeholder = 'Seleccione subtipos primero...';
+                return;
+            }
+
+            inputBusqUsuario.placeholder = 'Cargando usuarios...';
+            const codigosSubtiposStr = subtiposSeleccionadosGlobal.join(',');
+
+            fetch(`/ResponsableActividad/ObtenerUsuariosYActividades?codigosSubtipos=${encodeURIComponent(codigosSubtiposStr)}`)
+                .then(res => res.json())
+                .then(res => {
+                    if (res.success) {
+                        listaUsuariosGlobal = res.usuarios || [];
+                        if (listaUsuariosGlobal.length > 0) {
+                            inputBusqUsuario.disabled = false;
+                            inputBusqUsuario.placeholder = 'Escriba el nombre, cargo o código del usuario para buscar...';
+                        } else {
+                            inputBusqUsuario.placeholder = 'No hay usuarios asociados a estos subtipos.';
+                        }
+                    } else {
+                        inputBusqUsuario.placeholder = 'Error al cargar usuarios.';
+                    }
+                });
+        }
+
+        function filtrarUsuariosFlotante(input) {
+            const normalizar = texto => texto
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .toLocaleLowerCase();
+
+            const query = normalizar(input.value.trim());
+            const contenedorResultados = document.getElementById('resultadosUsuarioFlotante');
+            contenedorResultados.replaceChildren();
+
+            if (!query || listaUsuariosGlobal.length === 0) {
+                contenedorResultados.classList.add('d-none');
+                return;
+            }
+
+            const filtrados = listaUsuariosGlobal.filter(u => {
+                const textoCompleto = `${u.nombre} ${u.cargo || ''} ${u.institucion || ''} ${u.codigoDespa}`;
+                return normalizar(textoCompleto).includes(query);
+            }).slice(0, 50);
+
+            if (filtrados.length === 0) {
+                const vacio = document.createElement('div');
+                vacio.className = 'list-group-item text-muted small';
+                vacio.textContent = 'No se encontraron usuarios con ese criterio.';
+                contenedorResultados.appendChild(vacio);
+            } else {
+                filtrados.forEach(u => {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'list-group-item list-group-item-action text-start py-2';
+                    btn.innerHTML = `<strong>${u.nombre}</strong> <span class="text-muted small">(${u.cargo || 'Sin cargo'} - <code>${u.codigoDespa}</code>)</span>`;
+
+                    btn.addEventListener('click', () => {
+                        input.value = `${u.nombre} - ${u.cargo || 'Sin cargo'} (${u.codigoDespa})`;
+                        document.getElementById('selectUsuario').value = u.codigoDespa;
+                        contenedorResultados.classList.add('d-none');
+                        cargarActividadesUsuario();
+                    });
+                    contenedorResultados.appendChild(btn);
+                });
+            }
+
+            contenedorResultados.classList.remove('d-none');
+        }
+
+        function limpiarSeleccionUsuario() {
+            document.getElementById('txtBusquedaUsuario').value = '';
+            document.getElementById('selectUsuario').value = '';
+            document.getElementById('resultadosUsuarioFlotante').classList.add('d-none');
+            document.getElementById('contenedorGestionActividades').classList.add('d-none');
+            document.getElementById('txtBusquedaUsuario').focus();
+        }
+
+        document.addEventListener('click', (e) => {
+            const contenedor = document.getElementById('resultadosUsuarioFlotante');
+            const input = document.getElementById('txtBusquedaUsuario');
+            if (contenedor && !contenedor.contains(e.target) && e.target !== input) {
+                contenedor.classList.add('d-none');
+            }
+        });
+
+        function cargarActividadesUsuario() {
+            const codigoDespa = document.getElementById('selectUsuario').value;
+            const contenedorGestion = document.getElementById('contenedorGestionActividades');
+
+            if (!codigoDespa) {
+                contenedorGestion.classList.add('d-none');
+                return;
+            }
+
+            const codigosSubtiposStr = subtiposSeleccionadosGlobal.join(',');
+
+            fetch(`/ResponsableActividad/ObtenerGrid?codigoDespa=${codigoDespa}&codigosSubtipos=${encodeURIComponent(codigosSubtiposStr)}`)
+                .then(res => res.text())
+                .then(html => {
+                    document.getElementById('gridActividadesContenedor').innerHTML = html;
+                    contenedorGestion.classList.remove('d-none');
+
+                    // Capturar el estado inicial al cargar los datos y bloquear botón
+                    capturarEstadoInicial();
+                    evaluarCambiosPendientes();
+                });
+        }
+
+        function capturarEstadoInicial() {
+            estadoInicialCheckboxes.clear();
+            const checkboxes = document.querySelectorAll('.chk-actividad');
+            checkboxes.forEach(chk => {
+                if (chk.checked) {
+                    estadoInicialCheckboxes.add(chk.value);
+                }
+            });
+        }
+
+        function evaluarCambiosPendientes() {
+            const checkboxes = document.querySelectorAll('.chk-actividad');
+            let hayCambios = false;
+
+            checkboxes.forEach(chk => {
+                const estabaMarcado = estadoInicialCheckboxes.has(chk.value);
+                if (chk.checked !== estabaMarcado) {
+                    hayCambios = true;
+                }
+            });
+
+            const btnGuardar = document.getElementById('btnGuardarCambios');
+            if (btnGuardar) {
+                btnGuardar.disabled = !hayCambios;
+                if (hayCambios) {
+                    btnGuardar.classList.remove('opacity-50');
+                } else {
+                    btnGuardar.classList.add('opacity-50');
+                }
+            }
+        }
+
+        function guardarAsignacionActividades() {
+            const codigoDespa = document.getElementById('selectUsuario').value;
+            if (!codigoDespa) {
+                alert('Debe seleccionar un usuario.');
+                return;
+            }
+
+            const chkActividades = document.querySelectorAll('.chk-actividad:checked');
+            const listaIds = Array.from(chkActividades).map(chk => chk.value);
+
+            const dto = {
+                codigoDespa: codigoDespa,
+                listaCodigosActividades: listaIds.join(',')
+            };
+
+            fetch('/ResponsableActividad/GuardarAsignacion', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(dto)
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        // Actualizar el estado inicial con lo guardado y desactivar el botón
+                        capturarEstadoInicial();
+                        evaluarCambiosPendientes();
+                        aplicarFiltrosTablaActividades();
+                    } else {
+                        alert('Error: ' + data.message);
+                    }
+                });
+        }
+
+        async function filtrarEstadoActividades(nuevoEstado) {
+            if (filtroEstadoActual === nuevoEstado) return;
+
+            // Comprobar si hay cambios sin guardar
+            const checkboxes = document.querySelectorAll('.chk-actividad');
+            let hayCambios = false;
+            checkboxes.forEach(chk => {
+                if (chk.checked !== estadoInicialCheckboxes.has(chk.value)) {
+                    hayCambios = true;
+                }
+            });
+
+            if (hayCambios) {
+                const confirmar = await confirmarAccion(
+                    'Tiene modificaciones sin guardar. Si cambia de filtro, se descartarán los cambios pendientes. ¿Desea continuar?',
+                    { kind: 'warning', title: 'Cambios sin guardar', confirmText: 'Descartar cambios' }
+                );
+                if (!confirmar) {
+                    return; // Mantiene el filtro actual y preserva los cambios
+                } else {
+                    // Si acepta descartar, recargamos los datos originales del usuario
+                    cargarActividadesUsuario();
+                }
+            }
+
+            filtroEstadoActual = nuevoEstado;
+
+            document.getElementById('btnFiltroTodas').className = `btn btn-outline-secondary btn-sm ${nuevoEstado === 'todas' ? 'active' : ''}`;
+            document.getElementById('btnFiltroAsignadas').className = `btn btn-outline-success btn-sm ${nuevoEstado === 'asignadas' ? 'active' : ''}`;
+            document.getElementById('btnFiltroNoAsignadas').className = `btn btn-outline-danger btn-sm ${nuevoEstado === 'no-asignadas' ? 'active' : ''}`;
+
+            aplicarFiltrosTablaActividades();
+        }
+
+        function filtrarTextoActividades() {
+            aplicarFiltrosTablaActividades();
+        }
+
+        function limpiarBusquedaActividad() {
+            document.getElementById('txtBuscarActividadGrid').value = '';
+            aplicarFiltrosTablaActividades();
+        }
+
+        function aplicarFiltrosTablaActividades() {
+            const textoFiltro = document.getElementById('txtBuscarActividadGrid').value.toLowerCase().trim();
+            const filas = document.querySelectorAll('#tablaActividadesAsignacion tbody tr');
+
+            filas.forEach(fila => {
+                const checkbox = fila.querySelector('.chk-actividad');
+                const estaAsignada = checkbox ? checkbox.checked : false;
+                const textoFila = fila.innerText.toLowerCase();
+
+                let cumpleEstado = true;
+                if (filtroEstadoActual === 'asignadas' && !estaAsignada) cumpleEstado = false;
+                if (filtroEstadoActual === 'no-asignadas' && estaAsignada) cumpleEstado = false;
+
+                const cumpleTexto = textoFila.includes(textoFiltro);
+
+                if (cumpleEstado && cumpleTexto) {
+                    fila.style.display = '';
+                } else {
+                    fila.style.display = 'none';
+                }
+            });
+        }
+    </script>
+}

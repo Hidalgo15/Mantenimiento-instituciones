@@ -1,9 +1,11 @@
 ﻿using Mantenimiento.Core.Application.DTOs.Cuenta.DboCuentasDTO;
 using Mantenimiento.Core.Application.InterfaceServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MantenimientoPresentation.Controllers
 {
+    [Authorize]
     [Route("CuentaMapeo/[action]/{id?}")]
     public class CuentaMapeoController : Controller
     {

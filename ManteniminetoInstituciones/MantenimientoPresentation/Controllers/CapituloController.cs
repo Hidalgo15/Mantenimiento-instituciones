@@ -1,10 +1,12 @@
 ﻿using Mantenimiento.Core.Application.DTOs.Capitulo;
 using Mantenimiento.Core.Application.InterfaceServices;
-using Microsoft.Data.SqlClient;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Data.SqlClient;
 
 namespace MantenimientoPresentation.Controllers
 {
+    [Authorize]
     public class CapituloController : Controller
     {
         private readonly ICapituloService _service;

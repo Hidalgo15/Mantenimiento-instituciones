@@ -339,8 +339,8 @@
                 });
         }
 
-        function eliminarFondo(id) {
-            if (!confirm('¿Desea eliminar este Fondo Especial?')) return;
+        async function eliminarFondo(id) {
+            if (!await confirmarAccion('¿Desea eliminar este Fondo Especial?', { kind: 'danger', confirmText: 'Sí, eliminar' })) return;
 
             fetch(`/FondoEspeciales/Eliminar?id=${id}`, { method: 'POST' })
                 .then(res => res.json())

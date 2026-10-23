@@ -326,8 +326,8 @@
             });
         }
 
-        function eliminarClasificacion(id) {
-            if (!confirm('¿Está seguro de eliminar esta clasificación?')) return;
+        async function eliminarClasificacion(id) {
+            if (!await confirmarAccion('¿Está seguro de eliminar esta clasificación?', { kind: 'danger', confirmText: 'Sí, eliminar' })) return;
 
             fetch('/ClasificacionContrato/Eliminar', {
                 method: 'POST',

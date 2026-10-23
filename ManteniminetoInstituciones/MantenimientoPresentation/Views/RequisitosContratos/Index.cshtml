@@ -248,8 +248,8 @@
             .catch(() => alert('Ocurrió un error al procesar la solicitud.'));
         }
 
-        function eliminarRequisito(id) {
-            if (!confirm('¿Desea eliminar este requisito de contrato?')) return;
+        async function eliminarRequisito(id) {
+            if (!await confirmarAccion('¿Desea eliminar este requisito de contrato?', { kind: 'danger', confirmText: 'Sí, eliminar' })) return;
 
             fetch(`/RequisitosContratos/Eliminar?id=${id}`, { method: 'POST' })
                 .then(res => res.json())

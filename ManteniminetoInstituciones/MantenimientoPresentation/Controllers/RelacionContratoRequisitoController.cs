@@ -1,10 +1,11 @@
 ﻿using Mantenimiento.Core.Application.DTOs.RelacionContratoRequisito;
 using Mantenimiento.Core.Application.InterfaceServices;
-using MantenimientoPresentation.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MantenimientoPresentation.Controllers
 {
+    [Authorize]
     public class RelacionContratoRequisitoController : Controller
     {
         private readonly IRelacionContratoRequisitoService _service;

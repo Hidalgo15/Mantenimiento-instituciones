@@ -1,9 +1,11 @@
 ﻿using Mantenimiento.Core.Application.DTOs.CuentaInstitucion;
 using Mantenimiento.Core.Application.InterfaceServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MantenimientoPresentation.Controllers
 {
+    [Authorize]
     public class CuentaInstitucionController : Controller
     {
         private readonly ICuentaInstitucionService _service;

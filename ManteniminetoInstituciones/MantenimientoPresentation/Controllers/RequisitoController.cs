@@ -1,10 +1,11 @@
 ﻿using Mantenimiento.Core.Application.DTOs.Requisito;
 using Mantenimiento.Core.Application.InterfaceServices;
-using MantenimientoPresentation.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MantenimientoPresentation.Controllers
 {
+    [Authorize]
     public class RequisitoController : Controller
     {
         private readonly IRequisitoService _service;

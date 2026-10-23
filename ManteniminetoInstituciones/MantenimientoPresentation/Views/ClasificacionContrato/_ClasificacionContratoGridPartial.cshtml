@@ -8,7 +8,7 @@
             <table class="table table-hover align-middle mb-0">
                 <thead class="bg-light text-secondary border-bottom small text-uppercase fw-bold">
                     <tr>
-                        <th class="py-3 px-3" style="width: 80px;">ID</th>
+                        @* <th class="py-3 px-3" style="width: 80px;">ID</th> *@
                         <th class="py-3 px-3">Tipo de Contrato</th>
                         <th class="py-3 px-3">Tipo de Operación</th>
                         <th class="py-3 px-3">Proceso de Selección</th>
@@ -19,7 +19,7 @@
                     @foreach (var item in Model)
                     {
                         <tr>
-                            <td class="px-3 fw-bold text-secondary">#@item.CodigoClasificacion</td>
+                            @* <td class="px-3 fw-bold text-secondary">#@item.CodigoClasificacion</td> *@
                             <td class="px-3 fw-semibold text-dark">@(item.ContratoTipo ?? "-")</td>
                             <td class="px-3 text-secondary">@(item.TipoOperacion ?? "-")</td>
                            <td class="px-3">

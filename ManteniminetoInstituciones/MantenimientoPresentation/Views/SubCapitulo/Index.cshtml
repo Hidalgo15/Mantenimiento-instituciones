@@ -225,8 +225,8 @@
                 });
         }
 
-      function eliminarSubCapitulo(id) {
-                if (!confirm('¿Desea eliminar este Sub-capítulo?')) return;
+      async function eliminarSubCapitulo(id) {
+                if (!await confirmarAccion('¿Desea eliminar este Sub-capítulo?', { kind: 'danger', confirmText: 'Sí, eliminar' })) return;
 
                 fetch(`/SubCapitulo/Eliminar?id=${id}`, { method: 'POST' })
                     .then(res => res.json())

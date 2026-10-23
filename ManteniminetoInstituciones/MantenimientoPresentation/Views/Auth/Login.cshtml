@@ -1,0 +1,191 @@
+﻿@model Mantenimiento.Core.Application.DTOs.Login.LoginDto
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Iniciar Sesión - Mantenimiento</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+
+    <style>
+            :root {
+                --brand-navy: #0d5493;
+                --brand-navy-dark: #093b69;
+                --brand-blue-button: #1d4ed8;
+                --brand-blue-button-hover: #1e40af;
+            }
+
+            body {
+                min-height: 100vh;
+                background: linear-gradient(135deg, #2b6cb0 0%, #1e40af 50%, #1e3a8a 100%);
+                position: relative;
+                overflow-x: hidden;
+                font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            }
+
+            /* Marca de agua / Patrón de fondo (Cúpula) */
+            .bg-watermark {
+                position: fixed; /* 'fixed' evita scrollbars si la imagen sobresale de la pantalla */
+                right: -370px; /* Aumenta este valor negativo para moverla mas a la derecha */
+                bottom: -90px; /* Ajusta la altura vertical si es necesario */
+
+                width: 800px; /* Tamaño de la imagen */
+                height: 800px;
+                background-image: url('/images/Loginizquierdo.png'); /* ruta de imagen de la cúpula */
+                background-repeat: no-repeat;
+                background-size: contain;
+                opacity: 0.22;
+                pointer-events: none;
+                z-index: 0;
+            }
+
+            .login-card {
+                width: 100%;
+                max-width: 440px;
+                border: none;
+                border-radius: 1rem;
+                box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
+                background-color: #ffffff;
+                z-index: 1;
+            }
+
+            .logo-img {
+                max-height: 110px;
+                width: auto;
+                object-fit: contain;
+            }
+
+            .demo-box {
+                background-color: #eff6ff;
+                border: 1px solid #bfdbfe;
+                border-radius: 0.75rem;
+            }
+
+            .form-control:focus {
+                border-color: #10b981;
+                box-shadow: 0 0 0 0.25rem rgba(16, 185, 129, 0.25);
+            }
+
+            .input-group-text {
+                background-color: #ffffff;
+                border-right: none;
+                color: #9ca3af;
+            }
+
+            .input-group .form-control {
+                border-left: none;
+            }
+
+            .input-group:focus-within .input-group-text {
+                border-color: #10b981;
+                color: #10b981;
+            }
+
+            .btn-login {
+                background-color: var(--brand-blue-button);
+                border: none;
+                padding: 0.75rem 1rem;
+                font-weight: 600;
+                border-radius: 0.5rem;
+                transition: background-color 0.2s ease-in-out;
+            }
+
+                .btn-login:hover {
+                    background-color: var(--brand-blue-button-hover);
+                }
+
+            .title-divider {
+                width: 60px;
+                height: 2px;
+                background-color: #cbd5e1;
+                margin: 0.75rem auto 0 auto;
+            }
+    </style>
+</head>
+<body class="d-flex align-items-center justify-content-center p-3">
+
+    <!-- Elemento decorativo de fondo -->
+    <div class="bg-watermark"></div>
+
+    <div class="card login-card p-4 p-sm-5">
+        <!-- LOGO INSTITUCIONAL -->
+        <div class="text-center mb-4">
+            <img src="~/images/LogoContraloriaMobile.png" alt="Gobierno de la República Dominicana - Contraloría" class="logo-img mb-3 img-fluid" />
+            <h4 class="fw-bold text-dark mb-0">Control de Mantenimiento</h4>
+            <div class="title-divider"></div>
+        </div>
+
+        <!-- RECUADRO INFORMATIVO / DEMO (OPCIONAL) -->
+        <div class="demo-box p-3 mb-4">
+            <div class="d-flex align-items-center gap-2 mb-1 text-primary fw-semibold small">
+                <i class="bi bi-info-circle-fill"></i>
+                <span>Acceso al Sistema</span>
+            </div>
+            <p class="text-secondary small mb-0">Ingrese sus credenciales institucionales para acceder al módulo de mantenimiento.</p>
+        </div>
+
+        <!-- FORMULARIO DE LOGIN -->
+        <form asp-controller="Auth" asp-action="Login" method="post">
+            @if (!ViewData.ModelState.IsValid)
+            {
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2 small mb-3" role="alert"></div>
+            }
+
+            <!-- CAMPO USUARIO -->
+            <div class="mb-3">
+                <label asp-for="Usuario" class="form-label small fw-semibold text-secondary">Usuario</label>
+                <div class="input-group">
+                    <span class="input-group-text px-3"><i class="bi bi-person fs-5"></i></span>
+                    <input asp-for="Usuario" class="form-control py-2" placeholder="Ej. demo" required />
+                </div>
+                <span asp-validation-for="Usuario" class="text-danger small"></span>
+            </div>
+
+            <!-- CAMPO CONTRASEÑA -->
+            <div class="mb-4">
+                <label asp-for="Clave" class="form-label small fw-semibold text-secondary">Contraseña</label>
+                <div class="input-group">
+                    <span class="input-group-text px-3"><i class="bi bi-lock fs-5"></i></span>
+                    <input asp-for="Clave" type="password" class="form-control py-2" placeholder="••••••••" required />
+                </div>
+                <span asp-validation-for="Clave" class="text-danger small"></span>
+            </div>
+
+            <!-- BOTÓN INGRESAR -->
+            <button type="submit" class="btn btn-login text-white w-100 d-flex align-items-center justify-content-center gap-2 mb-3">
+                <i class="bi bi-box-arrow-in-right fs-5"></i>
+                <span>Iniciar sesión</span>
+            </button>
+        </form>
+
+        <!-- PIE DE TARJETA / COPYRIGHT -->
+        <div class="text-center border-top pt-3 mt-2">
+            <p class="text-muted small mb-1 d-flex align-items-center justify-content-center gap-1">
+                <i class="bi bi-shield-check text-secondary"></i>
+                <span>Módulo de Control de Mantenimiento</span>
+            </p>
+            <p class="text-muted extra-small mb-0" style="font-size: 0.75rem;">
+                © @DateTime.Now.Year Contraloría General de la República
+            </p>
+        </div>
+    </div>
+
+    <script>
+        document.querySelector('form').addEventListener('submit', event => {
+            const boton = event.currentTarget.querySelector('button[type="submit"]');
+            if (!boton || boton.disabled) return;
+
+            boton.disabled = true;
+            boton.setAttribute('aria-busy', 'true');
+            boton.innerHTML = '<span class="spinner-border spinner-border-sm" aria-hidden="true"></span><span>Verificando credenciales…</span>';
+        });
+    </script>
+</body>
+</html>
