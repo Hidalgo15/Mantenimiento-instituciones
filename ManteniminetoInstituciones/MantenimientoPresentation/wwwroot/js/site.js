@@ -200,6 +200,7 @@ document.addEventListener('hidden.bs.modal', evento => {
 function confirmarAccion(mensaje, opciones = {}) {
     const elemento = document.getElementById('confirmationModal');
     const aceptar = document.getElementById('confirmationModalAccept');
+    const cancelar = document.getElementById('confirmationModalCancel');
     const texto = document.getElementById('confirmationModalMessage');
     const titulo = document.getElementById('confirmationModalTitle');
 
@@ -213,6 +214,7 @@ function confirmarAccion(mensaje, opciones = {}) {
     titulo.textContent = opciones.title || (destructiva ? 'Confirmar eliminación' : 'Confirmar acción');
     texto.textContent = String(mensaje || '¿Desea continuar?');
     aceptar.textContent = opciones.confirmText || (destructiva ? 'Sí, continuar' : 'Continuar');
+    cancelar.textContent = opciones.cancelText || 'Cancelar';
     aceptar.className = `btn ${destructiva ? 'btn-danger' : 'btn-cgr-primary'} rounded-pill px-4`;
 
     return new Promise(resolve => {
@@ -278,6 +280,12 @@ function confirmarAccion(mensaje, opciones = {}) {
 
     window.fetch = async (...argumentos) => {
         const opciones = argumentos[1] || {};
+        const {
+            suppressGlobalError = false,
+            suppressAutoSuccess = false,
+            ...opcionesFetch
+        } = opciones;
+        const argumentosFetch = argumentos.length > 1 ? [argumentos[0], opcionesFetch] : argumentos;
         const metodo = (opciones.method || (argumentos[0] instanceof Request ? argumentos[0].method : 'GET')).toUpperCase();
         const boton = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(metodo)
             ? iniciarCargaBoton(document.activeElement instanceof HTMLButtonElement ? document.activeElement : null)
@@ -293,10 +301,10 @@ function confirmarAccion(mensaje, opciones = {}) {
         }
 
         try {
-            const respuesta = await fetchOriginal(...argumentos);
+            const respuesta = await fetchOriginal(...argumentosFetch);
             const tipoContenido = respuesta.headers.get('content-type') || '';
 
-            if (respuesta.ok && tipoContenido.includes('application/json')) {
+            if (!suppressAutoSuccess && respuesta.ok && tipoContenido.includes('application/json')) {
                 respuesta.clone().json().then(resultado => {
                     if (resultado && resultado.success === true && typeof resultado.message === 'string') {
                         mostrarNotificacion(resultado.message, 'success');
@@ -306,7 +314,9 @@ function confirmarAccion(mensaje, opciones = {}) {
 
             return respuesta;
         } catch (error) {
-            mostrarBanner('No se pudo conectar con el servidor. Verifique su conexión e intente nuevamente.', 'danger');
+            if (!suppressGlobalError) {
+                mostrarBanner('No se pudo conectar con el servidor. Verifique su conexión e intente nuevamente.', 'danger');
+            }
             throw error;
         } finally {
             solicitudesPendientes--;

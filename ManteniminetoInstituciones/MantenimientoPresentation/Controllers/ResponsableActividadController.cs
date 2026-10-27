@@ -32,6 +32,7 @@ namespace MantenimientoPresentation.Controllers
             {
                 _logger.LogError(ex, "Error al cargar los moldes en la vista inicial.");
                 ViewBag.Moldes = new List<MoldeCatalogoDto>();
+                ViewBag.ErrorCargaMoldes = "No se pudo cargar la lista de moldes. Actualice la página para intentarlo nuevamente.";
             }
 
             return View();
@@ -44,7 +45,6 @@ namespace MantenimientoPresentation.Controllers
             {
                 var usuarios = await _service.ObtenerUsuariosPorActividadAsync(codigoActividad, codigoTre, filtroCargo, filtroArea, busquedaGeneral);
 
-                // Cambiar aquí a "_ResponsableActividadGridPartial" si no quieres renombrar el archivo físico
                 return PartialView("_ResponsableActividadGridPartial", usuarios);
             }
             catch (Exception ex)
