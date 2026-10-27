@@ -54,7 +54,7 @@
                 </div>
 
                 <!-- 2. Subtipos Asociados (Cascada Abajo) -->
-                <div class="col-md-12 mt-3">
+                <div class="col-md-12 mt-3" id="seccionSubtipos">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <label class="form-label fw-bold text-dark mb-0">
                             <i class="bi bi-diagram-2-fill me-1" style="color: #0d5493;"></i> 2. Subtipos Asociados
@@ -70,7 +70,7 @@
                 </div>
 
                 <!-- 3. Actividad con Subtipos Segmentados (Agrupados por Categoría / Título Destacado) -->
-                <div class="col-md-12 mt-3">
+                <div class="col-md-12 mt-3" id="seccionActividad">
                     <label for="selectActividad" class="form-label fw-bold text-dark mb-2">
                         <i class="bi bi-check2-square me-1" style="color: #0d5493;"></i> 3. Seleccione la Actividad a Asignar
                     </label>
@@ -93,6 +93,10 @@
                             <i class="bi bi-people-fill me-2" style="color: #0d5493;"></i> Gestión de Usuarios por Asignar
                         </h5>
                         <p class="text-muted small mb-0">Marque los usuarios deseados y guarde los cambios realizados.</p>
+                        <!-- SEGURO VISUAL DE ACTIVIDAD -->
+                        <span id="lblActividadSeleccionada" class="badge bg-primary-subtle text-primary border border-primary-subtle mt-2 px-3 py-1 fs-6 fw-semibold d-none">
+                            <i class="bi bi-check2-circle me-1"></i> Actividad: <span class="fw-bold"></span>
+                        </span>
                     </div>
                     <div class="d-flex flex-column align-items-md-end gap-2">
                         <span id="estadoCambios" class="small text-warning-emphasis d-none" role="status">
@@ -317,6 +321,10 @@
                 contenedorSubtipos.setAttribute('aria-busy', 'false');
                 btnSelectAll.classList.remove('d-none');
                 actualizarBotonSubtipos();
+
+                // 🚀 AUTO-SCROLL SUAVE HACIA LOS SUBTIPOS
+                document.getElementById('seccionSubtipos').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
             } catch (error) {
                 if (solicitud !== solicitudSubtipos) return;
                 const mensaje = error instanceof TypeError
@@ -416,12 +424,12 @@
 
                 const fragmento = document.createDocumentFragment();
                 fragmento.appendChild(new Option('-- Seleccione una Actividad --', ''));
+                
                 grupos.forEach((actividades, subtipo) => {
                     const grupo = document.createElement('optgroup');
                     grupo.label = subtipo;
                     actividades.forEach(actividad => {
                         const opt = new Option(actividad.descripcionActividad, actividad.codigoActividad);
-                        // Guardamos el formato completo en el atributo data-display-text
                         opt.setAttribute('data-display-text', `${actividad.descripcionActividad} (${subtipo})`);
                         grupo.appendChild(opt);
                     });
@@ -431,6 +439,10 @@
                 selectActividad.replaceChildren(fragmento);
                 selectActividad.disabled = false;
                 estadoActividades.textContent = '';
+
+                // 🚀 AUTO-SCROLL SUAVE HACIA LA ACTIVIDAD
+                document.getElementById('seccionActividad').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
             } catch (error) {
                 if (solicitud !== solicitudActividades) return;
                 establecerOpcion(selectActividad, 'No se pudieron cargar las actividades.');
@@ -449,12 +461,10 @@
                     const optionSeleccionada = this.options[this.selectedIndex];
                     const textoConSubtipo = optionSeleccionada.getAttribute('data-display-text');
                     
-                    // Actualiza la opción seleccionada para que muestre el texto largo con subtipo
                     if (textoConSubtipo) {
                         optionSeleccionada.textContent = textoConSubtipo;
                     }
                     
-                    // Restaura las demás opciones a su texto corto y limpio dentro del menú desplegable
                     Array.from(this.options).forEach(opt => {
                         if (opt !== optionSeleccionada && opt.hasAttribute('data-display-text')) {
                             const originalText = opt.getAttribute('data-display-text').split(' (')[0];
@@ -471,6 +481,9 @@
             const codigoTre = document.getElementById('selectMolde').value;
             const contenedorGestion = document.getElementById('contenedorGestionUsuarios');
 
+            const badgeActividad = document.getElementById('lblActividadSeleccionada');
+            const spanTextoActividad = badgeActividad.querySelector('span.fw-bold');
+            
             if (!reintentar && codigoActividad !== actividadCargada) {
                 if (!await confirmarYDescartarCambios('cambie de actividad')) {
                     selectActividad.value = actividadCargada;
@@ -486,8 +499,14 @@
                 document.getElementById('gridUsuariosContenedor').replaceChildren();
                 document.getElementById('gridUsuariosContenedor').setAttribute('aria-busy', 'false');
                 contenedorGestion.classList.add('d-none');
+                badgeActividad.classList.add('d-none');
                 return;
             }
+
+            // Mostramos el nombre de la actividad seleccionada en el banner seguro
+            const textoSeleccionado = selectActividad.options[selectActividad.selectedIndex].text;
+            spanTextoActividad.textContent = textoSeleccionado;
+            badgeActividad.classList.remove('d-none');
 
             const solicitud = ++solicitudUsuarios;
             const grid = document.getElementById('gridUsuariosContenedor');
@@ -514,6 +533,10 @@
                 capturarEstadoInicial();
                 evaluarCambiosPendientes();
                 aplicarFiltrosTablaUsuarios();
+
+                // AUTO-SCROLL SUAVE HACIA LA TABLA DE GESTIÓN DE USUARIOS
+                contenedorGestion.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
             } catch (error) {
                 if (solicitud !== solicitudUsuarios) return;
                 const mensaje = error instanceof TypeError
