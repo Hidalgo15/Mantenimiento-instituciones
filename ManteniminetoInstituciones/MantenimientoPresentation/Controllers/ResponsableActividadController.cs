@@ -38,20 +38,19 @@ namespace MantenimientoPresentation.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ObtenerGrid(string codigoDespa, string codigosSubtipos, string nombreUsuario = "", string cargoUsuario = "")
+        public async Task<IActionResult> ObtenerGrid(int codigoActividad, int codigoTre, string? filtroCargo, string? filtroArea, string? busquedaGeneral)
         {
             try
             {
-                var disponibles = await _service.ObtenerActividadesPorSubtiposAsync(codigosSubtipos);
-                var actuales = await _service.ObtenerActividadesUsuarioAsync(codigoDespa);
-                var actualesIds = actuales.Select(a => a.CodigoActividad).ToList();
+                var usuarios = await _service.ObtenerUsuariosPorActividadAsync(codigoActividad, codigoTre, filtroCargo, filtroArea, busquedaGeneral);
 
-                return PartialView("_ResponsableActividadGridPartial", (disponibles, actualesIds, nombreUsuario, cargoUsuario));
+                // Cambiar aquí a "_ResponsableActividadGridPartial" si no quieres renombrar el archivo físico
+                return PartialView("_ResponsableActividadGridPartial", usuarios);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al obtener el grid de actividades.");
-                return StatusCode(500, "Ocurrió un error al cargar las actividades.");
+                _logger.LogError(ex, "Error al obtener el grid inverso de usuarios por actividad.");
+                return StatusCode(500, "Ocurrió un error al cargar los usuarios.");
             }
         }
 
@@ -66,21 +65,6 @@ namespace MantenimientoPresentation.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al obtener subtipos por molde.");
-                return Json(new { success = false, message = ex.Message });
-            }
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> ObtenerUsuariosPorMolde(int codigoTre)
-        {
-            try
-            {
-                var usuarios = await _service.ObtenerUsuariosPorMoldeAsync(codigoTre);
-                return Json(new { success = true, usuarios });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al obtener los usuarios por molde.");
                 return Json(new { success = false, message = ex.Message });
             }
         }
@@ -103,23 +87,8 @@ namespace MantenimientoPresentation.Controllers
             }
         }
 
-        [HttpGet]
-        public async Task<IActionResult> ObtenerActividadesUsuario(string codigoDespa)
-        {
-            try
-            {
-                var actividadesActuales = await _service.ObtenerActividadesUsuarioAsync(codigoDespa);
-                return Json(new { success = true, data = actividadesActuales });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al obtener las actividades asignadas al usuario.");
-                return Json(new { success = false, message = ex.Message });
-            }
-        }
-
         [HttpPost]
-        public async Task<IActionResult> GuardarAsignacion([FromBody] GestionarResponsableActividadDto dto)
+        public async Task<IActionResult> GuardarAsignacionInversa([FromBody] GestionarActividadUsuariosDto dto)
         {
             if (!ModelState.IsValid)
             {
@@ -129,12 +98,12 @@ namespace MantenimientoPresentation.Controllers
             try
             {
                 dto.Usuario = _currentUserService.GetUsername();
-                var resultado = await _service.GestionarActividadesAsync(dto);
+                var resultado = await _service.GestionarActividadUsuariosAsync(dto);
                 return Json(new { success = resultado.CodigoResultado == 1, message = resultado.Mensaje });
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al sincronizar las actividades del responsable.");
+                _logger.LogError(ex, "Error al sincronizar los usuarios de la actividad.");
                 return Json(new { success = false, message = ex.Message });
             }
         }

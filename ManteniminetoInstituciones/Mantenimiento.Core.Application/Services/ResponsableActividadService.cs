@@ -2,6 +2,7 @@
 using Mantenimiento.Core.Application.DTOs.Resultado;
 using Mantenimiento.Core.Application.InterfaceServices;
 using Mantenimiento.Core.Application.Mappings;
+using Mantenimiento.Core.Domain.Entities;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 
 namespace Mantenimiento.Core.Application.Services
@@ -81,6 +82,27 @@ namespace Mantenimiento.Core.Application.Services
                 throw new ArgumentException("El código de despacho del usuario es obligatorio.");
 
             var res = await _repository.GestionarActividadesAsync(dto.CodigoDespa, dto.ListaCodigosActividades);
+            return ResultadoOperacionMapper.ToDto(res);
+        }
+
+        /// <summary>
+        /// Obtiene la lista de usuarios evaluando si tienen asignada una actividad específica, aplicando filtros.
+        /// </summary>
+        public async Task<List<UsuarioActividadAsignacionDto>> ObtenerUsuariosPorActividadAsync(int codigoActividad, int codigoTre, string? filtroCargo, string? filtroArea, string? busquedaGeneral)
+        {
+            var data = await _repository.ObtenerUsuariosPorActividadAsync(codigoActividad, codigoTre, filtroCargo, filtroArea, busquedaGeneral);
+            return data.Select(ResponsableActividadMapper.ToDto).ToList();
+        }
+
+        /// <summary>
+        /// Gestiona la asignación de múltiples usuarios a una actividad específica (Nuevo Flujo Inverso).
+        /// </summary>
+        public async Task<ResultadoOperacionDto> GestionarActividadUsuariosAsync(GestionarActividadUsuariosDto dto)
+        {
+            if (dto.CodigoActividad <= 0)
+                throw new ArgumentException("El código de actividad es obligatorio.");
+
+            var res = await _repository.GestionarActividadUsuariosAsync(dto.CodigoActividad, dto.ListaCodigosDespa);
             return ResultadoOperacionMapper.ToDto(res);
         }
     }

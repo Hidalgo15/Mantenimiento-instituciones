@@ -2967,19 +2967,18 @@ BEGIN
                 -- Si no tiene duplicados, se queda tal cual
                 WHEN total_duplicados = 1 THEN ''
                 -- El registro más nuevo (último ID) siempre es el Actual
-                WHEN version_num = total_duplicados THEN ' (Actual)'
+                WHEN version_num = total_duplicados THEN ' (Flujo Nuevo)'
                 -- Si exactamente son 2 registros, al primero se le llama simplemente (Anterior)
-                WHEN total_duplicados = 2 AND version_num = 1 THEN ' (Anterior)'
+                WHEN total_duplicados = 2 AND version_num = 1 THEN ' (Flujo Viejo)'
                 -- Si hay 3 o más, al penúltimo se le llama (Anterior 1)
-                WHEN version_num = total_duplicados - 1 THEN ' (Anterior 1)'
+                WHEN version_num = total_duplicados - 1 THEN ' (Flujo Viejo No.1)'
                 -- Si hay más hacia atrás, se numeran de forma progresiva
-                ELSE ' (Anterior ' + CAST(total_duplicados - version_num AS VARCHAR(10)) + ')'
+                ELSE ' (Flujo Viejo No.' + CAST(total_duplicados - version_num AS VARCHAR(10)) + ')'
             END AS descripcion,
         abreviatura
     FROM SubtiposRank
     ORDER BY descripcion ASC, codigo_tipo_tre ASC;
 END;
-GO
 
 -- Obtener Usuarios por Molde
 
@@ -3107,6 +3106,98 @@ BEGIN
         COMMIT TRANSACTION;
 
         SELECT 1 AS CodigoResultado, 'Asignación de actividades actualizada exitosamente.' AS Mensaje;
+
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0
+            ROLLBACK TRANSACTION;
+
+        DECLARE @ErrorMessage NVARCHAR(4000) = ERROR_MESSAGE(),
+                @ErrorSeverity INT = ERROR_SEVERITY(),
+                @ErrorState INT = ERROR_STATE();
+
+        RAISERROR(@ErrorMessage, @ErrorSeverity, @ErrorState);
+    END CATCH
+END;
+GO
+
+-- Obtener_Usuarios_Por_Actividad
+
+CREATE OR ALTER PROCEDURE [dbo].[sp_Obtener_Usuarios_Por_Actividad]
+    @CodigoActividad INT,
+    @CodigoTre INT,
+    @FiltroCargo VARCHAR(100) = NULL,
+    @FiltroArea VARCHAR(100) = NULL,
+    @BusquedaGeneral VARCHAR(100) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT DISTINCT 
+        da.codigo_despa,
+        da.NOMBRE AS Nombre,
+        da.INSTITUCION AS Institucion,
+        da.descarea AS DescArea,
+        da.cargo AS Cargo,
+        da.email AS Email,
+        CASE 
+            WHEN ra.codigo_actividad IS NOT NULL THEN CAST(1 AS BIT)
+            ELSE CAST(0 AS BIT)
+        END AS EstaAsignado
+    FROM [SIGOB].[dbo].[v_DespachoAreaActivos] da WITH (NOLOCK)
+    INNER JOIN [SIGOB].[dbo].[usuario_tre] ut WITH (NOLOCK) 
+        ON ut.codigo_despa = da.codigo_despa
+    LEFT JOIN [SIGOB].[dbo].[responsable_actividad] ra WITH (NOLOCK)
+        ON ra.codigo_despa = da.codigo_despa AND ra.codigo_actividad = @CodigoActividad
+    WHERE ut.codigo_tre = @CodigoTre
+      AND (@FiltroCargo IS NULL OR da.cargo LIKE '%' + @FiltroCargo + '%')
+      AND (@FiltroArea IS NULL OR da.descarea LIKE '%' + @FiltroArea + '%')
+      AND (@BusquedaGeneral IS NULL OR da.NOMBRE LIKE '%' + @BusquedaGeneral + '%' OR da.codigo_despa LIKE '%' + @BusquedaGeneral + '%')
+    ORDER BY da.NOMBRE ASC;
+END;
+GO
+
+-- Store para gestionar la asignación inversa (Una Actividad -> Muchos Usuarios)
+CREATE OR ALTER PROCEDURE [dbo].[sp_Gestionar_Actividad_Usuarios]
+    @CodigoActividad INT,
+    @ListaCodigosDespa VARCHAR(MAX) -- Lista separada por comas, ej: 'D0001,D0005'
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    BEGIN TRY
+        DECLARE @T_Usuarios TABLE (codigo_despa CHAR(5));
+        
+        IF @ListaCodigosDespa IS NOT NULL AND LTRIM(RTRIM(@ListaCodigosDespa)) <> ''
+        BEGIN
+            INSERT INTO @T_Usuarios (codigo_despa)
+            SELECT LTRIM(RTRIM(value))
+            FROM STRING_SPLIT(@ListaCodigosDespa, ',')
+            WHERE LTRIM(RTRIM(value)) <> '';
+        END
+
+        BEGIN TRANSACTION;
+
+        -- 1. Eliminar la asignación de esta actividad a los usuarios que ya no están en la lista seleccionada
+        DELETE FROM [SIGOB].[dbo].[responsable_actividad]
+        WHERE codigo_actividad = @CodigoActividad
+          AND codigo_despa NOT IN (SELECT codigo_despa FROM @T_Usuarios);
+
+        -- 2. Insertar la actividad a los nuevos usuarios seleccionados que no la tenían
+        INSERT INTO [SIGOB].[dbo].[responsable_actividad] (codigo_despa, codigo_actividad)
+        SELECT tu.codigo_despa, @CodigoActividad
+        FROM @T_Usuarios tu
+        WHERE NOT EXISTS (
+            SELECT 1 
+            FROM [SIGOB].[dbo].[responsable_actividad] ra 
+            WHERE ra.codigo_actividad = @CodigoActividad 
+              AND ra.codigo_despa = tu.codigo_despa
+        );
+
+        COMMIT TRANSACTION;
+
+        SELECT 1 AS CodigoResultado, 'Asignación de usuarios a la actividad actualizada exitosamente.' AS Mensaje;
 
     END TRY
     BEGIN CATCH

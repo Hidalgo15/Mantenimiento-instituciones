@@ -101,5 +101,32 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
 
             return resultado.FirstOrDefault() ?? new ResultadoOperacion { CodigoResultado = 0, Mensaje = "Error desconocido al actualizar actividades." };
         }
+
+        public async Task<List<UsuarioActividadAsignacion>> ObtenerUsuariosPorActividadAsync(int codigoActividad, int codigoTre, string? filtroCargo, string? filtroArea, string? busquedaGeneral)
+        {
+            var pAct = new SqlParameter("@CodigoActividad", codigoActividad);
+            var pTre = new SqlParameter("@CodigoTre", codigoTre);
+            var pCargo = new SqlParameter("@FiltroCargo", (object?)filtroCargo ?? DBNull.Value);
+            var pArea = new SqlParameter("@FiltroArea", (object?)filtroArea ?? DBNull.Value);
+            var pBusqueda = new SqlParameter("@BusquedaGeneral", (object?)busquedaGeneral ?? DBNull.Value);
+
+            return await _context.Set<UsuarioActividadAsignacion>()
+                .FromSqlRaw("EXEC [SIGOB].[dbo].[sp_Obtener_Usuarios_Por_Actividad] @CodigoActividad, @CodigoTre, @FiltroCargo, @FiltroArea, @BusquedaGeneral", pAct, pTre, pCargo, pArea, pBusqueda)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
+        public async Task<ResultadoOperacion> GestionarActividadUsuariosAsync(int codigoActividad, string? listaCodigosDespa)
+        {
+            var pAct = new SqlParameter("@CodigoActividad", codigoActividad);
+            var pLista = new SqlParameter("@ListaCodigosDespa", (object?)listaCodigosDespa ?? DBNull.Value);
+
+            var resultado = await _context.Set<ResultadoOperacion>()
+                .FromSqlRaw("EXEC [SIGOB].[dbo].[sp_Gestionar_Actividad_Usuarios] @CodigoActividad, @ListaCodigosDespa", pAct, pLista)
+                .AsNoTracking()
+                .ToListAsync();
+
+            return resultado.FirstOrDefault() ?? new ResultadoOperacion { CodigoResultado = 0, Mensaje = "Error desconocido al actualizar usuarios de la actividad." };
+        }
     }
 }
