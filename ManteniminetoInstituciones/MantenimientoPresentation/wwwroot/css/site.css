@@ -285,6 +285,39 @@ body {
       --bs-table-bg-state: #f1f7fc;
 }
 
+#contenedorSubtipos .form-check {
+      padding-left: 2rem;
+      border-radius: 0.5rem;
+      transition: background-color 0.18s ease;
+}
+
+#contenedorSubtipos .form-check:hover,
+#contenedorSubtipos .form-check:focus-within {
+      background-color: #eaf3fb;
+}
+
+#contenedorSubtipos .form-check-label {
+      cursor: pointer;
+}
+
+#tablaUsuariosAsignacion .form-check-input {
+      cursor: pointer;
+}
+
+.responsable-loading {
+      display: flex;
+      min-height: 7rem;
+      align-items: center;
+      justify-content: center;
+      gap: 0.75rem;
+      padding: 1.5rem;
+      color: var(--cgr-text-muted);
+      background: #fff;
+      border: 1px solid var(--cgr-border-color);
+      border-radius: 0.75rem;
+      font-weight: 600;
+}
+
 .alert-secondary {
       padding: clamp(1.5rem, 4vw, 3rem);
 }

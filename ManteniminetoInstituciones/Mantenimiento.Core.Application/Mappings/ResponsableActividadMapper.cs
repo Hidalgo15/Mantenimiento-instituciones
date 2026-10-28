@@ -44,5 +44,16 @@ namespace Mantenimiento.Core.Application.Mappings
             DescripcionActividad = entity.DescripcionActividad,
             DescripcionSubtipo = entity.DescripcionSubtipo
         };
+
+        public static UsuarioActividadAsignacionDto ToDto(UsuarioActividadAsignacion entity) => new()
+        {
+            CodigoDespa = entity.CodigoDespa,
+            Nombre = entity.Nombre,
+            Institucion = entity.Institucion,
+            DescArea = entity.DescArea,
+            Cargo = entity.Cargo,
+            Email = entity.Email,
+            EstaAsignado = entity.EstaAsignado
+        };
     }
 }

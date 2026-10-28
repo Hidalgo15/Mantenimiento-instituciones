@@ -450,6 +450,18 @@ namespace Mantenimiento.Infraestructure.Persistence
                 entity.Property(e => e.CodigoActividad).HasColumnName("codigo_actividad");
                 entity.Property(e => e.DescripcionActividad).HasColumnName("descripcion_actividad");
             });
+
+            modelBuilder.Entity<UsuarioActividadAsignacion>(entity =>
+            {
+                entity.HasNoKey();
+                entity.Property(e => e.CodigoDespa).HasColumnName("codigo_despa");
+                entity.Property(e => e.Nombre).HasColumnName("Nombre");
+                entity.Property(e => e.Institucion).HasColumnName("Institucion");
+                entity.Property(e => e.DescArea).HasColumnName("DescArea");
+                entity.Property(e => e.Cargo).HasColumnName("Cargo");
+                entity.Property(e => e.Email).HasColumnName("Email");
+                entity.Property(e => e.EstaAsignado).HasColumnName("EstaAsignado");
+            });
             #endregion
 
 
