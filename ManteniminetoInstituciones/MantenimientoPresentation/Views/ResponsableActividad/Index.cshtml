@@ -408,8 +408,8 @@
                 filtroEstadoActual = 'todas';
                 document.getElementById('filtroBusquedaGeneral').value = '';
                 actualizarBotonesFiltro();
-                
-                // IMPORTANTE: Aseguramos que el estado inicial limpie los falsos positivos 
+
+                // IMPORTANTE: Aseguramos que el estado inicial limpie los falsos positivos
                 // para que el usuario elija conscientemente a quién aplicarle el flujo masivo
                 capturarEstadoInicial();
                 evaluarCambiosPendientes();
@@ -462,17 +462,19 @@
                     return;
                 }
 
-                const listaDespa = Array.from(document.querySelectorAll('.chk-usuario-asignacion:checked')).map(chk => chk.value);
                 const listaActividades = resActJson.actividades.map(a => a.codigoActividad);
 
-                // 2. Guardamos de forma masiva para cada actividad del flujo
-                // O puedes enviar la lista completa al backend mediante un ciclo o un nuevo endpoint masivo.
+                // 2. Capturamos TODOS los usuarios que están marcados actualmente en el grid
+                const listaDespaMarcados = Array.from(document.querySelectorAll('.chk-usuario-asignacion:checked')).map(chk => chk.value);
+
                 let exitoGlobal = true;
+
+                // 3. Enviamos la lista completa de marcados para cada actividad del flujo
                 for (const codigoActividad of listaActividades) {
                     const dto = {
                         codigoActividad: codigoActividad,
                         codigoTre: parseInt(codigoTre),
-                        listaCodigosDespa: listaDespa.join(',')
+                        listaCodigosDespa: listaDespaMarcados.join(',') // Todos los tildados en pantalla
                     };
 
                     const respuesta = await fetch('/ResponsableActividad/GuardarAsignacionInversa', {
@@ -482,6 +484,7 @@
                         suppressGlobalError: true,
                         suppressAutoSuccess: true
                     });
+                    
                     const resultado = await respuesta.json();
                     if (!respuesta.ok || !resultado.success) {
                         exitoGlobal = false;
@@ -494,10 +497,13 @@
                 }
 
                 mostrarNotificacion('¡Asignación del flujo guardada exitosamente!', 'success');
+                
+                // Actualizamos el estado inicial para que reconozca los nuevos checks como la "base" actual
                 capturarEstadoInicial();
                 evaluarCambiosPendientes();
                 aplicarFiltrosTablaUsuarios();
-            } catch {
+
+            } catch (error) {
                 mostrarBanner('No se pudieron guardar los cambios del flujo. Verifique su conexión.', 'danger');
             }
         }
