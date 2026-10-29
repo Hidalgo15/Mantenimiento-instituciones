@@ -395,7 +395,7 @@
                 // Usamos la primera actividad para renderizar la lista base de usuarios del molde
                 const primeraActividadId = resActJson.actividades[0].codigoActividad;
 
-                const urlGrid = `/ResponsableActividad/ObtenerGrid?codigoActividad=${encodeURIComponent(primeraActividadId)}&codigoTre=${encodeURIComponent(codigoTre)}`;
+                const urlGrid = `/ResponsableActividad/ObtenerGridPorFlujo?codigoTre=${encodeURIComponent(codigoTre)}&nombreFlujo=${encodeURIComponent(nombreFlujo)}`;
                 const respuesta = await fetch(urlGrid, { suppressGlobalError: true });
                 if (!respuesta.ok) throw new Error('No se pudieron cargar los usuarios.');
 
@@ -707,7 +707,7 @@
                 if (modalInstance) modalInstance.hide();
 
                 // Recargamos el grid principal para reflejar cambios si es necesario
-                cargarUsuariosPorFlujo(true);
+                // cargarUsuariosPorFlujo(true);
 
             } catch (error) {
                 mostrarBanner('Error de conexión al guardar las actividades individuales.', 'danger');

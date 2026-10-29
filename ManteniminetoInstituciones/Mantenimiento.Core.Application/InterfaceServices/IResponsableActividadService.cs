@@ -16,5 +16,6 @@ namespace Mantenimiento.Core.Application.InterfaceServices
         Task<ResultadoOperacionDto> GestionarActividadUsuariosAsync(GestionarActividadUsuariosDto dto);
         Task<List<FlujoMoldeDto>> ObtenerFlujosPorMoldeAsync(int codigoTre);
         Task<List<ActividadFlujoDto>> ObtenerActividadesPorFlujoAsync(int codigoTre, string nombreFlujo);
+        Task<List<UsuarioActividadAsignacionDto>> ObtenerUsuariosPorFlujoAsync(int codigoTre, string nombreFlujo, string? busquedaGeneral = null);
     }
 }
