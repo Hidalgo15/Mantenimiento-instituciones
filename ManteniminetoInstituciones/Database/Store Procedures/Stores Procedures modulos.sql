@@ -3212,3 +3212,60 @@ BEGIN
     END CATCH
 END;
 GO
+
+USE SIGOB
+GO
+
+-- Obtener Flujos por Molde Seleccionado
+CREATE OR ALTER PROCEDURE [dbo].[sp_Obtener_Flujos_Por_Molde]
+    @CodigoTre INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT DISTINCT 
+        fc.nombre_flujo AS NombreFlujo
+    FROM [SIGOB_CONTRALORIA].[dbo].[flujo_actividades_config] fac WITH (NOLOCK)
+    INNER JOIN [SIGOB_CONTRALORIA].[dbo].[flujos_catalogo] fc WITH (NOLOCK) 
+        ON fc.id_flujo = fac.id_flujo
+    WHERE fac.codigo_tre = @CodigoTre
+      AND fc.activo = 1
+    ORDER BY fc.nombre_flujo ASC;
+END;
+GO
+
+-- Obtener Actividades por Molde y Flujo Seleccionado
+
+CREATE OR ALTER PROCEDURE [dbo].[sp_Obtener_Actividades_Por_Flujo]
+    @CodigoTre INT,
+    @NombreFlujo VARCHAR(100)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT DISTINCT 
+        att.codigo_actividad,
+        att.codigo_tipo_tre,
+        a.descripcion AS descripcion_actividad,
+        tt.descripcion AS descripcion_subtipo,
+        @NombreFlujo AS flujo_correspondiente
+    FROM [SIGOB_CONTRALORIA].[dbo].[flujo_actividades_config] fac WITH (NOLOCK)
+    INNER JOIN [SIGOB_CONTRALORIA].[dbo].[flujos_catalogo] fc WITH (NOLOCK) 
+        ON fc.id_flujo = fac.id_flujo
+    -- Cruzamos directamente con la actividad configurada para este molde y flujo
+    INNER JOIN [SIGOB].[dbo].[actividad_tipo_tre] att WITH (NOLOCK) 
+        ON att.codigo_actividad = fac.codigo_actividad
+    INNER JOIN [SIGOB].[dbo].[actividad] a WITH (NOLOCK) 
+        ON a.codigo_actividad = att.codigo_actividad
+    INNER JOIN [SIGOB].[dbo].[tipos_tre] tt WITH (NOLOCK) 
+        ON tt.codigo_tipo_tre = att.codigo_tipo_tre
+    WHERE fac.codigo_tre = @CodigoTre
+      AND fc.nombre_flujo = @NombreFlujo
+      -- Validamos que el tipo pertenezca al molde actual
+      AND tt.codigo_tre = @CodigoTre
+      -- Reglas de exclusión del sistema
+      AND a.descripcion NOT LIKE 'RI%'
+      AND a.descripcion <> 'Inicio trámite'
+    ORDER BY descripcion_actividad ASC;
+END;
+GO

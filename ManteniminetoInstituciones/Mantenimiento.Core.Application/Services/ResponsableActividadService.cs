@@ -105,5 +105,17 @@ namespace Mantenimiento.Core.Application.Services
             var res = await _repository.GestionarActividadUsuariosAsync(dto.CodigoActividad, dto.ListaCodigosDespa);
             return ResultadoOperacionMapper.ToDto(res);
         }
+
+        public async Task<List<FlujoMoldeDto>> ObtenerFlujosPorMoldeAsync(int codigoTre)
+        {
+            var data = await _repository.ObtenerFlujosPorMoldeAsync(codigoTre);
+            return data.Select(ResponsableActividadMapper.ToDto).ToList();
+        }
+
+        public async Task<List<ActividadFlujoDto>> ObtenerActividadesPorFlujoAsync(int codigoTre, string nombreFlujo)
+        {
+            var data = await _repository.ObtenerActividadesPorFlujoAsync(codigoTre, nombreFlujo);
+            return data.Select(ResponsableActividadMapper.ToDto).ToList();
+        }
     }
 }

@@ -87,6 +87,70 @@ namespace MantenimientoPresentation.Controllers
             }
         }
 
+        [HttpGet]
+        public async Task<IActionResult> ObtenerFlujos(int codigoTre)
+        {
+            try
+            {
+                var flujos = await _service.ObtenerFlujosPorMoldeAsync(codigoTre);
+                return Json(new { success = true, data = flujos });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener flujos por molde.");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ObtenerActividadesPorFlujo(int codigoTre, string nombreFlujo)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(nombreFlujo))
+                    return Json(new { success = false, message = "Debe seleccionar un flujo válido." });
+
+                var actividades = await _service.ObtenerActividadesPorFlujoAsync(codigoTre, nombreFlujo);
+                return Json(new { success = true, actividades });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener actividades por flujo.");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ObtenerIdsActividadesPorFlujo(int codigoTre, string nombreFlujo)
+        {
+            try
+            {
+                var actividades = await _service.ObtenerActividadesPorFlujoAsync(codigoTre, nombreFlujo);
+                var codigos = actividades.Select(a => a.CodigoActividad).ToList();
+                return Json(new { success = true, codigosActividades = codigos });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener los códigos de actividades del flujo.");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ObtenerActividadesUsuario(string codigoDespa)
+        {
+            try
+            {
+                var actividades = await _service.ObtenerActividadesUsuarioAsync(codigoDespa);
+                return Json(actividades);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener actividades del usuario.");
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
         [HttpPost]
         public async Task<IActionResult> GuardarAsignacionInversa([FromBody] GestionarActividadUsuariosDto dto)
         {
@@ -104,6 +168,27 @@ namespace MantenimientoPresentation.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al sincronizar los usuarios de la actividad.");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GuardarAsignacionResponsable([FromBody] GestionarResponsableActividadDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return Json(new { success = false, message = "Datos de asignación inválidos." });
+            }
+
+            try
+            {
+                dto.Usuario = _currentUserService.GetUsername();
+                var resultado = await _service.GestionarActividadesAsync(dto);
+                return Json(new { success = resultado.CodigoResultado == 1, message = resultado.Mensaje });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al gestionar las actividades del responsable.");
                 return Json(new { success = false, message = ex.Message });
             }
         }
