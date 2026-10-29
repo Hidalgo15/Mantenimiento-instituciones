@@ -55,6 +55,21 @@ namespace MantenimientoPresentation.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> ObtenerGridPorFlujo(int codigoTre, string nombreFlujo, string? busquedaGeneral)
+        {
+            try
+            {
+                var usuarios = await _service.ObtenerUsuariosPorFlujoAsync(codigoTre, nombreFlujo, busquedaGeneral);
+                return PartialView("_ResponsableActividadGridPartial", usuarios);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener el grid de usuarios por flujo.");
+                return StatusCode(500, "Ocurrió un error al cargar los usuarios del flujo.");
+            }
+        }
+
+        [HttpGet]
         public async Task<IActionResult> ObtenerSubtipos(int codigoTre)
         {
             try
