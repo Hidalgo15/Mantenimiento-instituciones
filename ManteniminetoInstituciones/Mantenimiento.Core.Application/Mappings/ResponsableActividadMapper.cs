@@ -55,5 +55,19 @@ namespace Mantenimiento.Core.Application.Mappings
             Email = entity.Email,
             EstaAsignado = entity.EstaAsignado
         };
+
+        public static FlujoMoldeDto ToDto(FlujoMolde entity) => new()
+        {
+            NombreFlujo = entity.NombreFlujo
+        };
+
+        public static ActividadFlujoDto ToDto(ActividadFlujo entity) => new()
+        {
+            CodigoActividad = entity.CodigoActividad,
+            CodigoTipoTre = entity.CodigoTipoTre,
+            DescripcionActividad = entity.DescripcionActividad,
+            DescripcionSubtipo = entity.DescripcionSubtipo,
+            FlujoCorrespondiente = entity.FlujoCorrespondiente
+        };
     }
 }

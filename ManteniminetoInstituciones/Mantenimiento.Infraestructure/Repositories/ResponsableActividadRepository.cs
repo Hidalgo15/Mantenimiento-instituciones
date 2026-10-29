@@ -128,5 +128,24 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
 
             return resultado.FirstOrDefault() ?? new ResultadoOperacion { CodigoResultado = 0, Mensaje = "Error desconocido al actualizar usuarios de la actividad." };
         }
+
+        public async Task<List<FlujoMolde>> ObtenerFlujosPorMoldeAsync(int codigoTre)
+        {
+            var pTre = new SqlParameter("@CodigoTre", codigoTre);
+            return await _context.Set<FlujoMolde>()
+                .FromSqlRaw("EXEC [SIGOB].[dbo].[sp_Obtener_Flujos_Por_Molde] @CodigoTre", pTre)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
+        public async Task<List<ActividadFlujo>> ObtenerActividadesPorFlujoAsync(int codigoTre, string nombreFlujo)
+        {
+            var pTre = new SqlParameter("@CodigoTre", codigoTre);
+            var pFlujo = new SqlParameter("@NombreFlujo", nombreFlujo);
+            return await _context.Set<ActividadFlujo>()
+                .FromSqlRaw("EXEC [SIGOB].[dbo].[sp_Obtener_Actividades_Por_Flujo] @CodigoTre, @NombreFlujo", pTre, pFlujo)
+                .AsNoTracking()
+                .ToListAsync();
+        }
     }
 }

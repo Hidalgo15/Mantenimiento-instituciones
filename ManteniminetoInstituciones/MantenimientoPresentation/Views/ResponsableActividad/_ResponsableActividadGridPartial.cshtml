@@ -11,6 +11,7 @@
                         <th class="py-3 px-3">Usuario</th>
                         <th class="py-3 px-3">Cargo</th>
                         <th class="py-3 px-3">Área</th>
+                        <th class="py-3 px-3 text-center" style="width: 120px;">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -32,6 +33,12 @@
                             </td>
                             <td class="px-3 fw-semibold text-secondary small">@(string.IsNullOrEmpty(user.Cargo) ? "Sin cargo" : user.Cargo)</td>
                             <td class="px-3 text-muted small">@(string.IsNullOrEmpty(user.DescArea) ? "N/A" : user.DescArea)</td>
+                            <!-- Botón de gestión individual más pequeño y estilizado -->
+                            <td class="text-center px-3">
+                                <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-2 py-0" style="font-size: 0.75rem;" onclick="abrirModalGestionIndividual('@user.CodigoDespa', '@user.Nombre')">
+                                    <i class="bi bi-person-gear me-1"></i> Gestionar
+                                </button>
+                            </td>
                         </tr>
                     }
                 </tbody>
@@ -43,6 +50,6 @@ else
 {
     <div class="alert alert-secondary border-0 shadow-sm text-center py-4 rounded-3 mb-0" role="status">
         <i class="bi bi-people fs-3 text-secondary d-block mb-2" aria-hidden="true"></i>
-        <span class="fw-semibold text-secondary">No hay usuarios disponibles para la actividad seleccionada.</span>
+        <span class="fw-semibold text-secondary">No hay usuarios disponibles.</span>
     </div>
 }
