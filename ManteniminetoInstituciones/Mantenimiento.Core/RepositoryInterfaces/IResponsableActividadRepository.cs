@@ -11,5 +11,9 @@ namespace Mantenimiento.Core.Domain.RepositoryInterfaces
         Task<List<ActividadSubtipo>> ObtenerActividadesPorSubtiposAsync(string codigosSubtipos);
         Task<List<ResponsableActividad>> ObtenerActividadesUsuarioAsync(string codigoDespa);
         Task<ResultadoOperacion> GestionarActividadesAsync(string codigoDespa, string? listaCodigosActividades);
+        Task<List<UsuarioActividadAsignacion>> ObtenerUsuariosPorActividadAsync(int codigoActividad, int codigoTre, string? filtroCargo, string? filtroArea, string? busquedaGeneral);
+        Task<ResultadoOperacion> GestionarActividadUsuariosAsync(int codigoActividad, string? listaCodigosDespa);
+        Task<List<FlujoMolde>> ObtenerFlujosPorMoldeAsync(int codigoTre);
+        Task<List<ActividadFlujo>> ObtenerActividadesPorFlujoAsync(int codigoTre, string nombreFlujo);
     }
 }

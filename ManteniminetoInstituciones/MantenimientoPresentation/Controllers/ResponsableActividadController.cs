@@ -32,26 +32,40 @@ namespace MantenimientoPresentation.Controllers
             {
                 _logger.LogError(ex, "Error al cargar los moldes en la vista inicial.");
                 ViewBag.Moldes = new List<MoldeCatalogoDto>();
+                ViewBag.ErrorCargaMoldes = "No se pudo cargar la lista de moldes. Actualice la página para intentarlo nuevamente.";
             }
 
             return View();
         }
 
         [HttpGet]
-        public async Task<IActionResult> ObtenerGrid(string codigoDespa, string codigosSubtipos, string nombreUsuario = "", string cargoUsuario = "")
+        public async Task<IActionResult> ObtenerGrid(int codigoActividad, int codigoTre, string? filtroCargo, string? filtroArea, string? busquedaGeneral)
         {
             try
             {
-                var disponibles = await _service.ObtenerActividadesPorSubtiposAsync(codigosSubtipos);
-                var actuales = await _service.ObtenerActividadesUsuarioAsync(codigoDespa);
-                var actualesIds = actuales.Select(a => a.CodigoActividad).ToList();
+                var usuarios = await _service.ObtenerUsuariosPorActividadAsync(codigoActividad, codigoTre, filtroCargo, filtroArea, busquedaGeneral);
 
-                return PartialView("_ResponsableActividadGridPartial", (disponibles, actualesIds, nombreUsuario, cargoUsuario));
+                return PartialView("_ResponsableActividadGridPartial", usuarios);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al obtener el grid de actividades.");
-                return StatusCode(500, "Ocurrió un error al cargar las actividades.");
+                _logger.LogError(ex, "Error al obtener el grid inverso de usuarios por actividad.");
+                return StatusCode(500, "Ocurrió un error al cargar los usuarios.");
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ObtenerGridPorFlujo(int codigoTre, string nombreFlujo, string? busquedaGeneral)
+        {
+            try
+            {
+                var usuarios = await _service.ObtenerUsuariosPorFlujoAsync(codigoTre, nombreFlujo, busquedaGeneral);
+                return PartialView("_ResponsableActividadGridPartial", usuarios);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener el grid de usuarios por flujo.");
+                return StatusCode(500, "Ocurrió un error al cargar los usuarios del flujo.");
             }
         }
 
@@ -66,21 +80,6 @@ namespace MantenimientoPresentation.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al obtener subtipos por molde.");
-                return Json(new { success = false, message = ex.Message });
-            }
-        }
-
-        [HttpGet]
-        public async Task<IActionResult> ObtenerUsuariosPorMolde(int codigoTre)
-        {
-            try
-            {
-                var usuarios = await _service.ObtenerUsuariosPorMoldeAsync(codigoTre);
-                return Json(new { success = true, usuarios });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al obtener los usuarios por molde.");
                 return Json(new { success = false, message = ex.Message });
             }
         }
@@ -104,22 +103,92 @@ namespace MantenimientoPresentation.Controllers
         }
 
         [HttpGet]
+        public async Task<IActionResult> ObtenerFlujos(int codigoTre)
+        {
+            try
+            {
+                var flujos = await _service.ObtenerFlujosPorMoldeAsync(codigoTre);
+                return Json(new { success = true, data = flujos });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener flujos por molde.");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ObtenerActividadesPorFlujo(int codigoTre, string nombreFlujo)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(nombreFlujo))
+                    return Json(new { success = false, message = "Debe seleccionar un flujo válido." });
+
+                var actividades = await _service.ObtenerActividadesPorFlujoAsync(codigoTre, nombreFlujo);
+                return Json(new { success = true, actividades });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener actividades por flujo.");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet]
+        public async Task<IActionResult> ObtenerIdsActividadesPorFlujo(int codigoTre, string nombreFlujo)
+        {
+            try
+            {
+                var actividades = await _service.ObtenerActividadesPorFlujoAsync(codigoTre, nombreFlujo);
+                var codigos = actividades.Select(a => a.CodigoActividad).ToList();
+                return Json(new { success = true, codigosActividades = codigos });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener los códigos de actividades del flujo.");
+                return Json(new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpGet]
         public async Task<IActionResult> ObtenerActividadesUsuario(string codigoDespa)
         {
             try
             {
-                var actividadesActuales = await _service.ObtenerActividadesUsuarioAsync(codigoDespa);
-                return Json(new { success = true, data = actividadesActuales });
+                var actividades = await _service.ObtenerActividadesUsuarioAsync(codigoDespa);
+                return Json(actividades);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al obtener las actividades asignadas al usuario.");
+                _logger.LogError(ex, "Error al obtener actividades del usuario.");
+                return StatusCode(500, new { success = false, message = ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> GuardarAsignacionInversa([FromBody] GestionarActividadUsuariosDto dto)
+        {
+            if (!ModelState.IsValid)
+            {
+                return Json(new { success = false, message = "Datos de asignación inválidos." });
+            }
+
+            try
+            {
+                dto.Usuario = _currentUserService.GetUsername();
+                var resultado = await _service.GestionarActividadUsuariosAsync(dto);
+                return Json(new { success = resultado.CodigoResultado == 1, message = resultado.Mensaje });
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al sincronizar los usuarios de la actividad.");
                 return Json(new { success = false, message = ex.Message });
             }
         }
 
         [HttpPost]
-        public async Task<IActionResult> GuardarAsignacion([FromBody] GestionarResponsableActividadDto dto)
+        public async Task<IActionResult> GuardarAsignacionResponsable([FromBody] GestionarResponsableActividadDto dto)
         {
             if (!ModelState.IsValid)
             {
@@ -134,7 +203,7 @@ namespace MantenimientoPresentation.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al sincronizar las actividades del responsable.");
+                _logger.LogError(ex, "Error al gestionar las actividades del responsable.");
                 return Json(new { success = false, message = ex.Message });
             }
         }

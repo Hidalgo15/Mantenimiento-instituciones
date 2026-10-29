@@ -44,6 +44,8 @@ namespace Mantenimiento.Infraestructure.Persistence
         public DbSet<UsuarioSubtipo> UsuarioSubtiposTbl { get; set; }
         public DbSet<ActividadSubtipo> ActividadSubtiposTbl { get; set; }
         public DbSet<ResponsableActividad> ResponsableActividadesTbl { get; set; }
+        public DbSet<FlujoMolde> FlujoMoldesTbl { get; set; }
+        public DbSet<ActividadFlujo> ActividadFlujosTbl { get; set; }
 
         #endregion
 
@@ -449,6 +451,34 @@ namespace Mantenimiento.Infraestructure.Persistence
                 entity.Property(e => e.CodigoDespa).HasColumnName("codigo_despa");
                 entity.Property(e => e.CodigoActividad).HasColumnName("codigo_actividad");
                 entity.Property(e => e.DescripcionActividad).HasColumnName("descripcion_actividad");
+            });
+
+            modelBuilder.Entity<UsuarioActividadAsignacion>(entity =>
+            {
+                entity.HasNoKey();
+                entity.Property(e => e.CodigoDespa).HasColumnName("codigo_despa");
+                entity.Property(e => e.Nombre).HasColumnName("Nombre");
+                entity.Property(e => e.Institucion).HasColumnName("Institucion");
+                entity.Property(e => e.DescArea).HasColumnName("DescArea");
+                entity.Property(e => e.Cargo).HasColumnName("Cargo");
+                entity.Property(e => e.Email).HasColumnName("Email");
+                entity.Property(e => e.EstaAsignado).HasColumnName("EstaAsignado");
+            });
+
+            modelBuilder.Entity<FlujoMolde>(entity =>
+            {
+                entity.HasNoKey();
+                entity.Property(e => e.NombreFlujo).HasColumnName("NombreFlujo");
+            });
+
+            modelBuilder.Entity<ActividadFlujo>(entity =>
+            {
+                entity.HasNoKey();
+                entity.Property(e => e.CodigoActividad).HasColumnName("codigo_actividad");
+                entity.Property(e => e.CodigoTipoTre).HasColumnName("codigo_tipo_tre");
+                entity.Property(e => e.DescripcionActividad).HasColumnName("descripcion_actividad");
+                entity.Property(e => e.DescripcionSubtipo).HasColumnName("descripcion_subtipo");
+                entity.Property(e => e.FlujoCorrespondiente).HasColumnName("flujo_correspondiente");
             });
             #endregion
 
