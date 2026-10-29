@@ -451,8 +451,15 @@
             const codigoTre = document.getElementById('selectMolde').value;
             if (!nombreFlujo) return;
 
+            const cambiosPendientes = obtenerCambiosPendientes();
+            if (cambiosPendientes.length === 0) return;
+
+            const btnGuardar = document.getElementById('btnGuardarCambios');
+            btnGuardar.disabled = true;
+            cambiosPendientes.forEach(checkbox => checkbox.disabled = true);
+            let usuariosGuardados = 0;
+
             try {
-                // 1. Obtenemos todas las actividades que pertenecen a este flujo
                 const urlActividades = `/ResponsableActividad/ObtenerActividadesPorFlujo?codigoTre=${encodeURIComponent(codigoTre)}&nombreFlujo=${encodeURIComponent(nombreFlujo)}`;
                 const respAct = await fetch(urlActividades);
                 const resActJson = await respAct.json();
@@ -463,48 +470,59 @@
                 }
 
                 const listaActividades = resActJson.actividades.map(a => a.codigoActividad);
+                const codigosActividadesFlujo = new Set(listaActividades.map(Number));
 
-                // 2. Capturamos TODOS los usuarios que están marcados actualmente en el grid
-                const listaDespaMarcados = Array.from(document.querySelectorAll('.chk-usuario-asignacion:checked')).map(chk => chk.value);
+                for (const checkbox of cambiosPendientes) {
+                    const urlActividadesUsuario = `/ResponsableActividad/ObtenerActividadesUsuario?codigoDespa=${encodeURIComponent(checkbox.value)}`;
+                    const respuestaActividadesUsuario = await fetch(urlActividadesUsuario, { suppressGlobalError: true });
+                    if (!respuestaActividadesUsuario.ok) {
+                        throw new Error(`No se pudieron consultar las actividades de ${checkbox.value}.`);
+                    }
 
-                let exitoGlobal = true;
+                    const actividadesUsuario = await respuestaActividadesUsuario.json();
+                    if (!Array.isArray(actividadesUsuario)) {
+                        throw new Error(`La respuesta de actividades de ${checkbox.value} no es válida.`);
+                    }
 
-                // 3. Enviamos la lista completa de marcados para cada actividad del flujo
-                for (const codigoActividad of listaActividades) {
-                    const dto = {
-                        codigoActividad: codigoActividad,
-                        codigoTre: parseInt(codigoTre),
-                        listaCodigosDespa: listaDespaMarcados.join(',') // Todos los tildados en pantalla
-                    };
+                    const codigosFueraDelFlujo = actividadesUsuario
+                        .map(actividad => actividad.codigoActividad)
+                        .filter(codigo => !codigosActividadesFlujo.has(Number(codigo)));
+                    const codigosActualizados = checkbox.checked
+                        ? [...new Set([...codigosFueraDelFlujo, ...listaActividades])]
+                        : [...new Set(codigosFueraDelFlujo)];
 
-                    const respuesta = await fetch('/ResponsableActividad/GuardarAsignacionInversa', {
+                    const respuesta = await fetch('/ResponsableActividad/GuardarAsignacionResponsable', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(dto),
+                        body: JSON.stringify({
+                            codigoDespa: checkbox.value,
+                            listaCodigosActividades: codigosActualizados.join(',')
+                        }),
                         suppressGlobalError: true,
                         suppressAutoSuccess: true
                     });
-                    
+
                     const resultado = await respuesta.json();
                     if (!respuesta.ok || !resultado.success) {
-                        exitoGlobal = false;
+                        throw new Error(resultado.message || `No se pudieron guardar las actividades de ${checkbox.value}.`);
                     }
-                }
-
-                if (!exitoGlobal) {
-                    mostrarBanner('Algunas actividades no pudieron actualizarse correctamente.', 'warning');
-                    return;
+                    usuariosGuardados++;
                 }
 
                 mostrarNotificacion('¡Asignación del flujo guardada exitosamente!', 'success');
-                
-                // Actualizamos el estado inicial para que reconozca los nuevos checks como la "base" actual
                 capturarEstadoInicial();
                 evaluarCambiosPendientes();
                 aplicarFiltrosTablaUsuarios();
 
             } catch (error) {
-                mostrarBanner('No se pudieron guardar los cambios del flujo. Verifique su conexión.', 'danger');
+                const detalle = error instanceof Error ? error.message : 'Verifique su conexión.';
+                const avance = usuariosGuardados > 0
+                    ? ` Se guardaron ${usuariosGuardados} de ${cambiosPendientes.length} usuarios; puede volver a guardar para reintentar los pendientes.`
+                    : '';
+                mostrarBanner(`No se pudieron guardar todos los cambios del flujo. ${detalle}${avance}`, 'danger');
+            } finally {
+                cambiosPendientes.forEach(checkbox => checkbox.disabled = false);
+                evaluarCambiosPendientes();
             }
         }
 
