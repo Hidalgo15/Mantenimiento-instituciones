@@ -102,6 +102,15 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
             return resultado.FirstOrDefault() ?? new ResultadoOperacion { CodigoResultado = 0, Mensaje = "Error desconocido al actualizar actividades." };
         }
 
+        /// <summary>
+        /// Obtiene la lista de usuarios asociados a una actividad específica desde la base de datos mediante un procedimiento almacenado.
+        /// </summary>
+        /// <param name="codigoActividad"></param>
+        /// <param name="codigoTre"></param>
+        /// <param name="filtroCargo"></param>
+        /// <param name="filtroArea"></param>
+        /// <param name="busquedaGeneral"></param>
+        /// <returns></returns>
         public async Task<List<UsuarioActividadAsignacion>> ObtenerUsuariosPorActividadAsync(int codigoActividad, int codigoTre, string? filtroCargo, string? filtroArea, string? busquedaGeneral)
         {
             var pAct = new SqlParameter("@CodigoActividad", codigoActividad);
@@ -116,6 +125,12 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
                 .ToListAsync();
         }
 
+        /// <summary>
+        /// Gestiona la asignación de usuarios a una actividad específica mediante un procedimiento almacenado en la base de datos.
+        /// </summary>
+        /// <param name="codigoActividad"></param>
+        /// <param name="listaCodigosDespa"></param>
+        /// <returns></returns>
         public async Task<ResultadoOperacion> GestionarActividadUsuariosAsync(int codigoActividad, string? listaCodigosDespa)
         {
             var pAct = new SqlParameter("@CodigoActividad", codigoActividad);
@@ -129,6 +144,11 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
             return resultado.FirstOrDefault() ?? new ResultadoOperacion { CodigoResultado = 0, Mensaje = "Error desconocido al actualizar usuarios de la actividad." };
         }
 
+        /// <summary>
+        /// Obtiene la lista de flujos de trabajo asociados a un código de molde específico desde la base de datos mediante un procedimiento almacenado.
+        /// </summary>
+        /// <param name="codigoTre"></param>
+        /// <returns></returns>
         public async Task<List<FlujoMolde>> ObtenerFlujosPorMoldeAsync(int codigoTre)
         {
             var pTre = new SqlParameter("@CodigoTre", codigoTre);
@@ -138,12 +158,37 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
                 .ToListAsync();
         }
 
+        /// <summary>
+        /// Gestiona la asignación de flujos de trabajo a un molde específico mediante un procedimiento almacenado en la base de datos.
+        /// </summary>
+        /// <param name="codigoTre"></param>
+        /// <param name="nombreFlujo"></param>
+        /// <returns></returns>
         public async Task<List<ActividadFlujo>> ObtenerActividadesPorFlujoAsync(int codigoTre, string nombreFlujo)
         {
             var pTre = new SqlParameter("@CodigoTre", codigoTre);
             var pFlujo = new SqlParameter("@NombreFlujo", nombreFlujo);
             return await _context.Set<ActividadFlujo>()
                 .FromSqlRaw("EXEC [SIGOB].[dbo].[sp_Obtener_Actividades_Por_Flujo] @CodigoTre, @NombreFlujo", pTre, pFlujo)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
+        /// <summary>
+        /// Gestiona los usuarios asignados a un flujo de trabajo específico mediante un procedimiento almacenado en la base de datos.
+        /// </summary>
+        /// <param name="codigoTre"></param>
+        /// <param name="nombreFlujo"></param>
+        /// <param name="busquedaGeneral"></param>
+        /// <returns></returns>
+        public async Task<List<UsuarioActividadAsignacion>> ObtenerUsuariosPorFlujoAsync(int codigoTre, string nombreFlujo, string? busquedaGeneral)
+        {
+            var pTre = new SqlParameter("@CodigoTre", codigoTre);
+            var pFlujo = new SqlParameter("@NombreFlujo", nombreFlujo);
+            var pBusqueda = new SqlParameter("@BusquedaGeneral", (object?)busquedaGeneral ?? DBNull.Value);
+
+            return await _context.Set<UsuarioActividadAsignacion>()
+                .FromSqlRaw("EXEC [SIGOB].[dbo].[sp_Obtener_Usuarios_Por_Flujo] @CodigoTre, @NombreFlujo, @BusquedaGeneral", pTre, pFlujo, pBusqueda)
                 .AsNoTracking()
                 .ToListAsync();
         }
