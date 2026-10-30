@@ -25,6 +25,8 @@ namespace MantenimientoPresentation
             // HttpContextAccessor
             builder.Services.AddHttpContextAccessor();
 
+            #region Repositorios y Servicios
+
             // Repositorios y Servicios
             builder.Services.AddScoped<IInstitucionRepository, InstitucionRepository>();
             builder.Services.AddScoped<IInstitucionService, InstitucionService>();
@@ -84,6 +86,8 @@ namespace MantenimientoPresentation
 
             builder.Services.AddScoped<IResponsableActividadRepository, ResponsableActividadRepository>();
             builder.Services.AddScoped<IResponsableActividadService, ResponsableActividadService>();
+
+            #endregion
 
             builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
             .AddCookie(options =>

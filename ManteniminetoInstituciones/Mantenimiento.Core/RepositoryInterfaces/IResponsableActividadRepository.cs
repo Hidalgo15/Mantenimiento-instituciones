@@ -15,5 +15,6 @@ namespace Mantenimiento.Core.Domain.RepositoryInterfaces
         Task<ResultadoOperacion> GestionarActividadUsuariosAsync(int codigoActividad, string? listaCodigosDespa);
         Task<List<FlujoMolde>> ObtenerFlujosPorMoldeAsync(int codigoTre);
         Task<List<ActividadFlujo>> ObtenerActividadesPorFlujoAsync(int codigoTre, string nombreFlujo);
+        Task<List<UsuarioActividadAsignacion>> ObtenerUsuariosPorFlujoAsync(int codigoTre, string nombreFlujo, string? busquedaGeneral);
     }
 }

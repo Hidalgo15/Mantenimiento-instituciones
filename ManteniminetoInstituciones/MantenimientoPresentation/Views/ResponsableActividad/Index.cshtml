@@ -28,7 +28,7 @@
         </span>
     </div>
 
-    <!-- SELECCIÓN EN CASCADA (MOLDE -> FLUJO) -->
+    <!-- SELECCIÓN EN CASCADA -->
     <div class="card border-0 shadow-sm rounded-4 mb-4">
         <div class="card-body p-4 bg-white rounded-4">
             <div class="row g-3">
@@ -46,7 +46,7 @@
                     </select>
                 </div>
 
-                <!-- 2. Flujo de Trabajo (Carga Directa de Usuarios al Seleccionar) -->
+                <!-- 2. Flujo de Trabajo -->
                 <div class="col-md-12 mt-3" id="seccionFlujos">
                     <div class="d-flex justify-content-between align-items-center mb-2">
                         <label for="selectFlujo" class="form-label fw-bold text-dark mb-0">
@@ -342,7 +342,6 @@
         }
 
         // 2. CARGAR USUARIOS DIRECTAMENTE AL SELECCIONAR EL FLUJO
-        // 2. CARGAR USUARIOS DIRECTAMENTE AL SELECCIONAR EL FLUJO
         async function cargarUsuariosPorFlujo(reintentar = false) {
             const selectFlujo = document.getElementById('selectFlujo');
             const nombreFlujo = selectFlujo.value;
@@ -409,8 +408,8 @@
                 document.getElementById('filtroBusquedaGeneral').value = '';
                 actualizarBotonesFiltro();
 
-                // IMPORTANTE: Aseguramos que el estado inicial limpie los falsos positivos
-                // para que el usuario elija conscientemente a quién aplicarle el flujo masivo
+                // Aseguramos que el estado inicial limpie los falsos positivos
+                // para que el usuario elija conscientemente a quién aplicarle el flujo completo
                 capturarEstadoInicial();
                 evaluarCambiosPendientes();
                 aplicarFiltrosTablaUsuarios();
@@ -631,7 +630,6 @@
         }
 
         // 1. ABRIR MODAL DE GESTIÓN INDIVIDUAL POR USUARIO
-        // 1. ABRIR MODAL DE GESTIÓN INDIVIDUAL POR USUARIO
         async function abrirModalGestionIndividual(codigoDespa, nombreUsuario) {
             document.getElementById('txtDespaModal').value = codigoDespa;
             document.getElementById('lblNombreUsuarioModal').textContent = `${nombreUsuario} (Código: ${codigoDespa})`;
@@ -700,19 +698,48 @@
         // 2. GUARDAR LOS CAMBIOS DEL MODAL INDIVIDUAL
         async function guardarActividadesIndividuales() {
             const codigoDespa = document.getElementById('txtDespaModal').value;
-            const checkboxes = document.querySelectorAll('.chk-actividad-individual:checked');
-            const listaActividades = Array.from(checkboxes).map(chk => chk.value);
-
-            const dto = {
-                codigoDespa: codigoDespa,
-                listaCodigosActividades: listaActividades.join(',')
-            };
+            const idsSeleccionadosEnFlujo = Array.from(document.querySelectorAll('.chk-actividad-individual:checked'))
+                .map(checkbox => Number(checkbox.value));
 
             try {
+                const codigoTre = document.getElementById('selectMolde').value;
+                const nombreFlujo = document.getElementById('selectFlujo').value;
+                const urlActividadesFlujo = `/ResponsableActividad/ObtenerActividadesPorFlujo?codigoTre=${encodeURIComponent(codigoTre)}&nombreFlujo=${encodeURIComponent(nombreFlujo)}`;
+                const urlActividadesUsuario = `/ResponsableActividad/ObtenerActividadesUsuario?codigoDespa=${encodeURIComponent(codigoDespa)}`;
+                const [respuestaFlujo, respuestaUsuario] = await Promise.all([
+                    fetch(urlActividadesFlujo, { suppressGlobalError: true }),
+                    fetch(urlActividadesUsuario, { suppressGlobalError: true })
+                ]);
+
+                if (!respuestaFlujo.ok || !respuestaUsuario.ok) {
+                    throw new Error('No se pudieron consultar las asignaciones actuales del usuario.');
+                }
+
+                const resultadoFlujo = await respuestaFlujo.json();
+                const actividadesUsuario = await respuestaUsuario.json();
+                if (!resultadoFlujo.success || !Array.isArray(resultadoFlujo.actividades) ||
+                    !Array.isArray(actividadesUsuario)) {
+                    throw new Error('La respuesta de actividades del usuario no es válida.');
+                }
+
+                const idsActividadesFlujo = new Set(
+                    resultadoFlujo.actividades.map(actividad => Number(actividad.codigoActividad))
+                );
+                const idsActividadesFueraDelFlujo = actividadesUsuario
+                    .map(actividad => Number(actividad.codigoActividad))
+                    .filter(codigoActividad => !idsActividadesFlujo.has(codigoActividad));
+                const idsActividadesActualizadas = [...new Set([
+                    ...idsActividadesFueraDelFlujo,
+                    ...idsSeleccionadosEnFlujo
+                ])];
+
                 const respuesta = await fetch('/ResponsableActividad/GuardarAsignacionResponsable', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(dto),
+                    body: JSON.stringify({
+                        codigoDespa: codigoDespa,
+                        listaCodigosActividades: idsActividadesActualizadas.join(',')
+                    }),
                     suppressGlobalError: true,
                     suppressAutoSuccess: true
                 });
@@ -723,15 +750,26 @@
                     return;
                 }
 
+                const checkboxUsuario = Array.from(document.querySelectorAll('.chk-usuario-asignacion'))
+                    .find(checkbox => checkbox.value === codigoDespa);
+                if (checkboxUsuario) {
+                    const tieneActividadesDelFlujo = idsSeleccionadosEnFlujo.length > 0;
+                    checkboxUsuario.checked = tieneActividadesDelFlujo;
+                    if (tieneActividadesDelFlujo) {
+                        estadoInicialCheckboxes.add(codigoDespa);
+                    } else {
+                        estadoInicialCheckboxes.delete(codigoDespa);
+                    }
+                    evaluarCambiosPendientes();
+                    aplicarFiltrosTablaUsuarios();
+                }
+
                 mostrarNotificacion('Actividades del usuario actualizadas exitosamente.', 'success');
 
                 // Cerramos el modal
                 const modalElement = document.getElementById('modalGestionarUsuarioIndividual');
                 const modalInstance = bootstrap.Modal.getInstance(modalElement);
                 if (modalInstance) modalInstance.hide();
-
-                // Recargamos el grid principal para reflejar cambios si es necesario
-                // cargarUsuariosPorFlujo(true);
 
             } catch (error) {
                 mostrarBanner('Error de conexión al guardar las actividades individuales.', 'danger');

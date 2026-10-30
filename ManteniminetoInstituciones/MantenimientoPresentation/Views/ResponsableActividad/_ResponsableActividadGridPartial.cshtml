@@ -33,7 +33,7 @@
                             </td>
                             <td class="px-3 fw-semibold text-secondary small">@(string.IsNullOrEmpty(user.Cargo) ? "Sin cargo" : user.Cargo)</td>
                             <td class="px-3 text-muted small">@(string.IsNullOrEmpty(user.DescArea) ? "N/A" : user.DescArea)</td>
-                            <!-- Botón de gestión individual más pequeño y estilizado -->
+                            <!-- Botón de gestión -->
                             <td class="text-center px-3">
                                 <button type="button" class="btn btn-sm btn-outline-primary rounded-pill px-2 py-0" style="font-size: 0.75rem;" onclick="abrirModalGestionIndividual('@user.CodigoDespa', '@user.Nombre')">
                                     <i class="bi bi-person-gear me-1"></i> Gestionar
