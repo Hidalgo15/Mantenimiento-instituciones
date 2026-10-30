@@ -723,15 +723,26 @@
                     return;
                 }
 
+                const checkboxUsuario = Array.from(document.querySelectorAll('.chk-usuario-asignacion'))
+                    .find(checkbox => checkbox.value === codigoDespa);
+                if (checkboxUsuario) {
+                    const tieneActividadesDelFlujo = listaActividades.length > 0;
+                    checkboxUsuario.checked = tieneActividadesDelFlujo;
+                    if (tieneActividadesDelFlujo) {
+                        estadoInicialCheckboxes.add(codigoDespa);
+                    } else {
+                        estadoInicialCheckboxes.delete(codigoDespa);
+                    }
+                    evaluarCambiosPendientes();
+                    aplicarFiltrosTablaUsuarios();
+                }
+
                 mostrarNotificacion('Actividades del usuario actualizadas exitosamente.', 'success');
 
                 // Cerramos el modal
                 const modalElement = document.getElementById('modalGestionarUsuarioIndividual');
                 const modalInstance = bootstrap.Modal.getInstance(modalElement);
                 if (modalInstance) modalInstance.hide();
-
-                // Recargamos el grid principal para reflejar cambios si es necesario
-                // cargarUsuariosPorFlujo(true);
 
             } catch (error) {
                 mostrarBanner('Error de conexión al guardar las actividades individuales.', 'danger');
