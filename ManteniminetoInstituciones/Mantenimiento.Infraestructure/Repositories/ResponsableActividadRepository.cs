@@ -173,5 +173,24 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
                 .AsNoTracking()
                 .ToListAsync();
         }
+
+        /// <summary>
+        /// Gestiona los usuarios asignados a un flujo de trabajo específico mediante un procedimiento almacenado en la base de datos.
+        /// </summary>
+        /// <param name="codigoTre"></param>
+        /// <param name="nombreFlujo"></param>
+        /// <param name="busquedaGeneral"></param>
+        /// <returns></returns>
+        public async Task<List<UsuarioActividadAsignacion>> ObtenerUsuariosPorFlujoAsync(int codigoTre, string nombreFlujo, string? busquedaGeneral)
+        {
+            var pTre = new SqlParameter("@CodigoTre", codigoTre);
+            var pFlujo = new SqlParameter("@NombreFlujo", nombreFlujo);
+            var pBusqueda = new SqlParameter("@BusquedaGeneral", (object?)busquedaGeneral ?? DBNull.Value);
+
+            return await _context.Set<UsuarioActividadAsignacion>()
+                .FromSqlRaw("EXEC [SIGOB].[dbo].[sp_Obtener_Usuarios_Por_Flujo] @CodigoTre, @NombreFlujo, @BusquedaGeneral", pTre, pFlujo, pBusqueda)
+                .AsNoTracking()
+                .ToListAsync();
+        }
     }
 }

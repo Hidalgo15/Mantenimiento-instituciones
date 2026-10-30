@@ -3269,3 +3269,67 @@ BEGIN
     ORDER BY descripcion_actividad ASC;
 END;
 GO
+
+-- Obtener usuarios y su estado de asignación para un flujo del molde seleccionado
+USE [SIGOB];
+GO
+
+CREATE OR ALTER PROCEDURE [dbo].[sp_Obtener_Usuarios_Por_Flujo]
+    @CodigoTre INT,
+    @NombreFlujo VARCHAR(100),
+    @BusquedaGeneral VARCHAR(100) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    ;WITH ActividadesFlujo AS
+    (
+        SELECT DISTINCT att.codigo_actividad
+        FROM [SIGOB_CONTRALORIA].[dbo].[flujo_actividades_config] fac WITH (NOLOCK)
+        INNER JOIN [SIGOB_CONTRALORIA].[dbo].[flujos_catalogo] fc WITH (NOLOCK)
+            ON fc.id_flujo = fac.id_flujo
+        INNER JOIN [SIGOB].[dbo].[actividad_tipo_tre] att WITH (NOLOCK)
+            ON att.codigo_actividad = fac.codigo_actividad
+        INNER JOIN [SIGOB].[dbo].[actividad] a WITH (NOLOCK)
+            ON a.codigo_actividad = att.codigo_actividad
+        INNER JOIN [SIGOB].[dbo].[tipos_tre] tt WITH (NOLOCK)
+            ON tt.codigo_tipo_tre = att.codigo_tipo_tre
+        WHERE fac.codigo_tre = @CodigoTre
+          AND fc.nombre_flujo = @NombreFlujo
+          AND tt.codigo_tre = @CodigoTre
+          AND a.descripcion NOT LIKE 'RI%'
+          AND a.descripcion <> 'Inicio trámite'
+    )
+    SELECT DISTINCT
+        da.codigo_despa,
+        da.NOMBRE AS Nombre,
+        da.INSTITUCION AS Institucion,
+        da.descarea AS DescArea,
+        da.cargo AS Cargo,
+        da.email AS Email,
+        CAST(CASE
+            WHEN EXISTS
+            (
+                SELECT 1
+                FROM ActividadesFlujo af
+                INNER JOIN [SIGOB].[dbo].[responsable_actividad] ra WITH (NOLOCK)
+                    ON ra.codigo_actividad = af.codigo_actividad
+                   AND ra.codigo_despa = da.codigo_despa
+            )
+            THEN 1
+            ELSE 0
+        END AS BIT) AS EstaAsignado
+    FROM [SIGOB].[dbo].[v_DespachoAreaActivos] da WITH (NOLOCK)
+    INNER JOIN [SIGOB].[dbo].[usuario_tre] ut WITH (NOLOCK)
+        ON ut.codigo_despa = da.codigo_despa
+    WHERE ut.codigo_tre = @CodigoTre
+      AND EXISTS (SELECT 1 FROM ActividadesFlujo)
+      AND
+      (
+          @BusquedaGeneral IS NULL
+          OR da.NOMBRE LIKE '%' + @BusquedaGeneral + '%'
+          OR da.codigo_despa LIKE '%' + @BusquedaGeneral + '%'
+      )
+    ORDER BY da.NOMBRE ASC;
+END;
+GO

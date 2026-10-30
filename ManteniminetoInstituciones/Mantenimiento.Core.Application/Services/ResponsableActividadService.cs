@@ -137,40 +137,8 @@ namespace Mantenimiento.Core.Application.Services
         /// <returns></returns>
         public async Task<List<UsuarioActividadAsignacionDto>> ObtenerUsuariosPorFlujoAsync(int codigoTre, string nombreFlujo, string? busquedaGeneral = null)
         {
-            // Obtiene todas las actividades que pertenecen a este flujo
-            var actividadesFlujo = await _repository.ObtenerActividadesPorFlujoAsync(codigoTre, nombreFlujo);
-            var codigosActividadesFlujo = actividadesFlujo.Select(a => a.CodigoActividad).ToList();
-
-            if (!codigosActividadesFlujo.Any()) return new List<UsuarioActividadAsignacionDto>();
-
-            // Toma la primera actividad solo para obtener la lista base de usuarios del molde
-            var primerActividadId = codigosActividadesFlujo.First();
-            var usuariosBase = await _repository.ObtenerUsuariosPorActividadAsync(primerActividadId, codigoTre, null, null, busquedaGeneral);
-
-            var listaResultado = new List<UsuarioActividadAsignacionDto>();
-
-            // Para cada usuario, se verifica de manera real si tiene asignada CUALQUIERA de las actividades del flujo
-            foreach (var usuario in usuariosBase)
-            {
-                var dto = ResponsableActividadMapper.ToDto(usuario);
-
-                // Consulta las actividades reales que tiene este usuario en BD
-                var actividadesUsuario = await _repository.ObtenerActividadesUsuarioAsync(usuario.CodigoDespa);
-                var codigosActividadesUsuario = actividadesUsuario.Select(a => a.CodigoActividad).ToHashSet();
-
-                // Si el usuario tiene al menos una actividad de este flujo asignada, lo marcamos como asignado para el grid
-                dto.EstaAsignado = codigosActividadesFlujo.Any(id => codigosActividadesUsuario.Contains(id));
-
-                // Aplicando filtro de búsqueda general si viene especificado
-                if (string.IsNullOrWhiteSpace(busquedaGeneral) ||
-                    dto.Nombre.Contains(busquedaGeneral, StringComparison.OrdinalIgnoreCase) ||
-                    dto.CodigoDespa.Contains(busquedaGeneral, StringComparison.OrdinalIgnoreCase))
-                {
-                    listaResultado.Add(dto);
-                }
-            }
-
-            return listaResultado;
+            var usuarios = await _repository.ObtenerUsuariosPorFlujoAsync(codigoTre, nombreFlujo, busquedaGeneral);
+            return usuarios.Select(ResponsableActividadMapper.ToDto).ToList();
         }
 
     }
