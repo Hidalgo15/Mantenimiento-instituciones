@@ -9,10 +9,13 @@ namespace Mantenimiento.Core.Application.Services
     public class RequisitoService : IRequisitoService
     {
         private readonly IRequisitoRepository _repository;
+        private readonly IApplicationCache _cache;
+        private const string CacheKeyCatalogoRequisitos = "cat_requisitos_cache_key";
 
-        public RequisitoService(IRequisitoRepository repository)
+        public RequisitoService(IRequisitoRepository repository, IApplicationCache cache)
         {
             _repository = repository;
+            _cache = cache;
         }
 
         /// <summary>
@@ -42,6 +45,9 @@ namespace Mantenimiento.Core.Application.Services
                 throw new ArgumentException("La descripción del requisito es obligatoria.");
 
             var res = await _repository.CrearAsync(dto.RequisitoDescripcion.Trim());
+            if (res.CodigoResultado == 1)
+                _cache.Remove(CacheKeyCatalogoRequisitos);
+
             return ResultadoOperacionMapper.ToDto(res);
         }
 
@@ -64,6 +70,9 @@ namespace Mantenimiento.Core.Application.Services
                 throw new ArgumentException("La descripción del requisito no puede estar vacía.");
 
             var res = await _repository.ActualizarAsync(dto.RequisitosID, dto.RequisitoDescripcion.Trim());
+            if (res.CodigoResultado == 1)
+                _cache.Remove(CacheKeyCatalogoRequisitos);
+
             return ResultadoOperacionMapper.ToDto(res);
         }
 
@@ -82,6 +91,9 @@ namespace Mantenimiento.Core.Application.Services
                 throw new ArgumentException("El ID del requisito es inválido.");
 
             var res = await _repository.EliminarAsync(requisitosID);
+            if (res.CodigoResultado == 1)
+                _cache.Remove(CacheKeyCatalogoRequisitos);
+
             return ResultadoOperacionMapper.ToDto(res);
         }
     }

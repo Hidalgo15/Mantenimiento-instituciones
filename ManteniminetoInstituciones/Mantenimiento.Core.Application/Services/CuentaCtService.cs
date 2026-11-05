@@ -8,10 +8,13 @@ namespace Mantenimiento.Core.Application.Services
     public class CuentaCtService : ICuentaCtService
     {
         private readonly ICuentaCtRepository _repo;
+        private readonly IApplicationCache _cache;
+        private const string CacheKeyCatalogoCuentas = "cat_cuentas_cache_key";
 
-        public CuentaCtService(ICuentaCtRepository repo)
+        public CuentaCtService(ICuentaCtRepository repo, IApplicationCache cache)
         {
             _repo = repo;
+            _cache = cache;
         }
 
         /// <summary>
@@ -57,6 +60,7 @@ namespace Mantenimiento.Core.Application.Services
                 dto.CodigoCuenta.Trim(),
                 dto.DescripcionCuenta.Trim()
             );
+            _cache.Remove(CacheKeyCatalogoCuentas);
         }
 
         /// <summary>
@@ -86,6 +90,7 @@ namespace Mantenimiento.Core.Application.Services
                 dto.CodigoCuenta.Trim(),
                 dto.DescripcionCuenta.Trim()
             );
+            _cache.Remove(CacheKeyCatalogoCuentas);
         }
 
         /// <summary>
@@ -100,6 +105,7 @@ namespace Mantenimiento.Core.Application.Services
                 throw new ArgumentException("ID de cuenta inválido para eliminar.");
 
             await _repo.EliminarCuentaAsync(cuentaId);
+            _cache.Remove(CacheKeyCatalogoCuentas);
         }
     }
 }

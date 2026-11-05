@@ -31,5 +31,11 @@ namespace Mantenimiento.Infraestructure.ExternalServices.Services
 
             return value ?? throw new InvalidOperationException("La fábrica de caché devolvió un valor nulo.");
         }
+
+        public void Remove(string key)
+        {
+            ArgumentException.ThrowIfNullOrWhiteSpace(key);
+            _memoryCache.Remove(key);
+        }
     }
 }

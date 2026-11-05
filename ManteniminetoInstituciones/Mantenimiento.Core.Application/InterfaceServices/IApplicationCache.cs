@@ -6,5 +6,7 @@ namespace Mantenimiento.Core.Application.InterfaceServices
             string key,
             Func<Task<TValue>> factory,
             TimeSpan expiration) where TValue : class;
+
+        void Remove(string key);
     }
 }
