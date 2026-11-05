@@ -1,3 +1,4 @@
+using FluentValidation;
 using Mantenimiento.Core.Application.DTOs.Daf;
 using Mantenimiento.Core.Application.InterfaceServices;
 using Mantenimiento.Core.Application.Mappings;
@@ -8,10 +9,17 @@ namespace Mantenimiento.Core.Application.Services
     public class DafService : IDafService
     {
         private readonly IDafRepository _dafRepository;
+        private readonly IValidator<CrearDafDTO> _crearValidator;
+        private readonly IValidator<ActualizarDafDTO> _actualizarValidator;
 
-        public DafService(IDafRepository dafRepository)
+        public DafService(
+            IDafRepository dafRepository,
+            IValidator<CrearDafDTO> crearValidator,
+            IValidator<ActualizarDafDTO> actualizarValidator)
         {
             _dafRepository = dafRepository;
+            _crearValidator = crearValidator;
+            _actualizarValidator = actualizarValidator;
         }
 
         /// <summary>
@@ -83,7 +91,8 @@ namespace Mantenimiento.Core.Application.Services
         /// <returns>Tarea que representa la operación asíncrona y contiene el DafDto creado.</returns>
         public async Task<DafDto> CrearAsync(CrearDafDTO dafDto)
         {
-            ValidarDaf(dafDto.CodigoDaf, dafDto.Daf);
+            ArgumentNullException.ThrowIfNull(dafDto);
+            await _crearValidator.ValidateAndThrowAsync(dafDto);
 
             var entidad = DafMapper.ToEntity(dafDto);
 
@@ -100,7 +109,8 @@ namespace Mantenimiento.Core.Application.Services
         /// <returns>DafDto que representa el DAF actualizado.</returns>
         public async Task<DafDto> ActualizarAsync(ActualizarDafDTO dafDto)
         {
-            ValidarDaf(dafDto.CodigoDaf, dafDto.Daf);
+            ArgumentNullException.ThrowIfNull(dafDto);
+            await _actualizarValidator.ValidateAndThrowAsync(dafDto);
 
             var entidad = DafMapper.ToEntity(dafDto);
 
@@ -118,24 +128,5 @@ namespace Mantenimiento.Core.Application.Services
             await _dafRepository.EliminarAsync(id);
         }
 
-        /// <summary>
-        /// Valida que 'codigo' y 'daf' no sean nulos, vacíos ni contengan solo espacios, y que 'codigo' no supere 10
-        /// caracteres.
-        /// </summary>
-        /// <param name="codigo">Código del daf; no puede ser nulo, vacío ni contener solo espacios; máximo 10 caracteres.</param>
-        /// <param name="daf">Nombre del daf; no puede ser nulo, vacío ni contener solo espacios.</param>
-        /// <exception cref="ArgumentException">Se lanza si 'codigo' o 'daf' son nulos, vacíos o contienen solo espacios, o si 'codigo' tiene más de 10
-        /// caracteres.</exception>
-        private static void ValidarDaf(string? codigo, string daf)
-        {
-            if (string.IsNullOrWhiteSpace(codigo))
-                throw new ArgumentException("El código del daf es requerido.");
-
-            if (string.IsNullOrWhiteSpace(daf))
-                throw new ArgumentException("El nombre del daf es requerido.");
-
-            if (codigo.ToString().Length > 10)
-                throw new ArgumentException("El código del daf no puede exceder 10 dígitos.");
-        }
     }
 }

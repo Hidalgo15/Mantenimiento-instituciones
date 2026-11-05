@@ -1,4 +1,5 @@
 
+using FluentValidation;
 using Mantenimiento.Core.Application.DTOs.Capitulo;
 using Mantenimiento.Core.Application.DTOs.SubCapitulo;
 using Mantenimiento.Core.Application.InterfaceServices;
@@ -11,10 +12,19 @@ namespace Mantenimiento.Core.Application.Services
     {
         private readonly ISubCapituloRepository _repo;
         private readonly IDafRepository _dafRepo;
-        public SubCapituloService(ISubCapituloRepository repo, IDafRepository dafRepository )
+        private readonly IValidator<CrearSubCapituloDto> _crearValidator;
+        private readonly IValidator<ActualizarSubCapituloDto> _actualizarValidator;
+
+        public SubCapituloService(
+            ISubCapituloRepository repo,
+            IDafRepository dafRepository,
+            IValidator<CrearSubCapituloDto> crearValidator,
+            IValidator<ActualizarSubCapituloDto> actualizarValidator)
         {
             _repo = repo;
             _dafRepo = dafRepository;
+            _crearValidator = crearValidator;
+            _actualizarValidator = actualizarValidator;
         }
 
         /// <summary>
@@ -56,7 +66,8 @@ namespace Mantenimiento.Core.Application.Services
         /// <returns>Tarea que representa la operación asincrónica de creación.</returns>
         public async Task CrearSubCapituloAsync(CrearSubCapituloDto dto)
         {
-            ValidarSubCapitulo(dto.CodigoSubCapitulo, dto.subcapitulo);
+            ArgumentNullException.ThrowIfNull(dto);
+            await _crearValidator.ValidateAndThrowAsync(dto);
 
             await _repo.InsertarConSpAsync(SubCapituloMapper.ToEntity(dto));
         }
@@ -71,7 +82,8 @@ namespace Mantenimiento.Core.Application.Services
         /// <returns>Tarea que representa la operación asincrónica.</returns>
         public async Task ActualizarSubCapituloAsync(ActualizarSubCapituloDto dto)
         {
-            ValidarSubCapitulo(dto.CodigoSubCapitulo, dto.subcapitulo);
+            ArgumentNullException.ThrowIfNull(dto);
+            await _actualizarValidator.ValidateAndThrowAsync(dto);
 
             await _repo.ActualizarConSpAsync(SubCapituloMapper.ToEntity(dto));
         }
@@ -93,27 +105,6 @@ namespace Mantenimiento.Core.Application.Services
             }
 
             await _repo.EliminarConSpAsync(id);
-        }
-
-        /// <summary>
-        /// Valida el código y el nombre de un subcapítulo y lanza ArgumentException si no cumplen las reglas de
-        /// validación.
-        /// </summary>
-        /// <param name="codigo">Código del subcapítulo. Obligatorio; no puede ser nulo, vacío ni contener solo espacios; máximo 10
-        /// caracteres.</param>
-        /// <param name="subcapitulo">Nombre del subcapítulo. Obligatorio; no puede ser nulo, vacío ni contener solo espacios.</param>
-        /// <exception cref="ArgumentException">Se lanza si el código es nulo, vacío o contiene solo espacios; si el nombre es nulo, vacío o contiene solo
-        /// espacios; o si el código excede 10 caracteres.</exception>
-        private static void ValidarSubCapitulo(string? codigo, string subcapitulo)
-        {
-            if (string.IsNullOrWhiteSpace(codigo))
-                throw new ArgumentException("El código del subcapítulo es requerido.");
-
-            if (string.IsNullOrWhiteSpace(subcapitulo))
-                throw new ArgumentException("El nombre del subcapítulo es requerido.");
-
-            if (codigo.ToString().Length > 10)
-                throw new ArgumentException("El código del subcapítulo no puede exceder 10 dígitos.");
         }
 
         /// <summary>

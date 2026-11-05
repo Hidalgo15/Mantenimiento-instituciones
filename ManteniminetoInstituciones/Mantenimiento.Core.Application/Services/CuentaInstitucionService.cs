@@ -1,4 +1,5 @@
-﻿using Mantenimiento.Core.Application.DTOs.CuentaInstitucion;
+﻿using FluentValidation;
+using Mantenimiento.Core.Application.DTOs.CuentaInstitucion;
 using Mantenimiento.Core.Application.InterfaceServices;
 using Mantenimiento.Core.Application.Mappings;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
@@ -8,10 +9,17 @@ namespace Mantenimiento.Core.Application.Services
     public class CuentaInstitucionService : ICuentaInstitucionService
     {
         private readonly ICuentaInstitucionRepository _repo;
+        private readonly IValidator<CrearCuentaInstitucionDto> _crearValidator;
+        private readonly IValidator<ActualizarCuentaInstitucionDto> _actualizarValidator;
 
-        public CuentaInstitucionService(ICuentaInstitucionRepository repo)
+        public CuentaInstitucionService(
+            ICuentaInstitucionRepository repo,
+            IValidator<CrearCuentaInstitucionDto> crearValidator,
+            IValidator<ActualizarCuentaInstitucionDto> actualizarValidator)
         {
             _repo = repo;
+            _crearValidator = crearValidator;
+            _actualizarValidator = actualizarValidator;
         }
 
         /// <summary>
@@ -50,7 +58,8 @@ namespace Mantenimiento.Core.Application.Services
         /// <exception cref="InvalidOperationException">Se lanza si la cuenta bancaria ya está registrada para la institución.</exception>
         public async Task CrearCuentaAsync(CrearCuentaInstitucionDto dto)
         {
-            ValidarCuentaBanco(dto.CtaCtaBanco);
+            ArgumentNullException.ThrowIfNull(dto);
+            await _crearValidator.ValidateAndThrowAsync(dto);
 
             bool existe = await _repo.ExisteCuentaAsync(dto.InsCodigo, dto.CtaCtaBanco);
             if (existe)
@@ -70,7 +79,8 @@ namespace Mantenimiento.Core.Application.Services
         /// <exception cref="InvalidOperationException">Se lanza si ya existe otra cuenta registrada con el mismo número para la institución indicada.</exception>
         public async Task ActualizarCuentaAsync(ActualizarCuentaInstitucionDto dto)
         {
-            ValidarCuentaBanco(dto.CtaCtaBanco);
+            ArgumentNullException.ThrowIfNull(dto);
+            await _actualizarValidator.ValidateAndThrowAsync(dto);
 
             bool existe = await _repo.ExisteCuentaAsync(dto.InsCodigo, dto.CtaCtaBanco, dto.Id);
             if (existe)
@@ -91,20 +101,5 @@ namespace Mantenimiento.Core.Application.Services
             await _repo.EliminarConSpAsync(id);
         }
 
-        /// <summary>
-        /// Valida que el número de cuenta bancaria no sea nulo, vacío ni contenga solo espacios en blanco y que conste
-        /// únicamente de dígitos.
-        /// </summary>
-        /// <param name="ctaCtaBanco">Número de cuenta bancaria a validar.</param>
-        /// <exception cref="ArgumentException">Se lanza si ctaCtaBanco es nulo, vacío o contiene únicamente espacios en blanco, o si contiene caracteres no
-        /// numéricos.</exception>
-        private static void ValidarCuentaBanco(string ctaCtaBanco)
-        {
-            if (string.IsNullOrWhiteSpace(ctaCtaBanco))
-                throw new ArgumentException("El número de cuenta es requerido.");
-
-            if (!ctaCtaBanco.All(char.IsDigit))
-                throw new ArgumentException("La cuenta de banco debe contener únicamente números.");
-        }
     }
 }

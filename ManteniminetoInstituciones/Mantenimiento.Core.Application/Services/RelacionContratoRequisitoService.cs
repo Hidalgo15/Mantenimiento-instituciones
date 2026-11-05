@@ -1,4 +1,5 @@
-﻿using Mantenimiento.Core.Application.DTOs.RelacionContratoRequisito;
+﻿using FluentValidation;
+using Mantenimiento.Core.Application.DTOs.RelacionContratoRequisito;
 using Mantenimiento.Core.Application.DTOs.Resultado;
 using Mantenimiento.Core.Application.InterfaceServices;
 using Mantenimiento.Core.Application.Mappings;
@@ -9,10 +10,17 @@ namespace Mantenimiento.Core.Application.Services
     public class RelacionContratoRequisitoService : IRelacionContratoRequisitoService
     {
         private readonly IRelacionContratoRequisitoRepository _repository;
+        private readonly IValidator<CrearRelacionContratoRequisitoDto> _crearValidator;
+        private readonly IValidator<ActualizarRelacionContratoRequisitoDto> _actualizarValidator;
 
-        public RelacionContratoRequisitoService(IRelacionContratoRequisitoRepository repository)
+        public RelacionContratoRequisitoService(
+            IRelacionContratoRequisitoRepository repository,
+            IValidator<CrearRelacionContratoRequisitoDto> crearValidator,
+            IValidator<ActualizarRelacionContratoRequisitoDto> actualizarValidator)
         {
             _repository = repository;
+            _crearValidator = crearValidator;
+            _actualizarValidator = actualizarValidator;
         }
 
         /// <summary>
@@ -37,10 +45,8 @@ namespace Mantenimiento.Core.Application.Services
         /// <exception cref="ArgumentException">Se lanza si CodigoClasificacion o CodigoRequisito no son valores válidos (<= 0).</exception>
         public async Task<ResultadoOperacionDto> AsignarAsync(CrearRelacionContratoRequisitoDto dto)
         {
-            if (dto.CodigoClasificacion <= 0)
-                throw new ArgumentException("Debe seleccionar una clasificación de contrato válida.");
-            if (dto.CodigoRequisito <= 0)
-                throw new ArgumentException("Debe seleccionar un requisito válido.");
+            ArgumentNullException.ThrowIfNull(dto);
+            await _crearValidator.ValidateAndThrowAsync(dto);
 
             var res = await _repository.AsignarAsync(dto.CodigoClasificacion, dto.CodigoRequisito);
             return ResultadoOperacionMapper.ToDto(res);
@@ -57,12 +63,8 @@ namespace Mantenimiento.Core.Application.Services
         /// iguales a cero.</exception>
         public async Task<ResultadoOperacionDto> ActualizarAsync(ActualizarRelacionContratoRequisitoDto dto)
         {
-            if (dto.Id <= 0)
-                throw new ArgumentException("El ID de la relación es inválido.");
-            if (dto.CodigoClasificacion <= 0)
-                throw new ArgumentException("Debe seleccionar una clasificación de contrato válida.");
-            if (dto.CodigoRequisito <= 0)
-                throw new ArgumentException("Debe seleccionar un requisito válido.");
+            ArgumentNullException.ThrowIfNull(dto);
+            await _actualizarValidator.ValidateAndThrowAsync(dto);
 
             var res = await _repository.ActualizarAsync(dto.Id, dto.CodigoClasificacion, dto.CodigoRequisito);
             return ResultadoOperacionMapper.ToDto(res);

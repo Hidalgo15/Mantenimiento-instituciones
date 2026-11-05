@@ -1,7 +1,6 @@
-using FluentValidation;
+using Mantenimiento.Core.Application;
 using Mantenimiento.Core.Application.InterfaceServices;
 using Mantenimiento.Core.Application.Services;
-using Mantenimiento.Core.Application.Validators.Capitulo;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 using Mantenimiento.Infraestructure.ExternalServices.Services;
 using Mantenimiento.Infraestructure.Persistence;
@@ -24,7 +23,7 @@ namespace MantenimientoPresentation
             builder.Services.AddScoped<FluentValidationActionFilter>();
             builder.Services.AddControllersWithViews(options =>
                 options.Filters.AddService<FluentValidationActionFilter>());
-            builder.Services.AddValidatorsFromAssemblyContaining<CrearCapituloValidator>();
+            builder.Services.AddApplication();
 
             // DbContext Corregido
             builder.Services.AddDbContext<ApplicationDbContext>(options =>

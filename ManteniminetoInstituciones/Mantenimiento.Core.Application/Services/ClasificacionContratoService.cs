@@ -1,4 +1,5 @@
-﻿using Mantenimiento.Core.Application.DTOs.ClasificacionContrato;
+using FluentValidation;
+using Mantenimiento.Core.Application.DTOs.ClasificacionContrato;
 using Mantenimiento.Core.Application.InterfaceServices;
 using Mantenimiento.Core.Application.Mappings;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
@@ -8,10 +9,14 @@ namespace Mantenimiento.Core.Application.Services
     public class ClasificacionContratoService : IClasificacionContratoService
     {
         private readonly IClasificacionContratoRepository _repository;
+        private readonly IValidator<ActualizarClasificacionContratoDto> _actualizarValidator;
 
-        public ClasificacionContratoService(IClasificacionContratoRepository repository)
+        public ClasificacionContratoService(
+            IClasificacionContratoRepository repository,
+            IValidator<ActualizarClasificacionContratoDto> actualizarValidator)
         {
             _repository = repository;
+            _actualizarValidator = actualizarValidator;
         }
 
         /// <summary>
@@ -63,8 +68,8 @@ namespace Mantenimiento.Core.Application.Services
         /// <exception cref="ArgumentException"></exception>
         public async Task ActualizarAsync(ActualizarClasificacionContratoDto dto)
         {
-            if (dto.CodigoClasificacion <= 0)
-                throw new ArgumentException("El código de clasificación es inválido.");
+            ArgumentNullException.ThrowIfNull(dto);
+            await _actualizarValidator.ValidateAndThrowAsync(dto);
 
             await _repository.ActualizarAsync(dto.CodigoClasificacion, dto.ContratoTipo, dto.TipoOperacion, dto.ContratoProcesoSeleccion);
         }
