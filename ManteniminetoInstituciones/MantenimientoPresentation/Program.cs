@@ -1,8 +1,13 @@
+using FluentValidation;
 using Mantenimiento.Core.Application.InterfaceServices;
 using Mantenimiento.Core.Application.Services;
+using Mantenimiento.Core.Application.Validators.Capitulo;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
+using Mantenimiento.Infraestructure.ExternalServices.Services;
 using Mantenimiento.Infraestructure.Persistence;
 using Mantenimiento.Infraestructure.Persistence.Repositories;
+using MantenimientoPresentation.Filters;
+using MantenimientoPresentation.Middlewares;
 using MantenimientoPresentation.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.EntityFrameworkCore;
@@ -16,7 +21,10 @@ namespace MantenimientoPresentation
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-            builder.Services.AddControllersWithViews();
+            builder.Services.AddScoped<FluentValidationActionFilter>();
+            builder.Services.AddControllersWithViews(options =>
+                options.Filters.AddService<FluentValidationActionFilter>());
+            builder.Services.AddValidatorsFromAssemblyContaining<CrearCapituloValidator>();
 
             // DbContext Corregido
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -24,6 +32,11 @@ namespace MantenimientoPresentation
 
             // HttpContextAccessor
             builder.Services.AddHttpContextAccessor();
+
+            // Caché en memoria
+            builder.Services.AddMemoryCache();
+            builder.Services.AddSingleton<IApplicationCache, MemoryApplicationCache>();
+            builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
             #region Repositorios y Servicios
 
@@ -87,6 +100,8 @@ namespace MantenimientoPresentation
             builder.Services.AddScoped<IResponsableActividadRepository, ResponsableActividadRepository>();
             builder.Services.AddScoped<IResponsableActividadService, ResponsableActividadService>();
 
+            builder.Services.AddScoped<IEmailService, EmailService>();
+
             #endregion
 
             builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -99,9 +114,10 @@ namespace MantenimientoPresentation
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
+            app.UseMiddleware<ExceptionMiddleware>();
+
             if (!app.Environment.IsDevelopment())
             {
-                app.UseExceptionHandler("/Home/Error");
                 app.UseHsts();
             }
 

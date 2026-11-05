@@ -1,4 +1,5 @@
-﻿using Mantenimiento.Core.Application.DTOs.AnalistaSupervisor;
+﻿using FluentValidation;
+using Mantenimiento.Core.Application.DTOs.AnalistaSupervisor;
 using Mantenimiento.Core.Application.InterfaceServices;
 using Mantenimiento.Core.Application.Mappings;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
@@ -8,10 +9,17 @@ namespace Mantenimiento.Core.Application.Services
     public class AnalistaSupervisorService : IAnalistaSupervisorService
     {
         private readonly IAnalistaSupervisorRepository _repository;
+        private readonly IValidator<AsignarSupervisorDto> _asignarValidator;
+        private readonly IValidator<DesvincularAnalistaDto> _desvincularValidator;
 
-        public AnalistaSupervisorService(IAnalistaSupervisorRepository repository)
+        public AnalistaSupervisorService(
+            IAnalistaSupervisorRepository repository,
+            IValidator<AsignarSupervisorDto> asignarValidator,
+            IValidator<DesvincularAnalistaDto> desvincularValidator)
         {
             _repository = repository;
+            _asignarValidator = asignarValidator;
+            _desvincularValidator = desvincularValidator;
         }
 
         /// <summary>
@@ -48,7 +56,8 @@ namespace Mantenimiento.Core.Application.Services
         /// <returns>Una tarea que representa la operación asíncrona.</returns>
         public async Task AsignarAsync(AsignarSupervisorDto dto)
         {
-            ValidarAsignacion(dto.DespachoAnalista, dto.DespachoSupervisor);
+            ArgumentNullException.ThrowIfNull(dto);
+            await _asignarValidator.ValidateAndThrowAsync(dto);
             await _repository.AsignarSupervisorAsync(dto.DespachoAnalista.Trim(), dto.DespachoSupervisor.Trim());
         }
 
@@ -62,7 +71,8 @@ namespace Mantenimiento.Core.Application.Services
         /// <returns>Tarea que representa la operación asincrónica.</returns>
         public async Task ReasignarAsync(AsignarSupervisorDto dto)
         {
-            ValidarAsignacion(dto.DespachoAnalista, dto.DespachoSupervisor);
+            ArgumentNullException.ThrowIfNull(dto);
+            await _asignarValidator.ValidateAndThrowAsync(dto);
             await _repository.ReasignarSupervisorAsync(dto.DespachoAnalista.Trim(), dto.DespachoSupervisor.Trim());
         }
 
@@ -76,27 +86,9 @@ namespace Mantenimiento.Core.Application.Services
         /// <exception cref="ArgumentException">Se lanza si DespachoAnalista es nulo, vacío o contiene solo espacios en blanco.</exception>
         public async Task DesvincularAsync(DesvincularAnalistaDto dto)
         {
-            if (string.IsNullOrWhiteSpace(dto.DespachoAnalista))
-                throw new ArgumentException("El despacho del analista es obligatorio.");
-
+            ArgumentNullException.ThrowIfNull(dto);
+            await _desvincularValidator.ValidateAndThrowAsync(dto);
             await _repository.EliminarAsignacionAsync(dto.DespachoAnalista.Trim());
-        }
-
-        /// <summary>
-        /// Valida que los identificadores de analista y supervisor no sean nulos, vacíos ni contengan solo espacios en
-        /// blanco.
-        /// </summary>
-        /// <param name="analista">Código de despacho del analista; no puede ser nulo, vacío ni contener únicamente espacios en blanco.</param>
-        /// <param name="supervisor">Identificador del supervisor; debe estar seleccionado y no puede ser nulo, vacío ni contener únicamente
-        /// espacios en blanco.</param>
-        /// <exception cref="ArgumentException">Se lanza si 'analista' o 'supervisor' es nulo, vacío o contiene únicamente espacios en blanco.</exception>
-        private static void ValidarAsignacion(string analista, string supervisor)
-        {
-            if (string.IsNullOrWhiteSpace(analista))
-                throw new ArgumentException("El código de despacho del analista es obligatorio.");
-
-            if (string.IsNullOrWhiteSpace(supervisor))
-                throw new ArgumentException("Debe seleccionar un supervisor.");
         }
     }
 }

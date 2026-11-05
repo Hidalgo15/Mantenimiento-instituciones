@@ -1,4 +1,5 @@
-﻿using Mantenimiento.Core.Application.DTOs.ResponsableActividad;
+﻿using FluentValidation;
+using Mantenimiento.Core.Application.DTOs.ResponsableActividad;
 using Mantenimiento.Core.Application.DTOs.Resultado;
 using Mantenimiento.Core.Application.InterfaceServices;
 using Mantenimiento.Core.Application.Mappings;
@@ -9,10 +10,17 @@ namespace Mantenimiento.Core.Application.Services
     public class ResponsableActividadService : IResponsableActividadService
     {
         private readonly IResponsableActividadRepository _repository;
+        private readonly IValidator<GestionarResponsableActividadDto> _responsableValidator;
+        private readonly IValidator<GestionarActividadUsuariosDto> _actividadUsuariosValidator;
 
-        public ResponsableActividadService(IResponsableActividadRepository repository)
+        public ResponsableActividadService(
+            IResponsableActividadRepository repository,
+            IValidator<GestionarResponsableActividadDto> responsableValidator,
+            IValidator<GestionarActividadUsuariosDto> actividadUsuariosValidator)
         {
             _repository = repository;
+            _responsableValidator = responsableValidator;
+            _actividadUsuariosValidator = actividadUsuariosValidator;
         }
 
         /// <summary>
@@ -77,9 +85,8 @@ namespace Mantenimiento.Core.Application.Services
         /// <exception cref="ArgumentException"></exception>
         public async Task<ResultadoOperacionDto> GestionarActividadesAsync(GestionarResponsableActividadDto dto)
         {
-            if (string.IsNullOrWhiteSpace(dto.CodigoDespa))
-                throw new ArgumentException("El código de despacho del usuario es obligatorio.");
-
+            ArgumentNullException.ThrowIfNull(dto);
+            await _responsableValidator.ValidateAndThrowAsync(dto);
             var res = await _repository.GestionarActividadesAsync(dto.CodigoDespa, dto.ListaCodigosActividades);
             return ResultadoOperacionMapper.ToDto(res);
         }
@@ -98,9 +105,8 @@ namespace Mantenimiento.Core.Application.Services
         /// </summary>
         public async Task<ResultadoOperacionDto> GestionarActividadUsuariosAsync(GestionarActividadUsuariosDto dto)
         {
-            if (dto.CodigoActividad <= 0)
-                throw new ArgumentException("El código de actividad es obligatorio.");
-
+            ArgumentNullException.ThrowIfNull(dto);
+            await _actividadUsuariosValidator.ValidateAndThrowAsync(dto);
             var res = await _repository.GestionarActividadUsuariosAsync(dto.CodigoActividad, dto.ListaCodigosDespa);
             return ResultadoOperacionMapper.ToDto(res);
         }
