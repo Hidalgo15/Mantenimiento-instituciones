@@ -5,10 +5,13 @@ using Mantenimiento.Core.Domain.RepositoryInterfaces;
 using Mantenimiento.Infraestructure.ExternalServices.Services;
 using Mantenimiento.Infraestructure.Persistence;
 using Mantenimiento.Infraestructure.Persistence.Repositories;
+using MantenimientoPresentation.HealthChecks;
 using MantenimientoPresentation.Middlewares;
 using MantenimientoPresentation.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace MantenimientoPresentation
 {
@@ -21,6 +24,9 @@ namespace MantenimientoPresentation
             // Add services to the container.
             builder.Services.AddControllersWithViews();
             builder.Services.AddApplication();
+            builder.Services
+                .AddHealthChecks()
+                .AddCheck<SqlServerHealthCheck>("sql-server", tags: new[] { "ready" });
 
             // DbContext Corregido
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -157,11 +163,35 @@ namespace MantenimientoPresentation
             app.UseAuthentication();
             app.UseAuthorization();
 
+            app.MapHealthChecks("/health/live", new HealthCheckOptions
+            {
+                Predicate = _ => false,
+                ResponseWriter = WriteHealthResponse
+            });
+            app.MapHealthChecks("/health/ready", new HealthCheckOptions
+            {
+                Predicate = check => check.Tags.Contains("ready"),
+                ResponseWriter = WriteHealthResponse
+            });
+            app.MapHealthChecks("/health", new HealthCheckOptions
+            {
+                Predicate = check => check.Tags.Contains("ready"),
+                ResponseWriter = WriteHealthResponse
+            });
+
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Auth}/{action=Login}/{id?}");
 
             app.Run();
+        }
+
+        private static Task WriteHealthResponse(HttpContext context, HealthReport report)
+        {
+            context.Response.ContentType = "application/json";
+            return context.Response.WriteAsJsonAsync(
+                new { status = report.Status.ToString() },
+                cancellationToken: context.RequestAborted);
         }
     }
 }
