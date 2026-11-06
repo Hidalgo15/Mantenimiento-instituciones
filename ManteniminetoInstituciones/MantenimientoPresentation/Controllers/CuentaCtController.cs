@@ -43,11 +43,11 @@ namespace MantenimientoPresentation.Controllers
             {
                 var cuenta = await _cuentaCtService.ObtenerPorIdAsync(id);
                 if (cuenta == null)
-                    return Json(new { success = false, message = "La cuenta no fue encontrada." });
+                    return NotFound(new { success = false, message = "La cuenta no fue encontrada." });
 
                 return Json(new { success = true, data = cuenta });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al obtener la cuenta contable con Id {Id}.", id);
                 return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
@@ -61,9 +61,9 @@ namespace MantenimientoPresentation.Controllers
             {
                 dto.Usuario = _currentUserService.GetUsername();
                 await _cuentaCtService.CrearCuentaAsync(dto);
-                return Json(new { success = true, message = "Cuenta creada exitosamente." });
+                return StatusCode(StatusCodes.Status201Created, new { success = true, message = "Cuenta creada exitosamente." });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al crear la cuenta contable.");
                 return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
@@ -79,7 +79,7 @@ namespace MantenimientoPresentation.Controllers
                 await _cuentaCtService.ActualizarCuentaAsync(dto);
                 return Json(new { success = true, message = "Cuenta actualizada exitosamente." });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al actualizar la cuenta contable con Id {Id}.", dto.CuentaID);
                 return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
@@ -99,7 +99,7 @@ namespace MantenimientoPresentation.Controllers
             {
                 return BadRequest(new { success = false, message = "El identificador de la cuenta no es válido." });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al eliminar la cuenta contable con Id {Id}.", id);
                 return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });

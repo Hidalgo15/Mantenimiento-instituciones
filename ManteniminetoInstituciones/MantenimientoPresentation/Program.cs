@@ -5,7 +5,6 @@ using Mantenimiento.Core.Domain.RepositoryInterfaces;
 using Mantenimiento.Infraestructure.ExternalServices.Services;
 using Mantenimiento.Infraestructure.Persistence;
 using Mantenimiento.Infraestructure.Persistence.Repositories;
-using MantenimientoPresentation.Filters;
 using MantenimientoPresentation.Middlewares;
 using MantenimientoPresentation.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -20,9 +19,7 @@ namespace MantenimientoPresentation
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-            builder.Services.AddScoped<FluentValidationActionFilter>();
-            builder.Services.AddControllersWithViews(options =>
-                options.Filters.AddService<FluentValidationActionFilter>());
+            builder.Services.AddControllersWithViews();
             builder.Services.AddApplication();
 
             // DbContext Corregido
@@ -108,6 +105,38 @@ namespace MantenimientoPresentation
             {
                 options.LoginPath = "/Auth/Login";
                 options.ExpireTimeSpan = TimeSpan.FromMinutes(20);
+                options.Events.OnRedirectToLogin = context =>
+                {
+                    if (context.Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                    {
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        return context.Response.WriteAsJsonAsync(new
+                        {
+                            success = false,
+                            message = "Debe iniciar sesión para continuar.",
+                            statusCode = StatusCodes.Status401Unauthorized
+                        });
+                    }
+
+                    context.Response.Redirect(context.RedirectUri);
+                    return Task.CompletedTask;
+                };
+                options.Events.OnRedirectToAccessDenied = context =>
+                {
+                    if (context.Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                    {
+                        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                        return context.Response.WriteAsJsonAsync(new
+                        {
+                            success = false,
+                            message = "No tiene permisos para realizar esta acción.",
+                            statusCode = StatusCodes.Status403Forbidden
+                        });
+                    }
+
+                    context.Response.Redirect(context.RedirectUri);
+                    return Task.CompletedTask;
+                };
             });
 
             var app = builder.Build();

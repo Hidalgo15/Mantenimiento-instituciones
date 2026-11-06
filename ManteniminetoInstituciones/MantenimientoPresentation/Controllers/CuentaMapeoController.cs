@@ -54,10 +54,16 @@ namespace MantenimientoPresentation.Controllers
         {
             try
             {
+                if (id <= 0)
+                    return BadRequest(new { success = false, message = "Identificador no válido." });
+
                 var cuenta = await _cuentaMapeoService.ObtenerPorIdAsync(id);
+                if (cuenta == null)
+                    return NotFound(new { success = false, message = "La cuenta no fue encontrada." });
+
                 return Json(new { success = true, data = cuenta });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al obtener la cuenta mapeada con Id {Id}.", id);
                 return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
@@ -73,16 +79,16 @@ namespace MantenimientoPresentation.Controllers
                     .SelectMany(v => v.Errors)
                     .Select(e => e.ErrorMessage));
 
-                return Json(new { success = false, message = string.IsNullOrEmpty(errores) ? "Datos del formulario inválidos." : errores });
+                return BadRequest(new { success = false, message = string.IsNullOrEmpty(errores) ? "Datos del formulario inválidos." : errores });
             }
 
             try
             {
                 dto.Usuario = _currentUserService.GetUsername();
                 await _cuentaMapeoService.CrearCuentaAsync(dto);
-                return Json(new { success = true, message = "Cuenta registrada exitosamente." });
+                return StatusCode(StatusCodes.Status201Created, new { success = true, message = "Cuenta registrada exitosamente." });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al crear una cuenta mapeada.");
                 return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
@@ -98,7 +104,7 @@ namespace MantenimientoPresentation.Controllers
                     .SelectMany(v => v.Errors)
                     .Select(e => e.ErrorMessage));
 
-                return Json(new { success = false, message = string.IsNullOrEmpty(errores) ? "Datos del formulario inválidos." : errores });
+                return BadRequest(new { success = false, message = string.IsNullOrEmpty(errores) ? "Datos del formulario inválidos." : errores });
             }
 
             try
@@ -107,7 +113,7 @@ namespace MantenimientoPresentation.Controllers
                 await _cuentaMapeoService.ActualizarCuentaAsync(dto);
                 return Json(new { success = true, message = "Cuenta actualizada exitosamente." });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al actualizar la cuenta mapeada.");
                 return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
@@ -127,7 +133,7 @@ namespace MantenimientoPresentation.Controllers
             {
                 return BadRequest(new { success = false, message = "El identificador de la cuenta no es válido." });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al eliminar la cuenta mapeada con Id {Id}.", id);
                 return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });

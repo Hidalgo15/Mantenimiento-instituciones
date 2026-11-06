@@ -27,7 +27,7 @@ namespace MantenimientoPresentation.Controllers
                 ViewBag.Clasificaciones = await _service.ObtenerCatalogoClasificacionAsync();
                 ViewBag.Requisitos = await _service.ObtenerCatalogoRequisitosAsync();
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al cargar los catálogos de contrato y requisitos.");
                 ViewBag.Clasificaciones = new List<CatalogoClasificacionContratoDto>();
@@ -45,7 +45,7 @@ namespace MantenimientoPresentation.Controllers
                 var data = await _service.ObtenerAsync(codigoClasificacion, codigoRequisito);
                 return PartialView("_RelacionContratoRequisitoGridPartial", data);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al obtener el grid de relaciones contrato-requisito.");
                 return StatusCode(500, "Ocurrió un error al cargar los datos.");
@@ -59,9 +59,12 @@ namespace MantenimientoPresentation.Controllers
             {
                 dto.Usuario = _currentUserService.GetUsername();
                 var resultado = await _service.AsignarAsync(dto);
-                return Json(new { success = resultado.CodigoResultado == 1, message = resultado.Mensaje });
+                if (resultado.CodigoResultado != 1)
+                    return Conflict(new { success = false, message = resultado.Mensaje });
+
+                return StatusCode(StatusCodes.Status201Created, new { success = true, message = resultado.Mensaje });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al guardar la relación contrato-requisito.");
                 return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
@@ -75,9 +78,12 @@ namespace MantenimientoPresentation.Controllers
             {
                 dto.Usuario = _currentUserService.GetUsername();
                 var resultado = await _service.ActualizarAsync(dto);
-                return Json(new { success = resultado.CodigoResultado == 1, message = resultado.Mensaje });
+                if (resultado.CodigoResultado != 1)
+                    return Conflict(new { success = false, message = resultado.Mensaje });
+
+                return Json(new { success = true, message = resultado.Mensaje });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al actualizar la relación contrato-requisito.");
                 return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
@@ -91,13 +97,16 @@ namespace MantenimientoPresentation.Controllers
             {
                 var usuario = _currentUserService.GetUsername();
                 var resultado = await _service.EliminarAsync(id);
-                return Json(new { success = resultado.CodigoResultado == 1, message = resultado.Mensaje });
+                if (resultado.CodigoResultado != 1)
+                    return Conflict(new { success = false, message = resultado.Mensaje });
+
+                return Json(new { success = true, message = resultado.Mensaje });
             }
             catch (ArgumentException)
             {
                 return BadRequest(new { success = false, message = "El identificador de la relación no es válido." });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al eliminar la relación contrato-requisito.");
                 return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });

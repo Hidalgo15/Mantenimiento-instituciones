@@ -34,7 +34,7 @@ namespace MantenimientoPresentation.Controllers
                 var capitulos = await _capituloService.ObtenerCapitulosAsync();
                 ViewBag.Capitulos = capitulos;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al cargar los capítulos para el filtro de SubCapítulos.");
                 ViewBag.Capitulos = new List<CapituloDto>();
@@ -50,7 +50,7 @@ namespace MantenimientoPresentation.Controllers
                 var subCapitulos = await _service.ObtenerSubCapitulosPorCapituloAsync(capituloId);
                 return PartialView("_SubCapitulosGridPartial", subCapitulos);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al obtener el grid de subcapítulos para CapítuloId {CapituloId}.", capituloId);
                 return StatusCode(500, "Error al cargar la lista de subcapítulos.");
@@ -63,7 +63,7 @@ namespace MantenimientoPresentation.Controllers
             try
             {
                 if (id <= 0)
-                    return Json(new { success = false, message = "Identificador no válido." });
+                    return BadRequest(new { success = false, message = "Identificador no válido." });
 
                 var subCapitulo = await _service.ObtenerPorIdAsync(id, id_capitulo, buscar ?? string.Empty);
                 return Json(new { success = true, data = subCapitulo });
@@ -72,7 +72,7 @@ namespace MantenimientoPresentation.Controllers
             {
                 return NotFound(new { success = false, message = "No se encontró el subcapítulo solicitado." });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al obtener el subcapítulo con Id {Id}.", id);
                 return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
@@ -88,7 +88,7 @@ namespace MantenimientoPresentation.Controllers
                     .SelectMany(v => v.Errors)
                     .Select(e => e.ErrorMessage));
 
-                return Json(new { success = false, message = string.IsNullOrEmpty(errores) ? "Datos del formulario inválidos." : errores });
+                return BadRequest(new { success = false, message = string.IsNullOrEmpty(errores) ? "Datos del formulario inválidos." : errores });
             }
 
             try
@@ -97,9 +97,9 @@ namespace MantenimientoPresentation.Controllers
                 await _service.CrearSubCapituloAsync(dto);
 
                 _logger.LogInformation("Subcapítulo registrado exitosamente por {Usuario}.", dto.Usuario);
-                return Json(new { success = true, message = "Subcapítulo registrado exitosamente." });
+                return StatusCode(StatusCodes.Status201Created, new { success = true, message = "Subcapítulo registrado exitosamente." });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al registrar el subcapítulo.");
                 return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
@@ -115,7 +115,7 @@ namespace MantenimientoPresentation.Controllers
                     .SelectMany(v => v.Errors)
                     .Select(e => e.ErrorMessage));
 
-                return Json(new { success = false, message = string.IsNullOrEmpty(errores) ? "Datos del formulario inválidos." : errores });
+                return BadRequest(new { success = false, message = string.IsNullOrEmpty(errores) ? "Datos del formulario inválidos." : errores });
             }
 
             try
@@ -126,7 +126,7 @@ namespace MantenimientoPresentation.Controllers
                 _logger.LogInformation("Subcapítulo con Id {Id} actualizado por {Usuario}.", dto.Id, dto.Usuario);
                 return Json(new { success = true, message = "Subcapítulo actualizado exitosamente." });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al actualizar el subcapítulo con Id {Id}.", dto.Id);
                 return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
@@ -137,7 +137,7 @@ namespace MantenimientoPresentation.Controllers
         public async Task<IActionResult> Eliminar(int id)
         {
             if (id <= 0)
-                return Json(new { success = false, message = "Identificador no válido." });
+                return BadRequest(new { success = false, message = "Identificador no válido." });
 
             try
             {
@@ -151,7 +151,7 @@ namespace MantenimientoPresentation.Controllers
             {
                 return Conflict(new { success = false, message = "No se puede eliminar el subcapítulo porque tiene unidades DAF asociadas." });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al eliminar el subcapítulo con Id {Id}.", id);
                 return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });

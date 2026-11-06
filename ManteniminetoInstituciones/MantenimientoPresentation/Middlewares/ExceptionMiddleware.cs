@@ -44,8 +44,9 @@ namespace MantenimientoPresentation.Middlewares
             {
                 ValidationException validationException =>
                     ((int)HttpStatusCode.BadRequest,
-                     "Los datos enviados no son válidos.",
-                     validationException.Errors.Select(error => error.ErrorMessage).Distinct().ToArray()),
+                     validationException.Errors.Select(error => error.ErrorMessage).FirstOrDefault()
+                         ?? "Los datos enviados no son válidos.",
+                     validationException.Errors.Select(error => error.ErrorMessage).ToArray()),
                 ArgumentException =>
                     ((int)HttpStatusCode.BadRequest, "Los datos enviados no son válidos.", Array.Empty<string>()),
                 KeyNotFoundException =>
@@ -68,7 +69,8 @@ namespace MantenimientoPresentation.Middlewares
             context.Response.Headers["Cache-Control"] = "no-store";
 
             var acceptHeader = context.Request.Headers.Accept.ToString();
-            if (acceptHeader.Contains("text/html", StringComparison.OrdinalIgnoreCase)
+            if (exception is not ValidationException
+                && acceptHeader.Contains("text/html", StringComparison.OrdinalIgnoreCase)
                 && !acceptHeader.Contains("application/json", StringComparison.OrdinalIgnoreCase))
             {
                 context.Response.ContentType = "text/html; charset=utf-8";
@@ -84,13 +86,26 @@ namespace MantenimientoPresentation.Middlewares
             var errorResponse = new Dictionary<string, object>
             {
                 ["success"] = false,
-                ["statusCode"] = status,
-                ["message"] = message
+                ["message"] = message,
+                ["statusCode"] = status
             };
 
             if (validationErrors.Length > 0)
-                errorResponse["errors"] = validationErrors;
-
+            {
+                if (exception is ValidationException validationException)
+                {
+                    errorResponse["errors"] = validationException.Errors
+                        .GroupBy(error => error.PropertyName)
+                        .ToDictionary(
+                            group => group.Key,
+                            group => group.Select(error => error.ErrorMessage).ToArray());
+                }
+                else
+                {
+                    errorResponse["statusCode"] = status;
+                    errorResponse["errors"] = validationErrors;
+                }
+            }
             await context.Response.WriteAsync(JsonSerializer.Serialize(errorResponse));
         }
     }

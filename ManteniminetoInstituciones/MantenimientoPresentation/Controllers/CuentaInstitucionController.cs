@@ -33,7 +33,7 @@ namespace MantenimientoPresentation.Controllers
             {
                 ViewBag.Instituciones = await _institucionService.ObtenerInstitucionesSelectorAsync();
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al cargar la lista de instituciones para selección.");
                 ViewBag.Instituciones = new List<CuentaInstitucionDto>();
@@ -52,7 +52,7 @@ namespace MantenimientoPresentation.Controllers
                 var cuentas = await _service.ObtenerCuentasPorEstructuraAsync(insCodigo);
                 return PartialView("_CuentasGridPartial", cuentas);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al obtener las cuentas para el código de institución {InsCodigo}.", insCodigo);
                 return StatusCode(500, "Ocurrió un error al cargar las cuentas.");
@@ -65,7 +65,7 @@ namespace MantenimientoPresentation.Controllers
             try
             {
                 if (id <= 0)
-                    return Json(new { success = false, message = "Identificador no válido." });
+                    return BadRequest(new { success = false, message = "Identificador no válido." });
 
                 var cuenta = await _service.ObtenerPorIdAsync(id);
                 return Json(new { success = true, data = cuenta });
@@ -74,7 +74,7 @@ namespace MantenimientoPresentation.Controllers
             {
                 return NotFound(new { success = false, message = "No se encontró la cuenta institucional solicitada." });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al obtener la cuenta institucional con Id {Id}", id);
                 return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
@@ -85,7 +85,7 @@ namespace MantenimientoPresentation.Controllers
         public async Task<IActionResult> Crear([FromBody] CrearCuentaInstitucionDto dto)
         {
             if (dto == null || !ModelState.IsValid)
-                return Json(new { success = false, message = "Datos del formulario inválidos." });
+                return BadRequest(new { success = false, message = "Datos del formulario inválidos." });
 
             try
             {
@@ -93,13 +93,13 @@ namespace MantenimientoPresentation.Controllers
                 await _service.CrearCuentaAsync(dto);
 
                 _logger.LogInformation("Cuenta institucional registrada exitosamente por {Usuario}.", dto.Usuario);
-                return Json(new { success = true, message = "Cuenta registrada exitosamente." });
+                return StatusCode(StatusCodes.Status201Created, new { success = true, message = "Cuenta registrada exitosamente." });
             }
             catch (InvalidOperationException)
             {
                 return Conflict(new { success = false, message = "Ya existe una cuenta con ese número para la institución." });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al crear la cuenta institucional.");
                 return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
@@ -110,7 +110,7 @@ namespace MantenimientoPresentation.Controllers
         public async Task<IActionResult> Actualizar([FromBody] ActualizarCuentaInstitucionDto dto)
         {
             if (dto == null || !ModelState.IsValid)
-                return Json(new { success = false, message = "Datos del formulario inválidos." });
+                return BadRequest(new { success = false, message = "Datos del formulario inválidos." });
 
             try
             {
@@ -124,7 +124,7 @@ namespace MantenimientoPresentation.Controllers
             {
                 return Conflict(new { success = false, message = "Ya existe otra cuenta con ese número para la institución." });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al actualizar la cuenta institucional con Id {Id}.", dto.Id);
                 return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
@@ -135,7 +135,7 @@ namespace MantenimientoPresentation.Controllers
         public async Task<IActionResult> Eliminar(int id)
         {
             if (id <= 0)
-                return Json(new { success = false, message = "Identificador no válido." });
+                return BadRequest(new { success = false, message = "Identificador no válido." });
 
             try
             {
@@ -145,7 +145,7 @@ namespace MantenimientoPresentation.Controllers
                 _logger.LogInformation("Cuenta institucional con Id {Id} eliminada por {Usuario}.", id, usuario);
                 return Json(new { success = true, message = "Cuenta eliminada exitosamente." });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al eliminar la cuenta institucional con Id {Id}.", id);
                 return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
