@@ -54,11 +54,17 @@ namespace MantenimientoPresentation.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ObtenerGrid(string? estructura = null, string? tipoTramite = null)
+        public async Task<IActionResult> ObtenerGrid(
+            string? estructura = null,
+            string? tipoTramite = null,
+            int page = 1,
+            int pageSize = 10)
         {
             try
             {
-                var fondos = await _fondoService.ObtenerFondosEspecialesAsync(estructura, tipoTramite);
+                page = Math.Max(page, 1);
+                pageSize = Math.Clamp(pageSize, 1, 100);
+                var fondos = await _fondoService.ObtenerFondosEspecialesAsync(estructura, tipoTramite, page, pageSize);
                 return PartialView("_FondosGridPartial", fondos);
             }
             catch (Exception ex)

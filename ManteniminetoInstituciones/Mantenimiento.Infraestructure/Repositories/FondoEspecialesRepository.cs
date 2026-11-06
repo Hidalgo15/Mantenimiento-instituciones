@@ -1,4 +1,5 @@
 ﻿using Mantenimiento.Core.Domain.Entities;
+using Mantenimiento.Core.Domain.Pagination;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -16,14 +17,43 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
         }
 
         /// <summary>
-        /// Obtiene todos los fondos especiales de la base de datos.
+        /// Obtiene una página de fondos especiales, aplicando los filtros y el conteo en la base de datos.
         /// </summary>
-        /// <returns></returns>
-        public async Task<List<FondosEspeciales>> GetAllFondosEspecialesAsync()
+        public async Task<PagedResult<FondosEspeciales>> GetFondosEspecialesPaginadosAsync(
+            string? estructura,
+            string? tipoTramite,
+            int pageNumber,
+            int pageSize)
         {
-            return await _context.FondosEspeciales
+            pageNumber = Math.Max(pageNumber, 1);
+            pageSize = Math.Clamp(pageSize, 1, 100);
+
+            var query = _context.FondosEspeciales
                 .AsNoTracking()
+                .AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(estructura))
+            {
+                var estructuraNormalizada = estructura.ToUpper();
+                query = query.Where(f => f.Estructura != null && f.Estructura.ToUpper() == estructuraNormalizada);
+            }
+
+            if (!string.IsNullOrWhiteSpace(tipoTramite))
+            {
+                var tipoTramiteNormalizado = tipoTramite.ToUpper();
+                query = query.Where(f => f.TipoTramite != null && f.TipoTramite.ToUpper() == tipoTramiteNormalizado);
+            }
+
+            var totalCount = await query.CountAsync();
+            var totalPages = totalCount == 0 ? 0 : (int)Math.Ceiling(totalCount / (double)pageSize);
+            var paginaActual = totalPages == 0 ? 1 : Math.Min(pageNumber, totalPages);
+            var fondos = await query
+                .OrderBy(f => f.Id)
+                .Skip((paginaActual - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
+
+            return new PagedResult<FondosEspeciales>(fondos, paginaActual, pageSize, totalCount);
         }
 
         /// <summary>

@@ -157,18 +157,35 @@
 @section Scripts {
     <script>
         let modalFondoBs;
+        let tamanoPaginaFondos = 10;
 
         document.addEventListener('DOMContentLoaded', () => {
             modalFondoBs = new bootstrap.Modal(document.getElementById('modalFondo'));
+            document.getElementById('contenedorGrid').addEventListener('click', event => {
+                if (!(event.target instanceof Element)) return;
+                const boton = event.target.closest('button[data-action][data-page]');
+                if (!boton) return;
+
+                cargarGridFondos(Number(boton.dataset.page));
+            });
+            document.getElementById('contenedorGrid').addEventListener('change', event => {
+                if (!(event.target instanceof HTMLSelectElement) ||
+                    event.target.dataset.action !== 'cambiar-tamano-pagina') return;
+
+                tamanoPaginaFondos = Number(event.target.value);
+                cargarGridFondos(1);
+            });
             cargarGridFondos();
         });
 
-        function cargarGridFondos(estructura = '', tipoTramite = '') {
+        function cargarGridFondos(page = 1) {
             const contenedor = document.getElementById('contenedorGrid');
 
             const params = new URLSearchParams({
-                estructura: estructura,
-                tipoTramite: tipoTramite
+                estructura: document.getElementById('filtroInstitucion').value,
+                tipoTramite: document.getElementById('filtroTipoTramite').value,
+                page: String(page),
+                pageSize: String(tamanoPaginaFondos)
             });
 
             fetch(`/FondoEspeciales/ObtenerGrid?${params.toString()}`)
@@ -185,9 +202,7 @@
         }
 
         function filtrarTabla() {
-            const estructura = document.getElementById('filtroInstitucion').value;
-            const tipoTramite = document.getElementById('filtroTipoTramite').value;
-            cargarGridFondos(estructura, tipoTramite);
+            cargarGridFondos(1);
         }
 
         // Filtra las opciones del select y muestra coincidencias flotantes mientras se escribe

@@ -2,6 +2,7 @@
 using Mantenimiento.Core.Application.DTOs.Fondos;
 using Mantenimiento.Core.Application.InterfaceServices;
 using Mantenimiento.Core.Application.Mappings;
+using Mantenimiento.Core.Domain.Pagination;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 
 
@@ -32,26 +33,23 @@ namespace Mantenimiento.Core.Application.Services
         /// <param name="estructura"></param>
         /// <param name="tipoTramite"></param>
         /// <returns></returns>
-        public async Task<List<FondoDto>> ObtenerFondosEspecialesAsync(string? estructura = null, string? tipoTramite = null)
+        public async Task<PagedResult<FondoDto>> ObtenerFondosEspecialesAsync(
+            string? estructura = null,
+            string? tipoTramite = null,
+            int pageNumber = 1,
+            int pageSize = 10)
         {
-            var lista = await _fondoRepo.GetAllFondosEspecialesAsync();
-            var query = lista.AsEnumerable();
+            var pagina = await _fondoRepo.GetFondosEspecialesPaginadosAsync(
+                estructura,
+                tipoTramite,
+                pageNumber,
+                pageSize);
 
-            if (!string.IsNullOrWhiteSpace(estructura))
-            {
-                query = query.Where(f => string.Equals(
-                    f.Estructura,
-                    estructura,
-                    StringComparison.OrdinalIgnoreCase));
-            }
-
-            if (!string.IsNullOrWhiteSpace(tipoTramite))
-            {
-                query = query.Where(f => f.TipoTramite != null &&
-                    f.TipoTramite.Equals(tipoTramite, StringComparison.OrdinalIgnoreCase));
-            }
-
-            return query.Select(FondoEspecialesMapper.ToDto).ToList();
+            return new PagedResult<FondoDto>(
+                pagina.Items.Select(FondoEspecialesMapper.ToDto).ToList(),
+                pagina.PageNumber,
+                pagina.PageSize,
+                pagina.TotalCount);
         }
 
         /// <summary>

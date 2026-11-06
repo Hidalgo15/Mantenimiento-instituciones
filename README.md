@@ -77,6 +77,32 @@ La solución apunta a **.NET 8** y la interfaz usa **ASP.NET Core MVC con vistas
 
 El flujo habitual es **controlador → servicio → interfaz de repositorio → repositorio → SQL Server**. Las dependencias se registran en `MantenimientoPresentation/Program.cs`. Parte de los repositorios consulta tablas o vistas mediante Entity Framework Core; otros invocan procedimientos almacenados, especialmente con `FromSqlRaw` y `ExecuteSqlRawAsync`.
 
+### Paginación de listados
+
+El grid de **Fondos Especiales** usa paginación del lado del servidor. `FondoEspecialesController.ObtenerGrid` recibe `page` (predeterminado 1) y `pageSize` (predeterminado 10, limitado a 100); conserva los filtros de institución y tipo de trámite. El repositorio aplica esos filtros en SQL, obtiene el total con `CountAsync`, ordena por `Id` y ejecuta `Skip/Take` antes de materializar la página. La vista permite navegar y elegir tamaños de 10, 25, 50 o 100 registros. Los selectores de instituciones y tipos de trámite siguen cargándose completos como catálogos de apoyo.
+
+Varios grids usan procedimientos almacenados y no se paginan en la capa de aplicación, porque hacerlo después de `ToListAsync` seguiría descargando todos sus resultados. Para paginar esos módulos, la persona responsable de base de datos debe revisar las consultas y preservar sus filtros, añadiendo un orden determinista, parámetros `@PageNumber` y `@PageSize`, y el total de coincidencias (por ejemplo, mediante `@TotalCount OUTPUT`). Los procedimientos actuales identificados son:
+
+| Grid | Procedimiento almacenado |
+| --- | --- |
+| Analistas y supervisores | `[dbo].[sp_Obtener_Mantenimiento_Analistas_Supervisores]` |
+| Capítulos | `[dbo].[sp_capitulo_obtener]` |
+| Clasificación de contratos | `[dbo].[sp_clasificacion_contratos_Obtener]` |
+| Cuentas CT | `[ct].[sp_CuentasCt_Obtener]` |
+| Cuentas institucionales | `[dbo].[sp_cta_institucion_ObtenerPorEstructura]` |
+| Mapeo de cuentas | `[dbo].[sp_Cuentas_Obtener]` |
+| Relaciones cuenta-requisito | `[ct].[sp_Obtener_Relacion_Cuenta_Requisitos]` |
+| DAF | `[dbo].[sp_daf_Obtener]` |
+| Requisitos | `[ct].[sp_Obtener_Requisitos]` |
+| Requisitos de contratos | `[dbo].[sp_requisitos_contratos_Obtener]` |
+| Relaciones contrato-requisito | `[dbo].[sp_Obtener_Relacion_Contrato_Requisito]` |
+| Subcapítulos | `[dbo].[sp_subcapitulo_Obtener]` |
+| Unidades ejecutoras | `[dbo].[sp_unidad_ejecutora_Obtener]` |
+| Usuarios por actividad (Responsables) | `[SIGOB].[dbo].[sp_Obtener_Usuarios_Por_Actividad]` |
+| Usuarios por flujo (Responsables) | `[SIGOB].[dbo].[sp_Obtener_Usuarios_Por_Flujo]` |
+
+El cambio SQL y la adaptación de esos repositorios deben coordinarse como trabajo posterior con el responsable de base de datos; no se modificaron procedimientos almacenados en esta implementación.
+
 ### Puntos de entrada y configuración
 
 - Solución: `ManteniminetoInstituciones.sln`.
