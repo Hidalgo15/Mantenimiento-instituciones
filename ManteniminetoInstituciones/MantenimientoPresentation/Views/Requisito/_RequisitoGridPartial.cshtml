@@ -22,11 +22,16 @@
                             <td class="px-3 text-center">
                                 <div class="d-inline-flex gap-2">
                                     <button class="btn btn-sm btn-outline-primary rounded-pill px-3"
-                                            onclick="abrirModalEditar(@item.RequisitosID, '@Html.Raw(item.Requisitos.Replace("'", "\\'"))')">
+                                            type="button"
+                                            data-action="editar-requisito"
+                                            data-requisitos-id="@item.RequisitosID"
+                                            data-requisitos-descripcion="@item.Requisitos">
                                         <i class="bi bi-pencil-square me-1"></i> Editar
                                     </button>
                                     <button class="btn btn-sm btn-outline-danger rounded-pill px-3"
-                                            onclick="eliminarRequisito(@item.RequisitosID)">
+                                            type="button"
+                                            data-action="eliminar-requisito"
+                                            data-requisitos-id="@item.RequisitosID">
                                         <i class="bi bi-trash me-1"></i> Eliminar
                                     </button>
                                 </div>
