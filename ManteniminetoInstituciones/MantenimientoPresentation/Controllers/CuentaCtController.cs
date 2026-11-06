@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace MantenimientoPresentation.Controllers
 {
     [Authorize]
+    [AutoValidateAntiforgeryToken]
     public class CuentaCtController : Controller
     {
         private readonly ICuentaCtService _cuentaCtService;

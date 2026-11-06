@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace MantenimientoPresentation.Controllers
 {
     [Authorize]
+    [AutoValidateAntiforgeryToken]
     public class AnalistaSupervisorController : Controller
     {
         private readonly IAnalistaSupervisorService _service;

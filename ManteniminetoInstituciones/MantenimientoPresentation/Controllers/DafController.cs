@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace MantenimientoPresentation.Controllers
 {
     [Authorize]
+    [AutoValidateAntiforgeryToken]
     public class DafController : Controller
     {
         private readonly IDafService _dafService;

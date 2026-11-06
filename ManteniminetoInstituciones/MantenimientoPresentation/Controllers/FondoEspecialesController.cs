@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace MantenimientoPresentation.Controllers
 {
     [Authorize]
+    [AutoValidateAntiforgeryToken]
     [Route("FondoEspeciales/[action]/{id?}")]
     public class FondoEspecialesController : Controller
     {

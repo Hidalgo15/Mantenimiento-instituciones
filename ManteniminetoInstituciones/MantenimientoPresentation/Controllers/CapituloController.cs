@@ -7,6 +7,7 @@ using Microsoft.Data.SqlClient;
 namespace MantenimientoPresentation.Controllers
 {
     [Authorize]
+    [AutoValidateAntiforgeryToken]
     public class CapituloController : Controller
     {
         private readonly ICapituloService _service;

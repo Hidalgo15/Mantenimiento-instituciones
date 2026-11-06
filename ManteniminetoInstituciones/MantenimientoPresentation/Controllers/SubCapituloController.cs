@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace MantenimientoPresentation.Controllers
 {
     [Authorize]
+    [AutoValidateAntiforgeryToken]
     public class SubCapituloController : Controller
     {
         private readonly ISubCapituloService _service;

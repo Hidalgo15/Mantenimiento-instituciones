@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace MantenimientoPresentation.Controllers
 {
     [Authorize]
+    [AutoValidateAntiforgeryToken]
     [Route("CuentaMapeo/[action]/{id?}")]
     public class CuentaMapeoController : Controller
     {

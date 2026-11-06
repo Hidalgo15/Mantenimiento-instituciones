@@ -8,6 +8,7 @@ using Microsoft.Data.SqlClient;
 namespace MantenimientoPresentation.Controllers
 {
     [Authorize]
+    [AutoValidateAntiforgeryToken]
     public class UnidadEjecutoraController : Controller
     {
         private readonly IUnidadEjecutoraService _service;
