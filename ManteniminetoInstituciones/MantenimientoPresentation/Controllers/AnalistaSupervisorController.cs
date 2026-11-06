@@ -70,7 +70,7 @@ namespace MantenimientoPresentation.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al asignar supervisor al analista.");
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -96,7 +96,7 @@ namespace MantenimientoPresentation.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al reasignar supervisor.");
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -118,7 +118,7 @@ namespace MantenimientoPresentation.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al desvincular analista.");
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
     }

@@ -70,10 +70,14 @@ namespace MantenimientoPresentation.Controllers
                 var cuenta = await _service.ObtenerPorIdAsync(id);
                 return Json(new { success = true, data = cuenta });
             }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new { success = false, message = "No se encontró la cuenta institucional solicitada." });
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al obtener la cuenta institucional con Id {Id}", id);
-                return Json(new { success = false, message = "No se pudo recuperar la información de la cuenta." });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -91,10 +95,14 @@ namespace MantenimientoPresentation.Controllers
                 _logger.LogInformation("Cuenta institucional registrada exitosamente por {Usuario}.", dto.Usuario);
                 return Json(new { success = true, message = "Cuenta registrada exitosamente." });
             }
+            catch (InvalidOperationException)
+            {
+                return Conflict(new { success = false, message = "Ya existe una cuenta con ese número para la institución." });
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al crear la cuenta institucional.");
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -112,10 +120,14 @@ namespace MantenimientoPresentation.Controllers
                 _logger.LogInformation("Cuenta institucional con Id {Id} actualizada por {Usuario}.", dto.Id, dto.Usuario);
                 return Json(new { success = true, message = "Cuenta actualizada exitosamente." });
             }
+            catch (InvalidOperationException)
+            {
+                return Conflict(new { success = false, message = "Ya existe otra cuenta con ese número para la institución." });
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al actualizar la cuenta institucional con Id {Id}.", dto.Id);
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -136,7 +148,7 @@ namespace MantenimientoPresentation.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al eliminar la cuenta institucional con Id {Id}.", id);
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
     }

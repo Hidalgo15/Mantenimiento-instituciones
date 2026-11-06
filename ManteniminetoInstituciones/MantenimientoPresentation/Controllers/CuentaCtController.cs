@@ -11,11 +11,16 @@ namespace MantenimientoPresentation.Controllers
     {
         private readonly ICuentaCtService _cuentaCtService;
         private readonly ICurrentUserService _currentUserService;
+        private readonly ILogger<CuentaCtController> _logger;
 
-        public CuentaCtController(ICuentaCtService cuentaCtService, ICurrentUserService currentUserService)
+        public CuentaCtController(
+            ICuentaCtService cuentaCtService,
+            ICurrentUserService currentUserService,
+            ILogger<CuentaCtController> logger)
         {
             _cuentaCtService = cuentaCtService;
             _currentUserService = currentUserService;
+            _logger = logger;
         }
 
         [HttpGet]
@@ -44,7 +49,8 @@ namespace MantenimientoPresentation.Controllers
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = ex.Message });
+                _logger.LogError(ex, "Error al obtener la cuenta contable con Id {Id}.", id);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -59,7 +65,8 @@ namespace MantenimientoPresentation.Controllers
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = ex.Message });
+                _logger.LogError(ex, "Error al crear la cuenta contable.");
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -74,7 +81,8 @@ namespace MantenimientoPresentation.Controllers
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = ex.Message });
+                _logger.LogError(ex, "Error al actualizar la cuenta contable con Id {Id}.", dto.CuentaID);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -87,9 +95,14 @@ namespace MantenimientoPresentation.Controllers
                 await _cuentaCtService.EliminarCuentaAsync(id);
                 return Json(new { success = true, message = "Cuenta eliminada exitosamente." });
             }
+            catch (ArgumentException)
+            {
+                return BadRequest(new { success = false, message = "El identificador de la cuenta no es válido." });
+            }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = ex.Message });
+                _logger.LogError(ex, "Error al eliminar la cuenta contable con Id {Id}.", id);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
     }

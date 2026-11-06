@@ -47,11 +47,11 @@ namespace MantenimientoPresentation.Middlewares
                      "Los datos enviados no son válidos.",
                      validationException.Errors.Select(error => error.ErrorMessage).Distinct().ToArray()),
                 ArgumentException =>
-                    ((int)HttpStatusCode.BadRequest, exception.Message, Array.Empty<string>()),
+                    ((int)HttpStatusCode.BadRequest, "Los datos enviados no son válidos.", Array.Empty<string>()),
                 KeyNotFoundException =>
-                    ((int)HttpStatusCode.NotFound, exception.Message, Array.Empty<string>()),
+                    ((int)HttpStatusCode.NotFound, "No se encontró el recurso solicitado.", Array.Empty<string>()),
                 InvalidOperationException =>
-                    ((int)HttpStatusCode.Conflict, exception.Message, Array.Empty<string>()),
+                    ((int)HttpStatusCode.Conflict, "No se pudo completar la operación solicitada.", Array.Empty<string>()),
                 _ =>
                     ((int)HttpStatusCode.InternalServerError,
                      "Ocurrió un error interno en el servidor.",

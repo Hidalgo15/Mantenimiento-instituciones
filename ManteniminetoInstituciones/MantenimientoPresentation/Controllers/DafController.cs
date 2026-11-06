@@ -91,10 +91,14 @@ namespace MantenimientoPresentation.Controllers
 
                 return Json(new { success = true, data = daf });
             }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new { success = false, message = "No se encontró el registro DAF solicitado." });
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al obtener el registro DAF con Id {Id}", id);
-                return Json(new { success = false, message = "No se pudo recuperar el registro DAF." });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -115,7 +119,7 @@ namespace MantenimientoPresentation.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al crear el registro DAF.");
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -136,7 +140,7 @@ namespace MantenimientoPresentation.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al actualizar el registro DAF con Id {Id}.", dto.Id);
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -157,7 +161,7 @@ namespace MantenimientoPresentation.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al eliminar el registro DAF con Id {Id}.", id);
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
     }

@@ -60,7 +60,7 @@ namespace MantenimientoPresentation.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al asignar requisito a la cuenta.");
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -79,7 +79,7 @@ namespace MantenimientoPresentation.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al actualizar la relación cuenta-requisito.");
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -92,10 +92,14 @@ namespace MantenimientoPresentation.Controllers
                 var resultado = await _service.EliminarAsync(cuentaRequisitosID);
                 return Json(new { success = resultado.CodigoResultado == 1, message = resultado.Mensaje });
             }
+            catch (ArgumentException)
+            {
+                return BadRequest(new { success = false, message = "El identificador de la relación no es válido." });
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al eliminar la relación cuenta-requisito.");
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
     }

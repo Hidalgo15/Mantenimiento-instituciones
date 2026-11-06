@@ -68,7 +68,7 @@ namespace MantenimientoPresentation.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al obtener la clasificación por ID.");
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -84,7 +84,7 @@ namespace MantenimientoPresentation.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al crear la clasificación de contrato.");
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -100,7 +100,7 @@ namespace MantenimientoPresentation.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al actualizar la clasificación de contrato.");
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -113,10 +113,14 @@ namespace MantenimientoPresentation.Controllers
                 await _service.EliminarAsync(id);
                 return Json(new { success = true, message = "Clasificación eliminada exitosamente." });
             }
+            catch (ArgumentException)
+            {
+                return BadRequest(new { success = false, message = "El identificador de la clasificación no es válido." });
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al eliminar la clasificación de contrato.");
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
     }

@@ -54,10 +54,14 @@ namespace MantenimientoPresentation.Controllers
                 var requisito = await _service.ObtenerPorIdAsync(id);
                 return Json(new { success = true, data = requisito });
             }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new { success = false, message = "No se encontró el requisito de contrato solicitado." });
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al obtener el requisito con código {Id}.", id);
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -83,7 +87,7 @@ namespace MantenimientoPresentation.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al registrar el requisito de contrato.");
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -109,7 +113,7 @@ namespace MantenimientoPresentation.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al actualizar el requisito con código {Id}.", dto.CodigoRequisito);
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -126,10 +130,14 @@ namespace MantenimientoPresentation.Controllers
                 _logger.LogInformation("Requisito de contrato con código {Id} eliminado exitosamente.", id);
                 return Json(new { success = true, message = "Requisito eliminado exitosamente." });
             }
+            catch (ArgumentException)
+            {
+                return BadRequest(new { success = false, message = "El identificador del requisito no es válido." });
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al eliminar el requisito con código {Id}.", id);
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
     }

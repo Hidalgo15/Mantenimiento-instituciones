@@ -56,7 +56,7 @@ namespace MantenimientoPresentation.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al crear el requisito.");
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -75,7 +75,7 @@ namespace MantenimientoPresentation.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al actualizar el requisito.");
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -88,10 +88,14 @@ namespace MantenimientoPresentation.Controllers
                 var resultado = await _service.EliminarAsync(requisitosID);
                 return Json(new { success = resultado.CodigoResultado == 1, message = resultado.Mensaje });
             }
+            catch (ArgumentException)
+            {
+                return BadRequest(new { success = false, message = "El identificador del requisito no es válido." });
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al eliminar el requisito.");
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
     }

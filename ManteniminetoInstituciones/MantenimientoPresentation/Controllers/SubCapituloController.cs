@@ -68,10 +68,14 @@ namespace MantenimientoPresentation.Controllers
                 var subCapitulo = await _service.ObtenerPorIdAsync(id, id_capitulo, buscar ?? string.Empty);
                 return Json(new { success = true, data = subCapitulo });
             }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new { success = false, message = "No se encontró el subcapítulo solicitado." });
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al obtener el subcapítulo con Id {Id}.", id);
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -98,7 +102,7 @@ namespace MantenimientoPresentation.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al registrar el subcapítulo.");
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -125,7 +129,7 @@ namespace MantenimientoPresentation.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al actualizar el subcapítulo con Id {Id}.", dto.Id);
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -143,10 +147,14 @@ namespace MantenimientoPresentation.Controllers
                 _logger.LogInformation("Subcapítulo con Id {Id} eliminado por {Usuario}.", id, usuario);
                 return Json(new { success = true, message = "Subcapítulo eliminado exitosamente." });
             }
+            catch (InvalidOperationException)
+            {
+                return Conflict(new { success = false, message = "No se puede eliminar el subcapítulo porque tiene unidades DAF asociadas." });
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al eliminar el subcapítulo con Id {Id}.", id);
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 

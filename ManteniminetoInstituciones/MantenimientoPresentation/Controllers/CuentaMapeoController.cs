@@ -13,15 +13,18 @@ namespace MantenimientoPresentation.Controllers
         private readonly ICuentaMapeoService _cuentaMapeoService;
         private readonly ITipoTramitePagoService _tipoTramitePagoService; // Servicio que lista dbo.tipo_tramite_pago
         private readonly ICurrentUserService _currentUserService;
+        private readonly ILogger<CuentaMapeoController> _logger;
 
         public CuentaMapeoController(
             ICuentaMapeoService cuentaMapeoService,
             ITipoTramitePagoService tipoTramitePagoService,
-            ICurrentUserService currentUserService)
+            ICurrentUserService currentUserService,
+            ILogger<CuentaMapeoController> logger)
         {
             _cuentaMapeoService = cuentaMapeoService;
             _tipoTramitePagoService = tipoTramitePagoService;
             _currentUserService = currentUserService;
+            _logger = logger;
         }
 
         [HttpGet("")]
@@ -56,7 +59,8 @@ namespace MantenimientoPresentation.Controllers
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = ex.Message });
+                _logger.LogError(ex, "Error al obtener la cuenta mapeada con Id {Id}.", id);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -80,7 +84,8 @@ namespace MantenimientoPresentation.Controllers
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = ex.Message });
+                _logger.LogError(ex, "Error al crear una cuenta mapeada.");
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -104,7 +109,8 @@ namespace MantenimientoPresentation.Controllers
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = ex.Message });
+                _logger.LogError(ex, "Error al actualizar la cuenta mapeada.");
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -117,9 +123,14 @@ namespace MantenimientoPresentation.Controllers
                 await _cuentaMapeoService.EliminarCuentaAsync(id);
                 return Json(new { success = true, message = "Cuenta eliminada exitosamente." });
             }
+            catch (ArgumentException)
+            {
+                return BadRequest(new { success = false, message = "El identificador de la cuenta no es válido." });
+            }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = ex.Message });
+                _logger.LogError(ex, "Error al eliminar la cuenta mapeada con Id {Id}.", id);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
     }

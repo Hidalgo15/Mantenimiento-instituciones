@@ -81,10 +81,14 @@ namespace MantenimientoPresentation.Controllers
                 var capitulo = await _service.ObtenerPorIdAsync(id);
                 return Json(new { success = true, data = capitulo });
             }
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new { success = false, message = "No se encontró el capítulo solicitado." });
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al obtener el capítulo con Id {Id}", id);
-                return Json(new { success = false, message = "No se pudo recuperar la información del registro." });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -105,7 +109,7 @@ namespace MantenimientoPresentation.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al crear el capítulo.");
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -126,7 +130,7 @@ namespace MantenimientoPresentation.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al actualizar el capítulo con Id {Id}.", dto.Id);
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -147,12 +151,12 @@ namespace MantenimientoPresentation.Controllers
             catch (InvalidOperationException ex)
             {
                 _logger.LogWarning(ex, "No se pudo eliminar el capítulo con Id {Id} porque tiene registros dependientes.", id);
-                return Json(new { success = false, message = ex.Message });
+                return Conflict(new { success = false, message = "No se puede eliminar el capítulo porque tiene registros asociados." });
             }
             catch (SqlException ex) when (ex.Number == 547)
             {
                 _logger.LogWarning(ex, "La eliminación del capítulo con Id {Id} fue bloqueada por registros dependientes.", id);
-                return Json(new
+                return Conflict(new
                 {
                     success = false,
                     message = "No se puede eliminar el capítulo porque tiene subcapítulos asociados. Elimine primero sus subcapítulos."
@@ -161,7 +165,7 @@ namespace MantenimientoPresentation.Controllers
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al eliminar el capítulo con Id {Id}.", id);
-                return Json(new { success = false, message = "Ocurrió un error al eliminar el capítulo." });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
     }

@@ -116,12 +116,12 @@ namespace MantenimientoPresentation.Controllers
             {
                 // Advertencia de validación de negocio (no requiere log de excepción técnica completa)
                 _logger.LogWarning(ex, "Validación fallida al crear Unidad Ejecutora. Código: {Codigo}", dto.CodigoUnidadEjecutora);
-                return Json(new { success = false, message = ex.Message });
+                return BadRequest(new { success = false, message = "Los datos proporcionados no son válidos." });
             }
             catch (SqlException ex)
             {
                 _logger.LogError(ex, "Error de base de datos al intentar crear Unidad Ejecutora {Codigo}", dto.CodigoUnidadEjecutora);
-                return Json(new { success = false, message = "Ocurrió un problema de base de datos al guardar los datos." });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "No se pudo guardar la información. Inténtelo nuevamente." });
             }
             catch (Exception ex)
             {
@@ -155,12 +155,12 @@ namespace MantenimientoPresentation.Controllers
             catch (ArgumentException ex)
             {
                 _logger.LogWarning(ex, "Validación fallida al actualizar Unidad Ejecutora con Id {Id}", dto.Id);
-                return Json(new { success = false, message = ex.Message });
+                return BadRequest(new { success = false, message = "Los datos proporcionados no son válidos." });
             }
             catch (SqlException ex)
             {
                 _logger.LogError(ex, "Error de base de datos al actualizar Unidad Ejecutora con Id {Id}", dto.Id);
-                return Json(new { success = false, message = "Ocurrió un problema de base de datos al actualizar los datos." });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "No se pudo guardar la información. Inténtelo nuevamente." });
             }
             catch (Exception ex)
             {
@@ -187,12 +187,12 @@ namespace MantenimientoPresentation.Controllers
             catch (ArgumentException ex)
             {
                 _logger.LogWarning(ex, "Validación fallida al intentar eliminar la Unidad Ejecutora con Id {Id}", id);
-                return Json(new { success = false, message = ex.Message });
+                return BadRequest(new { success = false, message = "Los datos proporcionados no son válidos." });
             }
             catch (SqlException ex)
             {
                 _logger.LogError(ex, "Error de base de datos al eliminar Unidad Ejecutora con Id {Id}", id);
-                return Json(new { success = false, message = "No se pudo realizar la desactivación en la base de datos." });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "No se pudo completar la operación. Inténtelo nuevamente." });
             }
             catch (Exception ex)
             {
