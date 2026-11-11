@@ -70,6 +70,12 @@ namespace MantenimientoPresentation
             builder.Services.AddScoped<IFondoEspecialesService, FondoEspecialesService>();
             builder.Services.AddScoped<IFondoEspecialesRepository, FondoEspecialesRepository>();
 
+            builder.Services.AddScoped<IImpedimentoRepository, ImpedimentoRepository>();
+            builder.Services.AddScoped<IImpedimentoService, ImpedimentoService>();
+
+            builder.Services.AddScoped<IProveedorInhabilitadoRepository, ProveedorInhabilitadoRepository>();
+            builder.Services.AddScoped<IProveedorInhabilitadoService, ProveedorInhabilitadoService>();
+
             builder.Services.AddScoped<ITipoTramiteService, TipoTramiteService>();
             builder.Services.AddScoped<ITipoTramiteRepository, TipoTramiteContratoRepository>();
 
