@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace MantenimientoPresentation.Controllers
 {
     [Authorize]
+    [AutoValidateAntiforgeryToken]
     public class DafController : Controller
     {
         private readonly IDafService _dafService;
@@ -34,7 +35,7 @@ namespace MantenimientoPresentation.Controllers
                 var subcapitulos = await _subCapituloService.ObtenerSubCapitulosAsync(null);
                 ViewBag.SubCapitulos = subcapitulos;
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al cargar la lista inicial de subcapítulos para DAF.");
                 ViewBag.SubCapitulos = new List<SubCapituloDto>();
@@ -69,7 +70,7 @@ namespace MantenimientoPresentation.Controllers
 
                 return PartialView("_DafGridPartial", resultados);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al cargar el grid de registros DAF.");
                 return StatusCode(500, "Error al recuperar los registros DAF.");
@@ -82,18 +83,22 @@ namespace MantenimientoPresentation.Controllers
             try
             {
                 if (id <= 0)
-                    return Json(new { success = false, message = "Identificador no válido." });
+                    return BadRequest(new { success = false, message = "Identificador no válido." });
 
                 var daf = await _dafService.ObtenerPorIdAsync(id);
                 if (daf == null)
-                    return Json(new { success = false, message = "Registro DAF no encontrado." });
+                    return NotFound(new { success = false, message = "Registro DAF no encontrado." });
 
                 return Json(new { success = true, data = daf });
             }
-            catch (Exception ex)
+            catch (KeyNotFoundException)
+            {
+                return NotFound(new { success = false, message = "No se encontró el registro DAF solicitado." });
+            }
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al obtener el registro DAF con Id {Id}", id);
-                return Json(new { success = false, message = "No se pudo recuperar el registro DAF." });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -101,7 +106,7 @@ namespace MantenimientoPresentation.Controllers
         public async Task<IActionResult> Crear([FromBody] CrearDafDTO dto)
         {
             if (dto == null || !ModelState.IsValid)
-                return Json(new { success = false, message = "Datos del formulario inválidos." });
+                return BadRequest(new { success = false, message = "Datos del formulario inválidos." });
 
             try
             {
@@ -109,12 +114,12 @@ namespace MantenimientoPresentation.Controllers
                 var resultado = await _dafService.CrearAsync(dto);
 
                 _logger.LogInformation("Registro DAF creado exitosamente por {Usuario}.", dto.Usuario);
-                return Json(new { success = true, data = resultado, message = "DAF creado exitosamente." });
+                return StatusCode(StatusCodes.Status201Created, new { success = true, data = resultado, message = "DAF creado exitosamente." });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al crear el registro DAF.");
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -122,7 +127,7 @@ namespace MantenimientoPresentation.Controllers
         public async Task<IActionResult> Actualizar([FromBody] ActualizarDafDTO dto)
         {
             if (dto == null || !ModelState.IsValid)
-                return Json(new { success = false, message = "Datos del formulario inválidos." });
+                return BadRequest(new { success = false, message = "Datos del formulario inválidos." });
 
             try
             {
@@ -132,10 +137,10 @@ namespace MantenimientoPresentation.Controllers
                 _logger.LogInformation("Registro DAF con Id {Id} actualizado por {Usuario}.", dto.Id, dto.Usuario);
                 return Json(new { success = true, data = resultado, message = "DAF actualizado exitosamente." });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al actualizar el registro DAF con Id {Id}.", dto.Id);
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -143,7 +148,7 @@ namespace MantenimientoPresentation.Controllers
         public async Task<IActionResult> Eliminar(int id)
         {
             if (id <= 0)
-                return Json(new { success = false, message = "Identificador no válido." });
+                return BadRequest(new { success = false, message = "Identificador no válido." });
 
             try
             {
@@ -153,10 +158,10 @@ namespace MantenimientoPresentation.Controllers
                 _logger.LogInformation("Registro DAF con Id {Id} eliminado por {Usuario}.", id, usuario);
                 return Json(new { success = true, message = "DAF eliminado correctamente." });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al eliminar el registro DAF con Id {Id}.", id);
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
     }

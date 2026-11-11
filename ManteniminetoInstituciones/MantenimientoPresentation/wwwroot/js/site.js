@@ -285,8 +285,25 @@ function confirmarAccion(mensaje, opciones = {}) {
             suppressAutoSuccess = false,
             ...opcionesFetch
         } = opciones;
-        const argumentosFetch = argumentos.length > 1 ? [argumentos[0], opcionesFetch] : argumentos;
         const metodo = (opciones.method || (argumentos[0] instanceof Request ? argumentos[0].method : 'GET')).toUpperCase();
+        const argumentosFetch = argumentos.length > 1 ? [argumentos[0], opcionesFetch] : argumentos;
+        const url = argumentos[0] instanceof Request ? argumentos[0].url : argumentos[0];
+        if (new URL(url, window.location.href).origin === window.location.origin) {
+            const headers = new Headers(argumentos[0] instanceof Request ? argumentos[0].headers : undefined);
+            new Headers(opcionesFetch.headers).forEach((valor, nombre) => headers.set(nombre, valor));
+            if (!headers.has('X-Requested-With')) {
+                headers.set('X-Requested-With', 'XMLHttpRequest');
+            }
+
+            if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(metodo)) {
+                const token = document.querySelector('meta[name="csrf-token"]')?.content;
+                if (token && !headers.has('RequestVerificationToken')) {
+                    headers.set('RequestVerificationToken', token);
+                }
+            }
+
+            argumentosFetch[1] = { ...opcionesFetch, headers };
+        }
         const boton = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(metodo)
             ? iniciarCargaBoton(document.activeElement instanceof HTMLButtonElement ? document.activeElement : null)
             : null;
