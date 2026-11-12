@@ -1,5 +1,6 @@
 ﻿using Mantenimiento.Core.Application.DTOs.ClasificacionContrato;
 using Mantenimiento.Core.Application.InterfaceServices;
+using MantenimientoPresentation.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,12 +13,14 @@ namespace MantenimientoPresentation.Controllers
         private readonly IClasificacionContratoService _service;
         private readonly ILogger<ClasificacionContratoController> _logger;
         private readonly ICurrentUserService _currentUserService;
+        private readonly bool _gridPaginationEnabled;
 
-        public ClasificacionContratoController(IClasificacionContratoService service, ILogger<ClasificacionContratoController> logger, ICurrentUserService currentUserService)
+        public ClasificacionContratoController(IClasificacionContratoService service, ILogger<ClasificacionContratoController> logger, ICurrentUserService currentUserService, IConfiguration configuration)
         {
             _service = service;
             _logger = logger;
             _currentUserService = currentUserService;
+            _gridPaginationEnabled = configuration.GetValue<bool>("GridPagination:Enabled");
         }
 
         public async Task<IActionResult> Index()
@@ -40,10 +43,17 @@ namespace MantenimientoPresentation.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ObtenerGrid(string? contratoTipo, string? tipoOperacion, string? contratoProcesoSeleccion)
+        public async Task<IActionResult> ObtenerGrid(string? contratoTipo, string? tipoOperacion, string? contratoProcesoSeleccion, int page = 1, int pageSize = 10)
         {
             try
             {
+                if (_gridPaginationEnabled)
+                {
+                    var resultado = await _service.ObtenerPaginadoAsync(null, contratoTipo, tipoOperacion, contratoProcesoSeleccion, page, pageSize);
+                    GridPaginationViewData.Set(this, resultado);
+                    return PartialView("_ClasificacionContratoGridPartial", resultado.Items.ToList());
+                }
+
                 var data = await _service.ObtenerAsync(null, contratoTipo, tipoOperacion, contratoProcesoSeleccion);
                 return PartialView("_ClasificacionContratoGridPartial", data);
             }

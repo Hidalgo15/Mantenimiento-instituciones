@@ -2,6 +2,7 @@ using FluentValidation;
 using Mantenimiento.Core.Application.DTOs.RequisitoContrato;
 using Mantenimiento.Core.Application.InterfaceServices;
 using Mantenimiento.Core.Application.Mappings;
+using Mantenimiento.Core.Domain.Pagination;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 
 namespace Mantenimiento.Core.Application.Services
@@ -29,6 +30,19 @@ namespace Mantenimiento.Core.Application.Services
         {
             var lista = await _repo.ObtenerRequisitosAsync(busqueda);
             return lista.Select(RequisitoContratoMapper.ToDto).ToList();
+        }
+
+        public async Task<PagedResult<RequisitoContratoDto>> ObtenerPaginadoAsync(
+            string? busqueda = null,
+            int pagina = 1,
+            int tamanoPagina = 10)
+        {
+            var resultado = await _repo.ObtenerPaginadoAsync(busqueda, pagina, tamanoPagina);
+            return new PagedResult<RequisitoContratoDto>(
+                resultado.Items.Select(RequisitoContratoMapper.ToDto).ToList(),
+                resultado.PageNumber,
+                resultado.PageSize,
+                resultado.TotalCount);
         }
 
         /// <summary>

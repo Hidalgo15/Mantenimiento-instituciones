@@ -1,5 +1,6 @@
 ﻿using Mantenimiento.Core.Application.DTOs.RequisitoContrato;
 using Mantenimiento.Core.Application.InterfaceServices;
+using MantenimientoPresentation.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,15 +13,18 @@ namespace MantenimientoPresentation.Controllers
         private readonly IRequisitoContratoService _service;
         private readonly ICurrentUserService _currentUserService;
         private readonly ILogger<RequisitosContratosController> _logger;
+        private readonly bool _gridPaginationEnabled;
 
         public RequisitosContratosController(
             IRequisitoContratoService service,
             ICurrentUserService currentUserService,
-            ILogger<RequisitosContratosController> logger)
+            ILogger<RequisitosContratosController> logger,
+            IConfiguration configuration)
         {
             _service = service;
             _currentUserService = currentUserService;
             _logger = logger;
+            _gridPaginationEnabled = configuration.GetValue<bool>("GridPagination:Enabled");
         }
 
         public IActionResult Index()
@@ -29,10 +33,17 @@ namespace MantenimientoPresentation.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ObtenerGrid(string? busqueda = null)
+        public async Task<IActionResult> ObtenerGrid(string? busqueda = null, int page = 1, int pageSize = 10)
         {
             try
             {
+                if (_gridPaginationEnabled)
+                {
+                    var resultado = await _service.ObtenerPaginadoAsync(busqueda, page, pageSize);
+                    GridPaginationViewData.Set(this, resultado);
+                    return PartialView("_RequisitosContratosGridPartial", resultado.Items.ToList());
+                }
+
                 var requisitos = await _service.ObtenerRequisitosAsync(busqueda);
                 return PartialView("_RequisitosContratosGridPartial", requisitos);
             }

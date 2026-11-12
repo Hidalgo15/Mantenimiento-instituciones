@@ -3,6 +3,7 @@ using Mantenimiento.Core.Application.DTOs.RelacionContratoRequisito;
 using Mantenimiento.Core.Application.DTOs.Resultado;
 using Mantenimiento.Core.Application.InterfaceServices;
 using Mantenimiento.Core.Application.Mappings;
+using Mantenimiento.Core.Domain.Pagination;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 
 namespace Mantenimiento.Core.Application.Services
@@ -33,6 +34,20 @@ namespace Mantenimiento.Core.Application.Services
         {
             var entidades = await _repository.ObtenerAsync(codigoClasificacion, codigoRequisito);
             return entidades.Select(RelacionContratoRequisitoMapper.ToDto).ToList();
+        }
+
+        public async Task<PagedResult<RelacionContratoRequisitoDto>> ObtenerPaginadoAsync(
+            int? codigoClasificacion,
+            int? codigoRequisito,
+            int pagina = 1,
+            int tamanoPagina = 10)
+        {
+            var resultado = await _repository.ObtenerPaginadoAsync(codigoClasificacion, codigoRequisito, pagina, tamanoPagina);
+            return new PagedResult<RelacionContratoRequisitoDto>(
+                resultado.Items.Select(RelacionContratoRequisitoMapper.ToDto).ToList(),
+                resultado.PageNumber,
+                resultado.PageSize,
+                resultado.TotalCount);
         }
 
         /// <summary>

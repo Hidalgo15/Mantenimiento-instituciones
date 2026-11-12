@@ -1,5 +1,6 @@
 ﻿using Mantenimiento.Core.Application.DTOs.Cuenta.DboCuentasDTO;
 using Mantenimiento.Core.Application.InterfaceServices;
+using MantenimientoPresentation.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -14,17 +15,20 @@ namespace MantenimientoPresentation.Controllers
         private readonly ITipoTramitePagoService _tipoTramitePagoService; // Servicio que lista dbo.tipo_tramite_pago
         private readonly ICurrentUserService _currentUserService;
         private readonly ILogger<CuentaMapeoController> _logger;
+        private readonly bool _gridPaginationEnabled;
 
         public CuentaMapeoController(
             ICuentaMapeoService cuentaMapeoService,
             ITipoTramitePagoService tipoTramitePagoService,
             ICurrentUserService currentUserService,
-            ILogger<CuentaMapeoController> logger)
+            ILogger<CuentaMapeoController> logger,
+            IConfiguration configuration)
         {
             _cuentaMapeoService = cuentaMapeoService;
             _tipoTramitePagoService = tipoTramitePagoService;
             _currentUserService = currentUserService;
             _logger = logger;
+            _gridPaginationEnabled = configuration.GetValue<bool>("GridPagination:Enabled");
         }
 
         [HttpGet("")]
@@ -43,8 +47,15 @@ namespace MantenimientoPresentation.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ObtenerGrid(int? tipoTramite = null, string? busqueda = null)
+        public async Task<IActionResult> ObtenerGrid(int? tipoTramite = null, string? busqueda = null, int page = 1, int pageSize = 10)
         {
+            if (_gridPaginationEnabled)
+            {
+                var resultado = await _cuentaMapeoService.ObtenerPaginadoAsync(tipoTramite, busqueda, page, pageSize);
+                GridPaginationViewData.Set(this, resultado);
+                return PartialView("_CuentasGridPartial", resultado.Items);
+            }
+
             var cuentas = await _cuentaMapeoService.ObtenerCuentasAsync(tipoTramite, busqueda);
             return PartialView("_CuentasGridPartial", cuentas);
         }

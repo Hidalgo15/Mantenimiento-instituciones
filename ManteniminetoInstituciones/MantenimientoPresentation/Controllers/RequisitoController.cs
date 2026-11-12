@@ -1,5 +1,6 @@
 ﻿using Mantenimiento.Core.Application.DTOs.Requisito;
 using Mantenimiento.Core.Application.InterfaceServices;
+using MantenimientoPresentation.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,12 +13,14 @@ namespace MantenimientoPresentation.Controllers
         private readonly IRequisitoService _service;
         private readonly ILogger<RequisitoController> _logger;
         private readonly ICurrentUserService _currentUserService;
+        private readonly bool _gridPaginationEnabled;
 
-        public RequisitoController(IRequisitoService service, ILogger<RequisitoController> logger, ICurrentUserService currentUserService)
+        public RequisitoController(IRequisitoService service, ILogger<RequisitoController> logger, ICurrentUserService currentUserService, IConfiguration configuration)
         {
             _service = service;
             _logger = logger;
             _currentUserService = currentUserService;
+            _gridPaginationEnabled = configuration.GetValue<bool>("GridPagination:Enabled");
         }
 
         public IActionResult Index()
@@ -26,10 +29,18 @@ namespace MantenimientoPresentation.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ObtenerGrid(string? busqueda)
+        public async Task<IActionResult> ObtenerGrid(string? busqueda, int page = 1, int pageSize = 10)
         {
             try
             {
+                if (_gridPaginationEnabled)
+                {
+                    var resultado = await _service.ObtenerPaginadoAsync(busqueda, page, pageSize);
+                    GridPaginationViewData.Set(this, resultado);
+                    ViewData["Busqueda"] = busqueda;
+                    return PartialView("_RequisitoGridPartial", resultado.Items.ToList());
+                }
+
                 var data = await _service.ObtenerRequisitosAsync(busqueda);
                 ViewData["Busqueda"] = busqueda;
                 return PartialView("_RequisitoGridPartial", data);

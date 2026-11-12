@@ -2,6 +2,7 @@
 using Mantenimiento.Core.Application.DTOs.UnidadEjecutora;
 using Mantenimiento.Core.Application.InterfaceServices;
 using Mantenimiento.Core.Application.Mappings;
+using Mantenimiento.Core.Domain.Pagination;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 
 namespace Mantenimiento.Core.Application.Services
@@ -33,6 +34,21 @@ namespace Mantenimiento.Core.Application.Services
         {
             var lista = await _repo.ObtenerAsync(id, codigoUnidadEjecutora, idDaf);
             return lista.Select(UnidadEjecutoraMapper.ToDto);
+        }
+
+        public async Task<PagedResult<UnidadEjecutoraDto>> ObtenerPaginadoAsync(
+            int? id,
+            string? codigoUnidadEjecutora,
+            int? idDaf,
+            int pagina,
+            int tamanoPagina)
+        {
+            var resultado = await _repo.ObtenerPaginadoAsync(id, codigoUnidadEjecutora, idDaf, pagina, tamanoPagina);
+            return new PagedResult<UnidadEjecutoraDto>(
+                resultado.Items.Select(UnidadEjecutoraMapper.ToDto).ToList(),
+                resultado.PageNumber,
+                resultado.PageSize,
+                resultado.TotalCount);
         }
 
         /// <summary>

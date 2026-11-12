@@ -197,6 +197,49 @@ document.addEventListener('hidden.bs.modal', evento => {
     evento.target.querySelectorAll('.message-banner--modal').forEach(aviso => aviso.remove());
 });
 
+document.addEventListener('click', async evento => {
+    const boton = evento.target.closest('[data-grid-page]');
+    if (!boton || boton.disabled) return;
+
+    const paginacion = boton.closest('[data-grid-pagination]');
+    const contenedor = boton.closest('#contenedorGrid');
+    if (!paginacion || !contenedor) return;
+
+    const url = new URL(paginacion.dataset.gridUrl, window.location.origin);
+    const paginaActual = Number(paginacion.dataset.pageNumber);
+    const pagina = boton.dataset.gridPage === 'next' ? paginaActual + 1 : paginaActual - 1;
+    url.searchParams.set('page', String(pagina));
+    url.searchParams.set('pageSize', paginacion.dataset.pageSize);
+
+    evento.preventDefault();
+    await cargarPaginaGrid(url, contenedor);
+});
+
+document.addEventListener('change', async evento => {
+    const selector = evento.target.closest('[data-grid-page-size]');
+    if (!selector) return;
+
+    const paginacion = selector.closest('[data-grid-pagination]');
+    const contenedor = selector.closest('#contenedorGrid');
+    if (!paginacion || !contenedor) return;
+
+    const url = new URL(paginacion.dataset.gridUrl, window.location.origin);
+    url.searchParams.set('page', '1');
+    url.searchParams.set('pageSize', selector.value);
+    await cargarPaginaGrid(url, contenedor);
+});
+
+async function cargarPaginaGrid(url, contenedor) {
+    try {
+        const respuesta = await fetch(url);
+        if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`);
+        contenedor.innerHTML = await respuesta.text();
+    } catch (error) {
+        console.error('No se pudo cargar la página del grid.', error);
+        mostrarBanner('No se pudo cargar la página solicitada. Intente nuevamente.', 'danger');
+    }
+}
+
 function confirmarAccion(mensaje, opciones = {}) {
     const elemento = document.getElementById('confirmationModal');
     const aceptar = document.getElementById('confirmationModalAccept');

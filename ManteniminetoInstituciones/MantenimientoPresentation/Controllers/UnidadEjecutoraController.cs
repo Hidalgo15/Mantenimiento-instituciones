@@ -1,6 +1,7 @@
 ﻿using Mantenimiento.Core.Application.DTOs.Daf;
 using Mantenimiento.Core.Application.DTOs.UnidadEjecutora;
 using Mantenimiento.Core.Application.InterfaceServices;
+using MantenimientoPresentation.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
@@ -16,19 +17,22 @@ namespace MantenimientoPresentation.Controllers
         private readonly ICategoriaTramiteService _categoriaService;
         private readonly ICurrentUserService _currentUserService;
         private readonly ILogger<UnidadEjecutoraController> _logger;
+        private readonly bool _gridPaginationEnabled;
 
         public UnidadEjecutoraController(
             IUnidadEjecutoraService service,
             IDafService dafService,
             ICategoriaTramiteService categoriaService,
             ICurrentUserService currentUserService,
-            ILogger<UnidadEjecutoraController> logger)
+            ILogger<UnidadEjecutoraController> logger,
+            IConfiguration configuration)
         {
             _service = service;
             _dafService = dafService;
             _categoriaService = categoriaService;
             _currentUserService = currentUserService;
             _logger = logger;
+            _gridPaginationEnabled = configuration.GetValue<bool>("GridPagination:Enabled");
         }
 
         [HttpGet]
@@ -49,7 +53,7 @@ namespace MantenimientoPresentation.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ObtenerGrid(int? id, int? idDaf)
+        public async Task<IActionResult> ObtenerGrid(int? id, int? idDaf, int page = 1, int pageSize = 10)
         {
             try
             {
@@ -58,6 +62,13 @@ namespace MantenimientoPresentation.Controllers
                     var item = await _service.ObtenerPorIdAsync(id.Value);
                     var listaSingular = item != null ? new List<UnidadEjecutoraDto> { item } : new List<UnidadEjecutoraDto>();
                     return PartialView("_UnidadesEjecutorasGridPartial", listaSingular);
+                }
+
+                if (_gridPaginationEnabled)
+                {
+                    var resultado = await _service.ObtenerPaginadoAsync(null, null, idDaf, page, pageSize);
+                    GridPaginationViewData.Set(this, resultado);
+                    return PartialView("_UnidadesEjecutorasGridPartial", resultado.Items);
                 }
 
                 var lista = await _service.ObtenerAsync(idDaf: idDaf);

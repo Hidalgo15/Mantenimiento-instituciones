@@ -1,4 +1,5 @@
 ﻿using Mantenimiento.Core.Domain.Entities;
+using Mantenimiento.Core.Domain.Pagination;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +11,7 @@ namespace Mantenimiento.Core.Domain.RepositoryInterfaces
     public interface ICuentaMapeoRepository
     {
         Task<List<CuentaDbo>> ObtenerCuentasAsync(int? tipoTramite = null, string? busqueda = null);
+        Task<PagedResult<CuentaDbo>> ObtenerPaginadoAsync(int? tipoTramite, string? busqueda, int pagina, int tamanoPagina);
         Task<List<CuentaCt>> ObtenerCuentasBaseCatalogAsync();
         Task<CuentaDbo?> ObtenerPorIdAsync(int idCuenta);
         Task CrearCuentaAsync(int idCuentaBase, string? descripcion, int tipoTramite);

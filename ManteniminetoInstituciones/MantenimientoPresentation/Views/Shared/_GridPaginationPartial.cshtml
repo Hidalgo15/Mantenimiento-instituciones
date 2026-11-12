@@ -1,0 +1,38 @@
+@if (ViewData["GridPaginationEnabled"] is true)
+{
+    <nav class="d-flex flex-wrap justify-content-between align-items-center gap-3 mt-3"
+         aria-label="Paginación del grid"
+         data-grid-pagination
+         data-grid-url="@ViewData["GridPaginationUrl"]"
+         data-page-number="@ViewData["GridPageNumber"]"
+         data-total-pages="@ViewData["GridTotalPages"]"
+         data-page-size="@ViewData["GridPageSize"]">
+        <span class="text-muted small">
+            Página @ViewData["GridPageNumber"] de @ViewData["GridTotalPages"] (@ViewData["GridTotalCount"] registros)
+        </span>
+        <div class="d-flex align-items-center gap-2">
+            <label class="small text-muted" for="gridPageSize">Filas por página</label>
+            <select id="gridPageSize" class="form-select form-select-sm w-auto" data-grid-page-size aria-label="Filas por página">
+                @foreach (var size in new[] { 10, 25, 50, 100 })
+                {
+                    if (Convert.ToInt32(ViewData["GridPageSize"]) == size)
+                    {
+                        <option value="@size" selected>@size</option>
+                    }
+                    else
+                    {
+                        <option value="@size">@size</option>
+                    }
+                }
+            </select>
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-grid-page="previous"
+                    disabled="@(Convert.ToInt32(ViewData["GridPageNumber"]) <= 1)">
+                Anterior
+            </button>
+            <button type="button" class="btn btn-sm btn-outline-secondary" data-grid-page="next"
+                    disabled="@(Convert.ToInt32(ViewData["GridPageNumber"]) >= Convert.ToInt32(ViewData["GridTotalPages"]))">
+                Siguiente
+            </button>
+        </div>
+    </nav>
+}

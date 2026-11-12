@@ -1,5 +1,6 @@
 ﻿using Mantenimiento.Core.Application.DTOs.Cuenta.DboCuentasDTO;
 using Mantenimiento.Core.Domain.Entities;
+using Mantenimiento.Core.Domain.Pagination;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,5 +17,6 @@ namespace Mantenimiento.Core.Application.InterfaceServices
         Task<List<CuentaCt>> ObtenerCatalogoBaseAsync();
         Task<CuentaDto?> ObtenerPorIdAsync(int idCuenta);
         Task<List<CuentaDto>> ObtenerCuentasAsync(int? tipoTramite = null, string? busqueda = null);
+        Task<PagedResult<CuentaDto>> ObtenerPaginadoAsync(int? tipoTramite, string? busqueda, int pagina = 1, int tamanoPagina = 10);
     }
 }

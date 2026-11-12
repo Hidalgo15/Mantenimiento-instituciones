@@ -1,5 +1,6 @@
 ﻿using Mantenimiento.Core.Application.DTOs.Cuenta.CtCuentasDTO;
 using Mantenimiento.Core.Application.InterfaceServices;
+using MantenimientoPresentation.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,15 +13,18 @@ namespace MantenimientoPresentation.Controllers
         private readonly ICuentaCtService _cuentaCtService;
         private readonly ICurrentUserService _currentUserService;
         private readonly ILogger<CuentaCtController> _logger;
+        private readonly bool _gridPaginationEnabled;
 
         public CuentaCtController(
             ICuentaCtService cuentaCtService,
             ICurrentUserService currentUserService,
-            ILogger<CuentaCtController> logger)
+            ILogger<CuentaCtController> logger,
+            IConfiguration configuration)
         {
             _cuentaCtService = cuentaCtService;
             _currentUserService = currentUserService;
             _logger = logger;
+            _gridPaginationEnabled = configuration.GetValue<bool>("GridPagination:Enabled");
         }
 
         [HttpGet]
@@ -30,8 +34,15 @@ namespace MantenimientoPresentation.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ObtenerGrid(string? busqueda = null)
+        public async Task<IActionResult> ObtenerGrid(string? busqueda = null, int page = 1, int pageSize = 10)
         {
+            if (_gridPaginationEnabled)
+            {
+                var resultado = await _cuentaCtService.ObtenerPaginadoAsync(busqueda, page, pageSize);
+                GridPaginationViewData.Set(this, resultado);
+                return PartialView("_CuentasCtGridPartial", resultado.Items);
+            }
+
             var cuentas = await _cuentaCtService.ObtenerCuentasAsync(busqueda);
             return PartialView("_CuentasCtGridPartial", cuentas);
         }
