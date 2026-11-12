@@ -32,7 +32,7 @@
         </div>
     </div>
 
-    <div id="contenedorGridImpedimentos">
+    <div id="contenedorGrid">
         <div class="text-center py-5 bg-white rounded-3 border shadow-sm">
             <div class="spinner-border text-primary mb-3" style="width: 2.5rem; height: 2.5rem;" role="status"></div>
             <p class="text-muted mb-0 fw-semibold">Cargando impedimentos...</p>
@@ -82,7 +82,6 @@
 @section Scripts {
     <script>
         let modalImpedimento;
-        let paginaImpedimentos = 1;
         let temporizadorBusquedaImpedimentos;
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -94,13 +93,12 @@
             cargarImpedimentos();
         });
 
-        async function cargarImpedimentos(pagina = paginaImpedimentos) {
-            paginaImpedimentos = pagina;
-            const contenedor = document.getElementById('contenedorGridImpedimentos');
+        async function cargarImpedimentos(page = Number(document.querySelector('#contenedorGrid [data-grid-pagination]')?.dataset.pageNumber || 1)) {
+            const contenedor = document.getElementById('contenedorGrid');
             const filtroTexto = document.getElementById('filtroImpedimentos').value.trim();
-            const selectorTamanoPagina = document.getElementById('tamanoPaginaImpedimentos');
-            const tamanoPagina = selectorTamanoPagina ? selectorTamanoPagina.value : '10';
-            const parametros = new URLSearchParams({ filtroTexto, pagina: String(pagina), tamanoPagina });
+            const selectorTamanoPagina = document.getElementById('gridPageSize');
+            const pageSize = selectorTamanoPagina ? selectorTamanoPagina.value : '10';
+            const parametros = new URLSearchParams({ filtroTexto, page: String(page), pageSize });
 
             contenedor.innerHTML = '<div class="text-center py-5 bg-white rounded-3 border shadow-sm"><div class="spinner-border text-primary mb-3" style="width: 2.5rem; height: 2.5rem;" role="status"></div><p class="text-muted mb-0 fw-semibold">Cargando impedimentos...</p></div>';
 
@@ -112,10 +110,6 @@
                 console.error(error);
                 contenedor.innerHTML = '<div class="alert alert-danger text-center py-3 rounded-3 shadow-sm">No se pudo cargar el listado de impedimentos. Intente nuevamente.</div>';
             }
-        }
-
-        function cambiarPaginaImpedimentos(pagina) {
-            cargarImpedimentos(pagina);
         }
 
         function abrirModalCrear() {
@@ -166,7 +160,7 @@
                 const resultado = await respuesta.json();
                 if (!respuesta.ok || !resultado.success) throw new Error(resultado.message || 'No se pudo guardar el impedimento.');
                 modalImpedimento.hide();
-                await cargarImpedimentos(esEdicion ? paginaImpedimentos : 1);
+                await cargarImpedimentos(esEdicion ? undefined : 1);
             } catch (error) {
                 console.error(error);
                 alert(error.message || 'No se pudo guardar el impedimento.');
@@ -184,7 +178,7 @@
                 const respuesta = await fetch(`/Impedimentos/Eliminar?id=${id}`, { method: 'POST' });
                 const resultado = await respuesta.json();
                 if (!respuesta.ok || !resultado.success) throw new Error(resultado.message || 'No se pudo deshabilitar el impedimento.');
-                await cargarImpedimentos(paginaImpedimentos);
+                await cargarImpedimentos();
             } catch (error) {
                 console.error(error);
                 alert(error.message || 'No se pudo deshabilitar el impedimento.');

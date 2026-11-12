@@ -32,6 +32,12 @@ namespace Mantenimiento.Core.Application.Services
             _actualizarValidator = actualizarValidator;
         }
 
+        public async Task<List<ProveedorInhabilitadoDto>> ObtenerAsync(string? filtroTexto)
+        {
+            var registros = await _repository.ObtenerAsync(filtroTexto);
+            return registros.Select(ProveedorInhabilitadoMapper.ToDto).ToList();
+        }
+
         /// <summary>
         /// Obtiene una página de proveedores inhabilitados y convierte sus entidades en DTO.
         /// </summary>
