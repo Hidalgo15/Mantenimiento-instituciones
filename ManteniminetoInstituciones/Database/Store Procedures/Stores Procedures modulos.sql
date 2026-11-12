@@ -1923,9 +1923,10 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE PROCEDURE [dbo].[sp_FondoEspeciales_Obtener]
+CREATE OR ALTER PROCEDURE [dbo].[sp_FondoEspeciales_Obtener]
     @filtroFondo VARCHAR(50) = NULL,
-    @filtroEstructura VARCHAR(50) = NULL
+    @filtroEstructura VARCHAR(50) = NULL,
+    @filtroTipoTramite VARCHAR(100) = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -1939,6 +1940,7 @@ BEGIN
     FROM [dbo].[Fondo_especiales]
     WHERE (@filtroFondo IS NULL OR [Fondo] LIKE '%' + @filtroFondo + '%')
       AND (@filtroEstructura IS NULL OR [estructura_institucion] = @filtroEstructura)
+      AND (@filtroTipoTramite IS NULL OR [tipo_tramite] = @filtroTipoTramite)
 	ORDER BY [tipo_tramite] Desc;
 END
 GO

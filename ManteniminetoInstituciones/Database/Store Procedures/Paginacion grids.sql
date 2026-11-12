@@ -461,3 +461,59 @@ BEGIN
     ORDER BY RowNumber;
 END;
 GO
+
+USE SIGOB_CONTRALORIA
+GO
+
+SET ANSI_NULLS ON
+GO
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE OR ALTER PROCEDURE [dbo].[sp_FondoEspeciales_ObtenerPaginado]
+    @filtroFondo VARCHAR(50) = NULL,
+    @filtroEstructura VARCHAR(50) = NULL,
+    @filtroTipoTramite VARCHAR(100) = NULL,
+    @PageNumber INT = 1,
+    @PageSize INT = 10,
+    @TotalCount INT OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET @PageNumber = CASE WHEN @PageNumber < 1 THEN 1 ELSE @PageNumber END;
+    SET @PageSize = CASE WHEN @PageSize < 1 THEN 10 WHEN @PageSize > 100 THEN 100 ELSE @PageSize END;
+
+    -- 1. Cargar datos filtrados en tabla temporal
+    SELECT
+        [id],
+        [Fondo],
+        [estructura_institucion],
+        [descripcion],
+        [tipo_tramite]
+    INTO #Rows
+    FROM [dbo].[Fondo_especiales] WITH (NOLOCK)
+    WHERE (@filtroFondo IS NULL OR [Fondo] LIKE '%' + @filtroFondo + '%')
+      AND (@filtroEstructura IS NULL OR [estructura_institucion] = @filtroEstructura)
+      AND (@filtroTipoTramite IS NULL OR [tipo_tramite] = @filtroTipoTramite);
+
+    -- 2. Obtener el conteo total de registros
+    SELECT @TotalCount = COUNT(*) FROM #Rows;
+
+    DECLARE @TotalPages INT = CASE WHEN @TotalCount = 0 THEN 1
+        ELSE CEILING(CONVERT(FLOAT, @TotalCount) / @PageSize) END;
+
+    IF @PageNumber > @TotalPages SET @PageNumber = @TotalPages;
+
+    -- 3. Paginación mediante CTE y ROW_NUMBER (ordenado por tipo_tramite Desc tal como lo tenías)
+    ;WITH Numbered AS
+    (
+        SELECT ROW_NUMBER() OVER (ORDER BY tipo_tramite DESC, id DESC) AS RowNumber, *
+        FROM #Rows
+    )
+    SELECT id, Fondo, estructura_institucion, descripcion, tipo_tramite
+    FROM Numbered
+    WHERE RowNumber BETWEEN (CONVERT(BIGINT, @PageNumber) - 1) * @PageSize + 1
+                    AND CONVERT(BIGINT, @PageNumber) * @PageSize
+    ORDER BY RowNumber;
+END;
+GO

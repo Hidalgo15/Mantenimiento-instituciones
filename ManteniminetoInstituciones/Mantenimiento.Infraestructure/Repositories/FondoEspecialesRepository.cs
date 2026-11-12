@@ -3,6 +3,7 @@ using Mantenimiento.Core.Domain.Pagination;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 
 
 namespace Mantenimiento.Infraestructure.Persistence.Repositories
@@ -16,10 +17,28 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
             _context = context;
         }
 
+        public async Task<List<FondosEspeciales>> GetFondosEspecialesAsync(
+            string? filtroFondo,
+            string? estructura,
+            string? tipoTramite)
+        {
+            var parametroFondo = CrearParametroTexto("@filtroFondo", filtroFondo, 50);
+            var parametroEstructura = CrearParametroTexto("@filtroEstructura", estructura, 50);
+            var parametroTipoTramite = CrearParametroTexto("@filtroTipoTramite", tipoTramite, 100);
+
+            return await _context.FondosEspeciales
+                .FromSqlRaw(
+                    "EXEC dbo.sp_FondoEspeciales_Obtener @filtroFondo, @filtroEstructura, @filtroTipoTramite",
+                    parametroFondo, parametroEstructura, parametroTipoTramite)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
         /// <summary>
         /// Obtiene una página de fondos especiales, aplicando los filtros y el conteo en la base de datos.
         /// </summary>
         public async Task<PagedResult<FondosEspeciales>> GetFondosEspecialesPaginadosAsync(
+            string? filtroFondo,
             string? estructura,
             string? tipoTramite,
             int pageNumber,
@@ -27,33 +46,27 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
         {
             pageNumber = Math.Max(pageNumber, 1);
             pageSize = Math.Clamp(pageSize, 1, 100);
+            var parametroFondo = CrearParametroTexto("@filtroFondo", filtroFondo, 50);
+            var parametroEstructura = CrearParametroTexto("@filtroEstructura", estructura, 50);
+            var parametroTipoTramite = CrearParametroTexto("@filtroTipoTramite", tipoTramite, 100);
+            var parametroPagina = new SqlParameter("@PageNumber", SqlDbType.Int) { Value = pageNumber };
+            var parametroTamanoPagina = new SqlParameter("@PageSize", SqlDbType.Int) { Value = pageSize };
+            var parametroTotal = new SqlParameter("@TotalCount", SqlDbType.Int)
+            {
+                Direction = ParameterDirection.Output
+            };
 
-            var query = _context.FondosEspeciales
+            var fondos = await _context.FondosEspeciales
+                .FromSqlRaw(
+                    "EXEC dbo.sp_FondoEspeciales_ObtenerPaginado @filtroFondo, @filtroEstructura, @filtroTipoTramite, @PageNumber, @PageSize, @TotalCount OUTPUT",
+                    parametroFondo, parametroEstructura, parametroTipoTramite, parametroPagina, parametroTamanoPagina, parametroTotal)
                 .AsNoTracking()
-                .AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(estructura))
-            {
-                var estructuraNormalizada = estructura.ToUpper();
-                query = query.Where(f => f.Estructura != null && f.Estructura.ToUpper() == estructuraNormalizada);
-            }
-
-            if (!string.IsNullOrWhiteSpace(tipoTramite))
-            {
-                var tipoTramiteNormalizado = tipoTramite.ToUpper();
-                query = query.Where(f => f.TipoTramite != null && f.TipoTramite.ToUpper() == tipoTramiteNormalizado);
-            }
-
-            var totalCount = await query.CountAsync();
-            var totalPages = totalCount == 0 ? 0 : (int)Math.Ceiling(totalCount / (double)pageSize);
-            var paginaActual = totalPages == 0 ? 1 : Math.Min(pageNumber, totalPages);
-            var fondos = await query
-                .OrderBy(f => f.Id)
-                .Skip((paginaActual - 1) * pageSize)
-                .Take(pageSize)
                 .ToListAsync();
 
-            return new PagedResult<FondosEspeciales>(fondos, paginaActual, pageSize, totalCount);
+            var totalCount = Convert.ToInt32(parametroTotal.Value);
+            var totalPages = totalCount == 0 ? 1 : (int)Math.Ceiling(totalCount / (double)pageSize);
+            pageNumber = Math.Min(pageNumber, totalPages);
+            return new PagedResult<FondosEspeciales>(fondos, pageNumber, pageSize, totalCount);
         }
 
         /// <summary>
@@ -132,7 +145,13 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
             var pId = new SqlParameter("@id", id);
 
             await _context.Database.ExecuteSqlRawAsync(
-                "DELETE FROM [dbo].[Fondo_especiales] WHERE [Id] = @id", pId);
+                "EXEC dbo.sp_FondoEspeciales_Eliminar @id", pId);
         }
+
+        private static SqlParameter CrearParametroTexto(string nombre, string? valor, int longitud) =>
+            new(nombre, SqlDbType.VarChar, longitud)
+            {
+                Value = string.IsNullOrWhiteSpace(valor) ? DBNull.Value : valor.Trim()
+            };
     }
 }

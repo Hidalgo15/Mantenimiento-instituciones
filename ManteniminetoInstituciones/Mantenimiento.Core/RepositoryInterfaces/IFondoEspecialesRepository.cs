@@ -7,7 +7,12 @@ namespace Mantenimiento.Core.Domain.RepositoryInterfaces
 {
     public interface IFondoEspecialesRepository
     {
+        Task<List<FondosEspeciales>> GetFondosEspecialesAsync(
+            string? filtroFondo,
+            string? estructura,
+            string? tipoTramite);
         Task<PagedResult<FondosEspeciales>> GetFondosEspecialesPaginadosAsync(
+            string? filtroFondo,
             string? estructura,
             string? tipoTramite,
             int pageNumber,

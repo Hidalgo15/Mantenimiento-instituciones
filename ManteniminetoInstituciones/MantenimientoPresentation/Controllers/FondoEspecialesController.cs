@@ -2,6 +2,7 @@
 using Mantenimiento.Core.Application.DTOs.Institucion;
 using Mantenimiento.Core.Application.DTOs.TipoTramite;
 using Mantenimiento.Core.Application.InterfaceServices;
+using MantenimientoPresentation.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -17,19 +18,22 @@ namespace MantenimientoPresentation.Controllers
         private readonly IInstitucionService _institucionService;
         private readonly ICurrentUserService _currentUserService;
         private readonly ILogger<FondoEspecialesController> _logger;
+        private readonly bool _gridPaginationEnabled;
 
         public FondoEspecialesController(
             IFondoEspecialesService fondoService,
             ITipoTramiteService tipoTramiteService,
             IInstitucionService institucionService,
             ICurrentUserService currentUserService,
-            ILogger<FondoEspecialesController> logger)
+            ILogger<FondoEspecialesController> logger,
+            IConfiguration configuration)
         {
             _fondoService = fondoService;
             _tipoTramiteService = tipoTramiteService;
             _institucionService = institucionService;
             _currentUserService = currentUserService;
             _logger = logger;
+            _gridPaginationEnabled = configuration.GetValue<bool>("GridPagination:Enabled");
         }
 
         [HttpGet("")]
@@ -64,7 +68,14 @@ namespace MantenimientoPresentation.Controllers
             {
                 page = Math.Max(page, 1);
                 pageSize = Math.Clamp(pageSize, 1, 100);
-                var fondos = await _fondoService.ObtenerFondosEspecialesAsync(estructura, tipoTramite, page, pageSize);
+                if (_gridPaginationEnabled)
+                {
+                    var resultado = await _fondoService.ObtenerFondosEspecialesAsync(estructura, tipoTramite, page, pageSize);
+                    GridPaginationViewData.Set(this, resultado);
+                    return PartialView("_FondosGridPartial", resultado.Items);
+                }
+
+                var fondos = await _fondoService.ObtenerFondosEspecialesSinPaginacionAsync(estructura, tipoTramite);
                 return PartialView("_FondosGridPartial", fondos);
             }
             catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
