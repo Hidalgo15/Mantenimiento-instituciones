@@ -1,0 +1,250 @@
+@using Mantenimiento.Core.Application.DTOs.ProveedoresInhabilitados
+@using Mantenimiento.Core.Domain.Pagination
+@model PagedResult<ProveedorInhabilitadoDto>
+
+@{
+    ViewData["Title"] = "Proveedores Inhabilitados";
+}
+
+<div class="container-fluid py-3">
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 mb-4 pb-2 border-bottom">
+        <div>
+            <h4 class="fw-bold mb-0 text-dark">Mantenimiento de Proveedores Inhabilitados</h4>
+            <small class="text-muted">Consulte y administre los proveedores y sus datos de inhabilitación.</small>
+        </div>
+        <span class="badge text-white py-2 px-3 fs-6 rounded-pill" style="background-color: #0d5493;">
+            <i class="bi bi-person-lock me-1"></i> Proveedores
+        </span>
+    </div>
+
+    <!-- TARJETA DE FILTROS Y BÚSQUEDA -->
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-body p-4">
+            <div class="row align-items-end g-3">
+                <div class="col-md-8">
+                    <label for="filtroProveedores" class="form-label fw-bold text-dark">
+                        <i class="bi bi-search me-1" style="color: #0d5493;"></i> Buscar proveedores
+                    </label>
+                    <input type="search" id="filtroProveedores" class="form-control form-control-lg rounded-pill border-secondary-subtle"
+                           placeholder="Buscar por razón social, RPE o número de documento..." autocomplete="off" maxlength="255" />
+                </div>
+                <div class="col-md-4">
+                    <button type="button" class="btn btn-cgr-primary btn-lg w-100 rounded-pill" onclick="abrirModalCrearProveedor()">
+                        <i class="bi bi-plus-circle me-2"></i> Nuevo proveedor
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTENEDOR GRID -->
+    <div id="contenedorGridProveedores">
+        <div class="text-center py-5 bg-white rounded-3 border shadow-sm">
+            <div class="spinner-border text-primary mb-3" style="width: 2.5rem; height: 2.5rem;" role="status"></div>
+            <p class="text-muted mb-0 fw-semibold">Cargando proveedores...</p>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CREAR / EDITAR PROVEEDOR -->
+<div class="modal fade" id="modalProveedor" tabindex="-1" aria-labelledby="modalProveedorTitle" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
+            <div class="modal-header text-white px-4 py-3" style="background-color: #0d5493;">
+                <h5 class="modal-title fw-bold" id="modalProveedorTitle">Nuevo proveedor inhabilitado</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body p-4">
+                <form id="formProveedor">
+                    <input type="hidden" id="proveedorId" value="0" />
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="proveedorRpe" class="form-label fw-bold">RPE</label>
+                            <input type="text" id="proveedorRpe" class="form-control rounded-3" />
+                        </div>
+                        <div class="col-md-6">
+                            <label for="proveedorRazonSocial" class="form-label fw-bold">Razón social</label>
+                            <input type="text" id="proveedorRazonSocial" class="form-control rounded-3" />
+                        </div>
+                        <div class="col-md-4">
+                            <label for="proveedorGenero" class="form-label fw-bold">Género</label>
+                            <select id="proveedorGenero" class="form-select rounded-3">
+                                <option value="">Seleccione...</option>
+                                @if (ViewBag.Generos != null)
+                                {
+                                    @foreach (var genero in (IReadOnlyList<string>)ViewBag.Generos)
+                                    {
+                                        <option value="@genero">@genero</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="proveedorNumeroDocumento" class="form-label fw-bold">Número de documento</label>
+                            <input type="text" id="proveedorNumeroDocumento" class="form-control rounded-3" />
+                        </div>
+                        <div class="col-md-4">
+                            <label for="proveedorTipoDocumento" class="form-label fw-bold">Tipo de documento</label>
+                            <input type="text" id="proveedorTipoDocumento" class="form-control rounded-3" />
+                        </div>
+                        <div class="col-md-6">
+                            <label for="proveedorTipoPersona" class="form-label fw-bold">Tipo de persona</label>
+                            <input type="text" id="proveedorTipoPersona" class="form-control rounded-3" />
+                        </div>
+                        <div class="col-md-6">
+                            <label for="proveedorEstadoRpe" class="form-label fw-bold">Estado RPE</label>
+                            <select id="proveedorEstadoRpe" class="form-select rounded-3">
+                                <option value="">Seleccione...</option>
+                                @if (ViewBag.EstadosRpe != null)
+                                {
+                                    @foreach (var estadoRpe in (IReadOnlyList<string>)ViewBag.EstadosRpe)
+                                    {
+                                        <option value="@estadoRpe">@estadoRpe</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="col-12">
+                            <label for="proveedorMotivo" class="form-label fw-bold">Motivo de inhabilitación</label>
+                            <textarea id="proveedorMotivo" class="form-control rounded-3" rows="4"></textarea>
+                        </div>
+                        <div class="col-12">
+                            <small class="text-muted">Las fechas de registro y actualización son asignadas automáticamente por el sistema.</small>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer bg-light border-top-0 px-4 py-3">
+                <button type="button" class="btn btn-outline-secondary rounded-pill px-4" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-cgr-primary rounded-pill px-4" onclick="guardarProveedor()">
+                    <i class="bi bi-check-circle me-1"></i> Guardar
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let modalProveedor;
+        let paginaProveedores = 1;
+        let temporizadorBusquedaProveedores;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            modalProveedor = new bootstrap.Modal(document.getElementById('modalProveedor'));
+            document.getElementById('filtroProveedores').addEventListener('input', () => {
+                window.clearTimeout(temporizadorBusquedaProveedores);
+                temporizadorBusquedaProveedores = window.setTimeout(() => cargarProveedores(1), 250);
+            });
+            cargarProveedores();
+        });
+
+        async function cargarProveedores(pagina = paginaProveedores) {
+            paginaProveedores = pagina;
+            const contenedor = document.getElementById('contenedorGridProveedores');
+            const filtroTexto = document.getElementById('filtroProveedores').value.trim();
+            const selectorTamanoPagina = document.getElementById('tamanoPaginaProveedores');
+            const tamanoPagina = selectorTamanoPagina ? selectorTamanoPagina.value : '10';
+            const parametros = new URLSearchParams({ filtroTexto, pagina: String(pagina), tamanoPagina });
+
+            contenedor.innerHTML = '<div class="text-center py-5 bg-white rounded-3 border shadow-sm"><div class="spinner-border text-primary mb-3" style="width: 2.5rem; height: 2.5rem;" role="status"></div><p class="text-muted mb-0 fw-semibold">Cargando proveedores...</p></div>';
+
+            try {
+                const respuesta = await fetch(`/ProveedoresInhabilitados/ObtenerGrid?${parametros}`);
+                if (!respuesta.ok) throw new Error('No se pudo cargar el listado.');
+                contenedor.innerHTML = await respuesta.text();
+            } catch (error) {
+                console.error(error);
+                contenedor.innerHTML = '<div class="alert alert-danger text-center py-3 rounded-3 shadow-sm">No se pudo cargar el listado de proveedores. Intente nuevamente.</div>';
+            }
+        }
+
+        function cambiarPaginaProveedores(pagina) {
+            cargarProveedores(pagina);
+        }
+
+        function limpiarFormularioProveedor() {
+            document.getElementById('formProveedor').reset();
+            document.getElementById('proveedorId').value = '0';
+        }
+
+        function abrirModalCrearProveedor() {
+            limpiarFormularioProveedor();
+            document.getElementById('modalProveedorTitle').textContent = 'Nuevo proveedor inhabilitado';
+            modalProveedor.show();
+        }
+
+        async function abrirModalEditarProveedor(id) {
+            try {
+                const respuesta = await fetch(`/ProveedoresInhabilitados/ObtenerPorId?id=${id}`);
+                const resultado = await respuesta.json();
+                if (!respuesta.ok || !resultado.success) throw new Error(resultado.message || 'No se pudo obtener el proveedor.');
+
+                const proveedor = resultado.data;
+                document.getElementById('proveedorId').value = proveedor.id;
+                document.getElementById('proveedorRpe').value = proveedor.rpe || '';
+                document.getElementById('proveedorRazonSocial').value = proveedor.razonSocial || '';
+                document.getElementById('proveedorGenero').value = proveedor.genero || '';
+                document.getElementById('proveedorNumeroDocumento').value = proveedor.numeroDocumento || '';
+                document.getElementById('proveedorTipoDocumento').value = proveedor.tipoDocumento || '';
+                document.getElementById('proveedorTipoPersona').value = proveedor.tipoPersona || '';
+                document.getElementById('proveedorEstadoRpe').value = proveedor.estadoRpe || '';
+                document.getElementById('proveedorMotivo').value = proveedor.motivoInhabilitacion || '';
+                document.getElementById('modalProveedorTitle').textContent = 'Editar proveedor inhabilitado';
+                modalProveedor.show();
+            } catch (error) {
+                console.error(error);
+                alert(error.message || 'No se pudo obtener el proveedor.');
+            }
+        }
+
+        async function guardarProveedor() {
+            const id = Number.parseInt(document.getElementById('proveedorId').value, 10);
+            const dto = {
+                id,
+                rpe: document.getElementById('proveedorRpe').value,
+                razonSocial: document.getElementById('proveedorRazonSocial').value,
+                genero: document.getElementById('proveedorGenero').value,
+                numeroDocumento: document.getElementById('proveedorNumeroDocumento').value,
+                tipoDocumento: document.getElementById('proveedorTipoDocumento').value,
+                tipoPersona: document.getElementById('proveedorTipoPersona').value,
+                estadoRpe: document.getElementById('proveedorEstadoRpe').value,
+                motivoInhabilitacion: document.getElementById('proveedorMotivo').value
+            };
+            const esEdicion = id > 0;
+
+            try {
+                const respuesta = await fetch(`/ProveedoresInhabilitados/${esEdicion ? 'Actualizar' : 'Crear'}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(dto)
+                });
+                const resultado = await respuesta.json();
+                if (!respuesta.ok || !resultado.success) throw new Error(resultado.message || 'No se pudo guardar el proveedor.');
+                modalProveedor.hide();
+                await cargarProveedores(esEdicion ? paginaProveedores : 1);
+            } catch (error) {
+                console.error(error);
+                alert(error.message || 'No se pudo guardar el proveedor.');
+            }
+        }
+
+        async function eliminarProveedor(id) {
+            if (typeof confirmarAccion === 'function') {
+                if (!await confirmarAccion('¿Desea eliminar este proveedor inhabilitado?', { kind: 'danger', confirmText: 'Sí, eliminar' })) return;
+            } else {
+                if (!confirm('¿Desea eliminar este proveedor inhabilitado?')) return;
+            }
+
+            try {
+                const respuesta = await fetch(`/ProveedoresInhabilitados/Eliminar?id=${id}`, { method: 'POST' });
+                const resultado = await respuesta.json();
+                if (!respuesta.ok || !resultado.success) throw new Error(resultado.message || 'No se pudo eliminar el proveedor.');
+                await cargarProveedores(paginaProveedores);
+            } catch (error) {
+                console.error(error);
+                alert(error.message || 'No se pudo eliminar el proveedor.');
+            }
+        }
+    </script>
+}

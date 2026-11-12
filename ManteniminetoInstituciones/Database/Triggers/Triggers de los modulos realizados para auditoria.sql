@@ -820,4 +820,167 @@ BEGIN
 END;
 GO
 
+-- =========================================================================
+-- 16. TRIGGER AUDITORÍA: cc_proveedores_inhabilitados
+-- =========================================================================
+
+USE SIGOB_CONTRALORIA
+GO
+
+CREATE OR ALTER TRIGGER [dbo].[TR_cc_proveedores_inhabilitados_Auditoria]
+ON [dbo].[cc_proveedores_inhabilitados]
+AFTER INSERT, UPDATE, DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    IF TRIGGER_NESTLEVEL() > 1 RETURN;
+    IF NOT EXISTS (SELECT 1 FROM inserted) AND NOT EXISTS (SELECT 1 FROM deleted) RETURN;
+
+    DECLARE @tabla VARCHAR(128) = 'cc_proveedores_inhabilitados';
+    DECLARE @app_name VARCHAR(256) = APP_NAME();
+    DECLARE @host_name VARCHAR(128) = HOST_NAME();
+    DECLARE @usuario VARCHAR(128) = ISNULL(CAST(SESSION_CONTEXT(N'UsuarioApp') AS VARCHAR(128)), SUSER_SNAME());
+
+    -------------------------------------------------------------------------
+    -- INSERT
+    -------------------------------------------------------------------------
+    IF EXISTS (SELECT 1 FROM inserted) AND NOT EXISTS (SELECT 1 FROM deleted)
+    BEGIN
+        INSERT INTO [dbo].[auditoria_mantenimientos] 
+            ([tabla_nombre], [id_registro], [operacion], [usuario], [app_name], [host_name], [datos_anteriores], [datos_nuevos])
+        SELECT 
+            @tabla, 
+            CAST(i.Id AS VARCHAR(100)), 
+            'INSERT', 
+            @usuario, 
+            @app_name, 
+            @host_name, 
+            NULL,
+            (SELECT i.* FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)
+        FROM inserted i;
+    END
+
+    -------------------------------------------------------------------------
+    -- DELETE
+    -------------------------------------------------------------------------
+    ELSE IF EXISTS (SELECT 1 FROM deleted) AND NOT EXISTS (SELECT 1 FROM inserted)
+    BEGIN
+        INSERT INTO [dbo].[auditoria_mantenimientos] 
+            ([tabla_nombre], [id_registro], [operacion], [usuario], [app_name], [host_name], [datos_anteriores], [datos_nuevos])
+        SELECT 
+            @tabla, 
+            CAST(d.Id AS VARCHAR(100)), 
+            'DELETE', 
+            @usuario, 
+            @app_name, 
+            @host_name,
+            (SELECT d.* FOR JSON PATH, WITHOUT_ARRAY_WRAPPER), 
+            NULL
+        FROM deleted d;
+    END
+
+    -------------------------------------------------------------------------
+    -- UPDATE
+    -------------------------------------------------------------------------
+    ELSE IF EXISTS (SELECT 1 FROM inserted) AND EXISTS (SELECT 1 FROM deleted)
+    BEGIN
+        INSERT INTO [dbo].[auditoria_mantenimientos] 
+            ([tabla_nombre], [id_registro], [operacion], [usuario], [app_name], [host_name], [datos_anteriores], [datos_nuevos])
+        SELECT 
+            @tabla, 
+            CAST(i.Id AS VARCHAR(100)), 
+            'UPDATE', 
+            @usuario, 
+            @app_name, 
+            @host_name,
+            (SELECT d.* FOR JSON PATH, WITHOUT_ARRAY_WRAPPER),
+            (SELECT i.* FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)
+        FROM inserted i
+        INNER JOIN deleted d ON i.Id = d.Id;
+    END
+END;
+GO
+
+USE [SIGOB_CONTRALORIA];
+GO
+
+-- =========================================================================
+-- 16. TRIGGER AUDITORÍA: t_Impedimentos
+-- =========================================================================
+
+CREATE OR ALTER TRIGGER [dbo].[TR_t_Impedimentos_Auditoria]
+ON [dbo].[t_Impedimentos]
+AFTER INSERT, UPDATE, DELETE
+AS
+BEGIN
+    SET NOCOUNT ON;
+    IF TRIGGER_NESTLEVEL() > 1 RETURN;
+    IF NOT EXISTS (SELECT 1 FROM inserted) AND NOT EXISTS (SELECT 1 FROM deleted) RETURN;
+
+    DECLARE @tabla VARCHAR(128) = 't_Impedimentos';
+    DECLARE @app_name VARCHAR(256) = APP_NAME();
+    DECLARE @host_name VARCHAR(128) = HOST_NAME();
+    -- Prioriza el usuario de la app o el campo Usuario_Agrego si existe, de lo contrario toma el usuario de conexión
+    DECLARE @usuario_conexion VARCHAR(128) = ISNULL(CAST(SESSION_CONTEXT(N'UsuarioApp') AS VARCHAR(128)), SUSER_SNAME());
+
+    -------------------------------------------------------------------------
+    -- INSERT
+    -------------------------------------------------------------------------
+    IF EXISTS (SELECT 1 FROM inserted) AND NOT EXISTS (SELECT 1 FROM deleted)
+    BEGIN
+        INSERT INTO [dbo].[auditoria_mantenimientos] 
+            ([tabla_nombre], [id_registro], [operacion], [usuario], [app_name], [host_name], [datos_anteriores], [datos_nuevos])
+        SELECT 
+            @tabla, 
+            CAST(i.ID AS VARCHAR(100)), 
+            'INSERT', 
+            ISNULL(NULLIF(i.Usuario_Agrego, ''), @usuario_conexion), 
+            @app_name, 
+            @host_name, 
+            NULL,
+            (SELECT i.* FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)
+        FROM inserted i;
+    END
+
+    -------------------------------------------------------------------------
+    -- DELETE
+    -------------------------------------------------------------------------
+    ELSE IF EXISTS (SELECT 1 FROM deleted) AND NOT EXISTS (SELECT 1 FROM inserted)
+    BEGIN
+        INSERT INTO [dbo].[auditoria_mantenimientos] 
+            ([tabla_nombre], [id_registro], [operacion], [usuario], [app_name], [host_name], [datos_anteriores], [datos_nuevos])
+        SELECT 
+            @tabla, 
+            CAST(d.ID AS VARCHAR(100)), 
+            'DELETE', 
+            ISNULL(NULLIF(d.Usuario_Agrego, ''), @usuario_conexion), 
+            @app_name, 
+            @host_name,
+            (SELECT d.* FOR JSON PATH, WITHOUT_ARRAY_WRAPPER), 
+            NULL
+        FROM deleted d;
+    END
+
+    -------------------------------------------------------------------------
+    -- UPDATE
+    -------------------------------------------------------------------------
+    ELSE IF EXISTS (SELECT 1 FROM inserted) AND EXISTS (SELECT 1 FROM deleted)
+    BEGIN
+        INSERT INTO [dbo].[auditoria_mantenimientos] 
+            ([tabla_nombre], [id_registro], [operacion], [usuario], [app_name], [host_name], [datos_anteriores], [datos_nuevos])
+        SELECT 
+            @tabla, 
+            CAST(i.ID AS VARCHAR(100)), 
+            'UPDATE', 
+            ISNULL(NULLIF(i.Usuario_Agrego, ''), @usuario_conexion), 
+            @app_name, 
+            @host_name,
+            (SELECT d.* FOR JSON PATH, WITHOUT_ARRAY_WRAPPER),
+            (SELECT i.* FOR JSON PATH, WITHOUT_ARRAY_WRAPPER)
+        FROM inserted i
+        INNER JOIN deleted d ON i.ID = d.ID;
+    END
+END;
+GO
+
 ---

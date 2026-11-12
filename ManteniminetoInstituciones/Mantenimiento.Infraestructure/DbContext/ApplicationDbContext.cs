@@ -46,6 +46,8 @@ namespace Mantenimiento.Infraestructure.Persistence
         public DbSet<ResponsableActividad> ResponsableActividadesTbl { get; set; }
         public DbSet<FlujoMolde> FlujoMoldesTbl { get; set; }
         public DbSet<ActividadFlujo> ActividadFlujosTbl { get; set; }
+        public DbSet<Impedimento> ImpedimentosTbl { get; set; }
+        public DbSet<ProveedorInhabilitado> ProveedoresInhabilitadosTbl { get; set; }
 
         #endregion
 
@@ -482,6 +484,40 @@ namespace Mantenimiento.Infraestructure.Persistence
             });
             #endregion
 
+            #region Impedimentos
+            modelBuilder.Entity<Impedimento>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.ToTable("t_Impedimentos", "dbo");
+                entity.Property(e => e.Id).HasColumnName("ID");
+                entity.Property(e => e.Nombres).HasColumnName("NOMBRES");
+                entity.Property(e => e.CedulaRnc).HasColumnName("cedula_rnc");
+                entity.Property(e => e.UsuarioAgrego).HasColumnName("Usuario_Agrego");
+                entity.Property(e => e.Motivo).HasColumnName("Motivo");
+                entity.Property(e => e.FechaAgrego).HasColumnName("Fecha_Agrego");
+                entity.Property(e => e.Estado).HasColumnName("Estado");
+            });
+            #endregion
+
+            #region Proveedores Inhabilitados
+            modelBuilder.Entity<ProveedorInhabilitado>(entity =>
+            {
+                entity.HasKey(e => e.Id);
+                entity.ToTable("cc_proveedores_inhabilitados", "dbo");
+
+                entity.Property(e => e.Id).HasColumnName("ID");
+                entity.Property(e => e.Rpe).HasColumnName("RPE");
+                entity.Property(e => e.RazonSocial).HasColumnName("RAZON_SOCIAL");
+                entity.Property(e => e.Genero).HasColumnName("GENERO");
+                entity.Property(e => e.NumeroDocumento).HasColumnName("NUMERO_DOCUMENTO");
+                entity.Property(e => e.TipoDocumento).HasColumnName("TIPO_DOCUMENTO");
+                entity.Property(e => e.TipoPersona).HasColumnName("TIPO_PERSONA");
+                entity.Property(e => e.FechaRegistro).HasColumnName("FECHA_REGISTRO");
+                entity.Property(e => e.FechaUltimaActualizacion).HasColumnName("FECHA_ULTIMA_ACTUALIZACION");
+                entity.Property(e => e.EstadoRpe).HasColumnName("ESTADO_RPE");
+                entity.Property(e => e.MotivoInhabilitacion).HasColumnName("MOTIVO_INHABILITACION");
+            });
+            #endregion
 
         }
     }
