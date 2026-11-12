@@ -90,13 +90,7 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
                 .OrderBy(genero => genero)
                 .ToListAsync();
 
-            var estadosRpe = await _context.ProveedoresInhabilitadosTbl
-                .AsNoTracking()
-                .Where(proveedor => proveedor.EstadoRpe != null && proveedor.EstadoRpe.Trim() != string.Empty)
-                .Select(proveedor => proveedor.EstadoRpe!.Trim())
-                .Distinct()
-                .OrderBy(estado => estado)
-                .ToListAsync();
+            var estadosRpe = new List<string> { "Habilitado", "Inhabilitado" };
 
             return (generos, estadosRpe);
         }
