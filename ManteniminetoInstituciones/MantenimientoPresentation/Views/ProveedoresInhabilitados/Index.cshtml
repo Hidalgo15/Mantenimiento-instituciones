@@ -1,3 +1,7 @@
+@using Mantenimiento.Core.Application.DTOs.ProveedoresInhabilitados
+@using Mantenimiento.Core.Domain.Pagination
+@model PagedResult<ProveedorInhabilitadoDto>
+
 @{
     ViewData["Title"] = "Proveedores Inhabilitados";
 }
@@ -13,13 +17,16 @@
         </span>
     </div>
 
+    <!-- TARJETA DE FILTROS Y BÚSQUEDA -->
     <div class="card border-0 shadow-sm rounded-3 mb-4">
         <div class="card-body p-4">
             <div class="row align-items-end g-3">
                 <div class="col-md-8">
-                    <label for="filtroProveedores" class="form-label fw-bold text-dark">Buscar proveedores</label>
-                    <input type="search" id="filtroProveedores" class="form-control form-control-lg rounded-pill"
-                           placeholder="Buscar por razón social, RPE o número de documento" autocomplete="off" maxlength="255" />
+                    <label for="filtroProveedores" class="form-label fw-bold text-dark">
+                        <i class="bi bi-search me-1" style="color: #0d5493;"></i> Buscar proveedores
+                    </label>
+                    <input type="search" id="filtroProveedores" class="form-control form-control-lg rounded-pill border-secondary-subtle"
+                           placeholder="Buscar por razón social, RPE o número de documento..." autocomplete="off" maxlength="255" />
                 </div>
                 <div class="col-md-4">
                     <button type="button" class="btn btn-cgr-primary btn-lg w-100 rounded-pill" onclick="abrirModalCrearProveedor()">
@@ -30,14 +37,16 @@
         </div>
     </div>
 
+    <!-- CONTENEDOR GRID -->
     <div id="contenedorGridProveedores">
         <div class="text-center py-5 bg-white rounded-3 border shadow-sm">
-            <div class="spinner-border text-primary mb-3" role="status"></div>
+            <div class="spinner-border text-primary mb-3" style="width: 2.5rem; height: 2.5rem;" role="status"></div>
             <p class="text-muted mb-0 fw-semibold">Cargando proveedores...</p>
         </div>
     </div>
 </div>
 
+<!-- MODAL CREAR / EDITAR PROVEEDOR -->
 <div class="modal fade" id="modalProveedor" tabindex="-1" aria-labelledby="modalProveedorTitle" aria-hidden="true">
     <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
         <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
@@ -51,47 +60,53 @@
                     <div class="row g-3">
                         <div class="col-md-6">
                             <label for="proveedorRpe" class="form-label fw-bold">RPE</label>
-                            <input type="text" id="proveedorRpe" class="form-control" />
+                            <input type="text" id="proveedorRpe" class="form-control rounded-3" />
                         </div>
                         <div class="col-md-6">
                             <label for="proveedorRazonSocial" class="form-label fw-bold">Razón social</label>
-                            <input type="text" id="proveedorRazonSocial" class="form-control" />
+                            <input type="text" id="proveedorRazonSocial" class="form-control rounded-3" />
                         </div>
                         <div class="col-md-4">
                             <label for="proveedorGenero" class="form-label fw-bold">Género</label>
-                            <select id="proveedorGenero" class="form-select">
+                            <select id="proveedorGenero" class="form-select rounded-3">
                                 <option value="">Seleccione...</option>
-                                @foreach (var genero in (IReadOnlyList<string>)ViewBag.Generos)
+                                @if (ViewBag.Generos != null)
                                 {
-                                    <option value="@genero">@genero</option>
+                                    @foreach (var genero in (IReadOnlyList<string>)ViewBag.Generos)
+                                    {
+                                        <option value="@genero">@genero</option>
+                                    }
                                 }
                             </select>
                         </div>
                         <div class="col-md-4">
                             <label for="proveedorNumeroDocumento" class="form-label fw-bold">Número de documento</label>
-                            <input type="text" id="proveedorNumeroDocumento" class="form-control" />
+                            <input type="text" id="proveedorNumeroDocumento" class="form-control rounded-3" />
                         </div>
                         <div class="col-md-4">
                             <label for="proveedorTipoDocumento" class="form-label fw-bold">Tipo de documento</label>
-                            <input type="text" id="proveedorTipoDocumento" class="form-control" />
+                            <input type="text" id="proveedorTipoDocumento" class="form-control rounded-3" />
                         </div>
                         <div class="col-md-6">
                             <label for="proveedorTipoPersona" class="form-label fw-bold">Tipo de persona</label>
-                            <input type="text" id="proveedorTipoPersona" class="form-control" />
+                            <input type="text" id="proveedorTipoPersona" class="form-control rounded-3" />
                         </div>
                         <div class="col-md-6">
                             <label for="proveedorEstadoRpe" class="form-label fw-bold">Estado RPE</label>
-                            <select id="proveedorEstadoRpe" class="form-select">
+                            <select id="proveedorEstadoRpe" class="form-select rounded-3">
                                 <option value="">Seleccione...</option>
-                                @foreach (var estadoRpe in (IReadOnlyList<string>)ViewBag.EstadosRpe)
+                                @if (ViewBag.EstadosRpe != null)
                                 {
-                                    <option value="@estadoRpe">@estadoRpe</option>
+                                    @foreach (var estadoRpe in (IReadOnlyList<string>)ViewBag.EstadosRpe)
+                                    {
+                                        <option value="@estadoRpe">@estadoRpe</option>
+                                    }
                                 }
                             </select>
                         </div>
                         <div class="col-12">
                             <label for="proveedorMotivo" class="form-label fw-bold">Motivo de inhabilitación</label>
-                            <textarea id="proveedorMotivo" class="form-control" rows="4"></textarea>
+                            <textarea id="proveedorMotivo" class="form-control rounded-3" rows="4"></textarea>
                         </div>
                         <div class="col-12">
                             <small class="text-muted">Las fechas de registro y actualización son asignadas automáticamente por el sistema.</small>
@@ -131,7 +146,8 @@
             const selectorTamanoPagina = document.getElementById('tamanoPaginaProveedores');
             const tamanoPagina = selectorTamanoPagina ? selectorTamanoPagina.value : '10';
             const parametros = new URLSearchParams({ filtroTexto, pagina: String(pagina), tamanoPagina });
-            contenedor.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary" role="status"></div><p class="text-muted mt-3">Cargando proveedores...</p></div>';
+
+            contenedor.innerHTML = '<div class="text-center py-5 bg-white rounded-3 border shadow-sm"><div class="spinner-border text-primary mb-3" style="width: 2.5rem; height: 2.5rem;" role="status"></div><p class="text-muted mb-0 fw-semibold">Cargando proveedores...</p></div>';
 
             try {
                 const respuesta = await fetch(`/ProveedoresInhabilitados/ObtenerGrid?${parametros}`);
@@ -139,7 +155,7 @@
                 contenedor.innerHTML = await respuesta.text();
             } catch (error) {
                 console.error(error);
-                contenedor.innerHTML = '<div class="alert alert-danger">No se pudo cargar el listado de proveedores. Intente nuevamente.</div>';
+                contenedor.innerHTML = '<div class="alert alert-danger text-center py-3 rounded-3 shadow-sm">No se pudo cargar el listado de proveedores. Intente nuevamente.</div>';
             }
         }
 
@@ -214,7 +230,11 @@
         }
 
         async function eliminarProveedor(id) {
-            if (!await confirmarAccion('¿Desea eliminar este proveedor inhabilitado?', { kind: 'danger', confirmText: 'Sí, eliminar' })) return;
+            if (typeof confirmarAccion === 'function') {
+                if (!await confirmarAccion('¿Desea eliminar este proveedor inhabilitado?', { kind: 'danger', confirmText: 'Sí, eliminar' })) return;
+            } else {
+                if (!confirm('¿Desea eliminar este proveedor inhabilitado?')) return;
+            }
 
             try {
                 const respuesta = await fetch(`/ProveedoresInhabilitados/Eliminar?id=${id}`, { method: 'POST' });

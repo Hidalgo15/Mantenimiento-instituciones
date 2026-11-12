@@ -14,12 +14,14 @@
     </div>
 
     <div class="card border-0 shadow-sm rounded-3 mb-4">
-        <div class="card-body p-4">
+        <div class="card-body p-4 bg-white rounded-3">
             <div class="row align-items-end g-3">
                 <div class="col-md-8">
-                    <label for="filtroImpedimentos" class="form-label fw-bold text-dark">Buscar impedimentos</label>
-                    <input type="search" id="filtroImpedimentos" class="form-control form-control-lg rounded-pill"
-                           placeholder="Buscar por nombre, cédula/RNC o motivo" autocomplete="off" maxlength="255" />
+                    <label for="filtroImpedimentos" class="form-label fw-bold text-dark mb-2">
+                        <i class="bi bi-search me-1" style="color: #0d5493;"></i> Buscar impedimentos
+                    </label>
+                    <input type="search" id="filtroImpedimentos" class="form-control form-control-lg rounded-pill border-secondary-subtle"
+                           placeholder="Buscar por nombre, cédula/RNC o motivo..." autocomplete="off" maxlength="255" />
                 </div>
                 <div class="col-md-4">
                     <button type="button" class="btn btn-cgr-primary btn-lg w-100 rounded-pill" onclick="abrirModalCrear()">
@@ -32,12 +34,13 @@
 
     <div id="contenedorGridImpedimentos">
         <div class="text-center py-5 bg-white rounded-3 border shadow-sm">
-            <div class="spinner-border text-primary mb-3" role="status"></div>
+            <div class="spinner-border text-primary mb-3" style="width: 2.5rem; height: 2.5rem;" role="status"></div>
             <p class="text-muted mb-0 fw-semibold">Cargando impedimentos...</p>
         </div>
     </div>
 </div>
 
+<!-- Modal -->
 <div class="modal fade" id="modalImpedimento" tabindex="-1" aria-labelledby="modalImpedimentoTitle" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg rounded-4 overflow-hidden">
@@ -50,19 +53,19 @@
                     <input type="hidden" id="impedimentoId" value="0" />
                     <div class="mb-3">
                         <label for="impedimentoNombres" class="form-label fw-bold">Nombres</label>
-                        <input type="text" id="impedimentoNombres" class="form-control" maxlength="255" />
+                        <input type="text" id="impedimentoNombres" class="form-control rounded-3" maxlength="255" />
                     </div>
                     <div class="mb-3">
                         <label for="impedimentoCedulaRnc" class="form-label fw-bold">Cédula / RNC</label>
-                        <input type="text" id="impedimentoCedulaRnc" class="form-control" maxlength="15" />
+                        <input type="text" id="impedimentoCedulaRnc" class="form-control rounded-3" maxlength="15" />
                     </div>
                     <div class="mb-3">
                         <label for="impedimentoMotivo" class="form-label fw-bold">Motivo</label>
-                        <textarea id="impedimentoMotivo" class="form-control" rows="3" maxlength="500"></textarea>
+                        <textarea id="impedimentoMotivo" class="form-control rounded-3" rows="3" maxlength="500"></textarea>
                     </div>
-                    <div class="form-check form-switch">
-                        <input class="form-check-input" type="checkbox" id="impedimentoEstado" checked />
-                        <label class="form-check-label fw-semibold" for="impedimentoEstado">Impedimento activo</label>
+                    <div class="form-check form-switch ps-5">
+                        <input class="form-check-input" type="checkbox" id="impedimentoEstado" checked style="width: 2.5em; height: 1.25em;" />
+                        <label class="form-check-label fw-semibold ms-2" for="impedimentoEstado">Impedimento activo</label>
                     </div>
                 </form>
             </div>
@@ -98,7 +101,8 @@
             const selectorTamanoPagina = document.getElementById('tamanoPaginaImpedimentos');
             const tamanoPagina = selectorTamanoPagina ? selectorTamanoPagina.value : '10';
             const parametros = new URLSearchParams({ filtroTexto, pagina: String(pagina), tamanoPagina });
-            contenedor.innerHTML = '<div class="text-center py-5"><div class="spinner-border text-primary" role="status"></div><p class="text-muted mt-3">Cargando impedimentos...</p></div>';
+
+            contenedor.innerHTML = '<div class="text-center py-5 bg-white rounded-3 border shadow-sm"><div class="spinner-border text-primary mb-3" style="width: 2.5rem; height: 2.5rem;" role="status"></div><p class="text-muted mb-0 fw-semibold">Cargando impedimentos...</p></div>';
 
             try {
                 const respuesta = await fetch(`/Impedimentos/ObtenerGrid?${parametros}`);
@@ -106,7 +110,7 @@
                 contenedor.innerHTML = await respuesta.text();
             } catch (error) {
                 console.error(error);
-                contenedor.innerHTML = '<div class="alert alert-danger">No se pudo cargar el listado de impedimentos. Intente nuevamente.</div>';
+                contenedor.innerHTML = '<div class="alert alert-danger text-center py-3 rounded-3 shadow-sm">No se pudo cargar el listado de impedimentos. Intente nuevamente.</div>';
             }
         }
 
@@ -170,7 +174,11 @@
         }
 
         async function eliminarImpedimento(id) {
-            if (!await confirmarAccion('¿Desea deshabilitar este impedimento?', { kind: 'danger', confirmText: 'Sí, deshabilitar' })) return;
+            if (typeof confirmarAccion === 'function') {
+                if (!await confirmarAccion('¿Desea deshabilitar este impedimento?', { kind: 'danger', confirmText: 'Sí, deshabilitar' })) return;
+            } else {
+                if (!confirm('¿Desea deshabilitar este impedimento?')) return;
+            }
 
             try {
                 const respuesta = await fetch(`/Impedimentos/Eliminar?id=${id}`, { method: 'POST' });
