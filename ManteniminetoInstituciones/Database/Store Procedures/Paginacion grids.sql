@@ -356,3 +356,108 @@ BEGIN
     ORDER BY RowNumber;
 END
 GO
+
+CREATE OR ALTER PROCEDURE [dbo].[sp_cc_proveedores_inhabilitados_ObtenerPaginado]
+    @Id INT = NULL,
+    @NUMERO_DOCUMENTO VARCHAR(50) = NULL,
+    @FiltroTexto VARCHAR(255) = NULL,
+    @PageNumber INT = 1,
+    @PageSize INT = 10,
+    @TotalCount INT OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET @PageNumber = CASE WHEN @PageNumber < 1 THEN 1 ELSE @PageNumber END;
+    SET @PageSize = CASE WHEN @PageSize < 1 THEN 10 WHEN @PageSize > 100 THEN 100 ELSE @PageSize END;
+
+    -- Si se consulta un ID específico o documento exacto, filtramos directo en #Rows
+    SELECT 
+        [Id],
+        [RPE],
+        [RAZON_SOCIAL],
+        [GENERO],
+        [NUMERO_DOCUMENTO],
+        [TIPO_DOCUMENTO],
+        [TIPO_PERSONA],
+        [FECHA_REGISTRO],
+        [FECHA_ULTIMA_ACTUALIZACION],
+        [ESTADO_RPE],
+        [MOTIVO_INHABILITACION]
+    INTO #Rows
+    FROM [dbo].[cc_proveedores_inhabilitados] WITH (NOLOCK)
+    WHERE (@Id IS NULL OR [Id] = @Id)
+      AND (@NUMERO_DOCUMENTO IS NULL OR [NUMERO_DOCUMENTO] = @NUMERO_DOCUMENTO)
+      AND (@Id IS NOT NULL OR @NUMERO_DOCUMENTO IS NOT NULL 
+           OR @FiltroTexto IS NULL 
+           OR [RAZON_SOCIAL] LIKE '%' + @FiltroTexto + '%' 
+           OR [RPE] LIKE '%' + @FiltroTexto + '%'
+           OR [NUMERO_DOCUMENTO] LIKE '%' + @FiltroTexto + '%');
+
+    SELECT @TotalCount = COUNT(*) FROM #Rows;
+    DECLARE @TotalPages INT = CASE WHEN @TotalCount = 0 THEN 1
+        ELSE CEILING(CONVERT(FLOAT, @TotalCount) / @PageSize) END;
+    IF @PageNumber > @TotalPages SET @PageNumber = @TotalPages;
+
+    ;WITH Numbered AS
+    (
+        SELECT ROW_NUMBER() OVER (ORDER BY Id DESC) AS RowNumber, *
+        FROM #Rows
+    )
+    SELECT Id, RPE, RAZON_SOCIAL, GENERO, NUMERO_DOCUMENTO, TIPO_DOCUMENTO, 
+           TIPO_PERSONA, FECHA_REGISTRO, FECHA_ULTIMA_ACTUALIZACION, ESTADO_RPE, MOTIVO_INHABILITACION
+    FROM Numbered
+    WHERE RowNumber BETWEEN (CONVERT(BIGINT, @PageNumber) - 1) * @PageSize + 1
+                    AND CONVERT(BIGINT, @PageNumber) * @PageSize
+    ORDER BY RowNumber;
+END;
+GO
+
+CREATE OR ALTER PROCEDURE [dbo].[sp_t_Impedimentos_ObtenerPaginado]
+    @ID INT = NULL,
+    @cedula_rnc NVARCHAR(15) = NULL,
+    @FiltroTexto NVARCHAR(255) = NULL,
+    @PageNumber INT = 1,
+    @PageSize INT = 10,
+    @TotalCount INT OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET @PageNumber = CASE WHEN @PageNumber < 1 THEN 1 ELSE @PageNumber END;
+    SET @PageSize = CASE WHEN @PageSize < 1 THEN 10 WHEN @PageSize > 100 THEN 100 ELSE @PageSize END;
+
+    -- Construcción de filas bajo criterios unificados en tabla temporal
+    SELECT 
+        [ID],
+        [NOMBRES],
+        [cedula_rnc],
+        [Usuario_Agrego],
+        [Motivo],
+        [Fecha_Agrego],
+        [Estado]
+    INTO #Rows
+    FROM [dbo].[t_Impedimentos] WITH (NOLOCK)
+    WHERE (@ID IS NULL OR [ID] = @ID)
+      AND (@cedula_rnc IS NULL OR [cedula_rnc] = @cedula_rnc)
+      AND (@ID IS NOT NULL OR @cedula_rnc IS NOT NULL 
+           OR @FiltroTexto IS NULL 
+           OR [NOMBRES] LIKE '%' + @FiltroTexto + '%' 
+           OR [Motivo] LIKE '%' + @FiltroTexto + '%'
+           OR [cedula_rnc] LIKE '%' + @FiltroTexto + '%');
+
+    SELECT @TotalCount = COUNT(*) FROM #Rows;
+    DECLARE @TotalPages INT = CASE WHEN @TotalCount = 0 THEN 1
+        ELSE CEILING(CONVERT(FLOAT, @TotalCount) / @PageSize) END;
+    IF @PageNumber > @TotalPages SET @PageNumber = @TotalPages;
+
+    ;WITH Numbered AS
+    (
+        SELECT ROW_NUMBER() OVER (ORDER BY ID DESC) AS RowNumber, *
+        FROM #Rows
+    )
+    SELECT ID, NOMBRES, cedula_rnc, Usuario_Agrego, Motivo, Fecha_Agrego, Estado
+    FROM Numbered
+    WHERE RowNumber BETWEEN (CONVERT(BIGINT, @PageNumber) - 1) * @PageSize + 1
+                    AND CONVERT(BIGINT, @PageNumber) * @PageSize
+    ORDER BY RowNumber;
+END;
+GO

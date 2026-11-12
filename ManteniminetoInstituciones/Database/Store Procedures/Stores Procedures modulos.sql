@@ -3390,12 +3390,10 @@ GO
 
 -- Obtener
 
-CREATE PROCEDURE [dbo].[sp_t_Impedimentos_Obtener]
+CREATE OR ALTER PROCEDURE [dbo].[sp_t_Impedimentos_Obtener]
     @ID INT = NULL,
     @cedula_rnc NVARCHAR(15) = NULL,
-    @FiltroTexto NVARCHAR(255) = NULL, -- Busca en nombres o motivo
-    @Pagina INT = 1,                 -- Número de página actual (ej. 1)
-    @TamanoPagina INT = 50           -- Registros por página (ej. 50)
+    @FiltroTexto NVARCHAR(255) = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -3434,10 +3432,7 @@ BEGIN
         RETURN;
     END
 
-    -- 3. Consulta General Paginada con Filtro Opcional
-    DECLARE @Offset INT = (@Pagina - 1) * @TamanoPagina;
-
-    -- Retornar dataset paginado
+    -- 3. Consulta general con filtro de texto opcional (Sin Paginación)
     SELECT 
         [ID],
         [NOMBRES],
@@ -3445,16 +3440,13 @@ BEGIN
         [Usuario_Agrego],
         [Motivo],
         [Fecha_Agrego],
-        [Estado],
-        COUNT(*) OVER() AS [TotalRegistros] -- para calcular páginas en el frontend
+        [Estado]
     FROM [dbo].[t_Impedimentos] WITH (NOLOCK)
     WHERE (@FiltroTexto IS NULL 
            OR [NOMBRES] LIKE '%' + @FiltroTexto + '%' 
            OR [Motivo] LIKE '%' + @FiltroTexto + '%'
            OR [cedula_rnc] LIKE '%' + @FiltroTexto + '%')
-    ORDER BY [ID] DESC
-    OFFSET @Offset ROWS 
-    FETCH NEXT @TamanoPagina ROWS ONLY;
+    ORDER BY [ID] DESC;
 END;
 GO
 
@@ -3600,12 +3592,10 @@ GO
 
 -- Obtener
 
-CREATE PROCEDURE [dbo].[sp_cc_proveedores_inhabilitados_Obtener]
+CREATE OR ALTER PROCEDURE [dbo].[sp_cc_proveedores_inhabilitados_Obtener]
     @Id INT = NULL,
-    @NUMERO_DOCUMENTO VARCHAR(50) = NULL, -- Búsqueda exacta por documento
-    @FiltroTexto VARCHAR(255) = NULL,     -- Búsqueda textual general (Razón Social o RPE)
-    @Pagina INT = 1,
-    @TamanoPagina INT = 50
+    @NUMERO_DOCUMENTO VARCHAR(50) = NULL,
+    @FiltroTexto VARCHAR(255) = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -3652,9 +3642,7 @@ BEGIN
         RETURN;
     END
 
-    -- 3. Consulta Paginada con Filtro de Texto
-    DECLARE @Offset INT = (@Pagina - 1) * @TamanoPagina;
-
+    -- 3. Consulta general con filtro de texto opcional (Sin Paginación)
     SELECT 
         [Id],
         [RPE],
@@ -3666,16 +3654,13 @@ BEGIN
         [FECHA_REGISTRO],
         [FECHA_ULTIMA_ACTUALIZACION],
         [ESTADO_RPE],
-        [MOTIVO_INHABILITACION],
-        COUNT(*) OVER() AS [TotalRegistros]
+        [MOTIVO_INHABILITACION]
     FROM [dbo].[cc_proveedores_inhabilitados] WITH (NOLOCK)
     WHERE (@FiltroTexto IS NULL 
            OR [RAZON_SOCIAL] LIKE '%' + @FiltroTexto + '%' 
            OR [RPE] LIKE '%' + @FiltroTexto + '%'
            OR [NUMERO_DOCUMENTO] LIKE '%' + @FiltroTexto + '%')
-    ORDER BY [Id] DESC
-    OFFSET @Offset ROWS 
-    FETCH NEXT @TamanoPagina ROWS ONLY;
+    ORDER BY [Id] DESC;
 END;
 GO
 
