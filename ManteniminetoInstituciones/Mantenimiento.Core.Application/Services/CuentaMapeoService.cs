@@ -1,7 +1,9 @@
-﻿using Mantenimiento.Core.Application.DTOs.Cuenta.DboCuentasDTO;
+﻿using FluentValidation;
+using Mantenimiento.Core.Application.DTOs.Cuenta.DboCuentasDTO;
 using Mantenimiento.Core.Application.InterfaceServices;
 using Mantenimiento.Core.Application.Mappings;
 using Mantenimiento.Core.Domain.Entities;
+using Mantenimiento.Core.Domain.Pagination;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 
 namespace Mantenimiento.Core.Application.Services
@@ -9,10 +11,17 @@ namespace Mantenimiento.Core.Application.Services
     public class CuentaMapeoService : ICuentaMapeoService
     {
         private readonly ICuentaMapeoRepository _repo;
+        private readonly IValidator<CrearCuentaDto> _crearValidator;
+        private readonly IValidator<ActualizarCuentaDto> _actualizarValidator;
 
-        public CuentaMapeoService(ICuentaMapeoRepository repo)
+        public CuentaMapeoService(
+            ICuentaMapeoRepository repo,
+            IValidator<CrearCuentaDto> crearValidator,
+            IValidator<ActualizarCuentaDto> actualizarValidator)
         {
             _repo = repo;
+            _crearValidator = crearValidator;
+            _actualizarValidator = actualizarValidator;
         }
 
         /// <summary>
@@ -27,6 +36,20 @@ namespace Mantenimiento.Core.Application.Services
         {
             var lista = await _repo.ObtenerCuentasAsync(tipoTramite: tipoTramite, busqueda: busqueda);
             return lista.Select(CuentaMapeoMapper.ToDto).ToList();
+        }
+
+        public async Task<PagedResult<CuentaDto>> ObtenerPaginadoAsync(
+            int? tipoTramite,
+            string? busqueda,
+            int pagina = 1,
+            int tamanoPagina = 10)
+        {
+            var resultado = await _repo.ObtenerPaginadoAsync(tipoTramite, busqueda, pagina, tamanoPagina);
+            return new PagedResult<CuentaDto>(
+                resultado.Items.Select(CuentaMapeoMapper.ToDto).ToList(),
+                resultado.PageNumber,
+                resultado.PageSize,
+                resultado.TotalCount);
         }
 
         /// <summary>
@@ -62,11 +85,8 @@ namespace Mantenimiento.Core.Application.Services
         /// <exception cref="ArgumentException">Se lanza cuando IdCuentaBase o TipoTramite tienen valores no válidos (<= 0).</exception>
         public async Task CrearCuentaAsync(CrearCuentaDto dto)
         {
-            if (dto.IdCuentaBase <= 0)
-                throw new ArgumentException("Debe seleccionar una cuenta base válida.");
-
-            if (dto.TipoTramite <= 0)
-                throw new ArgumentException("Debe seleccionar un tipo de trámite de pago válido.");
+            ArgumentNullException.ThrowIfNull(dto);
+            await _crearValidator.ValidateAndThrowAsync(dto);
 
             await _repo.CrearCuentaAsync(dto.IdCuentaBase, dto.DescripcionCuenta?.Trim(), dto.TipoTramite);
         }
@@ -82,14 +102,8 @@ namespace Mantenimiento.Core.Application.Services
         /// TipoTramite no es válido (<= 0).</exception>
         public async Task ActualizarCuentaAsync(ActualizarCuentaDto dto)
         {
-            if (dto.IdCuenta <= 0)
-                throw new ArgumentException("El ID de la cuenta no es válido.");
-
-            if (string.IsNullOrWhiteSpace(dto.DescripcionCuenta))
-                throw new ArgumentException("La descripción de la cuenta no puede estar vacía.");
-
-            if (dto.TipoTramite <= 0)
-                throw new ArgumentException("Debe seleccionar un tipo de trámite válido.");
+            ArgumentNullException.ThrowIfNull(dto);
+            await _actualizarValidator.ValidateAndThrowAsync(dto);
 
             await _repo.ActualizarCuentaAsync(dto.IdCuenta, dto.DescripcionCuenta.Trim(), dto.TipoTramite);
         }

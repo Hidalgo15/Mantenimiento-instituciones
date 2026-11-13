@@ -1,11 +1,17 @@
+using Mantenimiento.Core.Application;
 using Mantenimiento.Core.Application.InterfaceServices;
 using Mantenimiento.Core.Application.Services;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
+using Mantenimiento.Infraestructure.ExternalServices.Services;
 using Mantenimiento.Infraestructure.Persistence;
 using Mantenimiento.Infraestructure.Persistence.Repositories;
+using MantenimientoPresentation.HealthChecks;
+using MantenimientoPresentation.Middlewares;
 using MantenimientoPresentation.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace MantenimientoPresentation
 {
@@ -17,6 +23,10 @@ namespace MantenimientoPresentation
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+            builder.Services.AddApplication();
+            builder.Services
+                .AddHealthChecks()
+                .AddCheck<SqlServerHealthCheck>("sql-server", tags: new[] { "ready" });
 
             // DbContext Corregido
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -24,6 +34,11 @@ namespace MantenimientoPresentation
 
             // HttpContextAccessor
             builder.Services.AddHttpContextAccessor();
+
+            // Caché en memoria
+            builder.Services.AddMemoryCache();
+            builder.Services.AddSingleton<IApplicationCache, MemoryApplicationCache>();
+            builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 
             #region Repositorios y Servicios
 
@@ -54,6 +69,12 @@ namespace MantenimientoPresentation
 
             builder.Services.AddScoped<IFondoEspecialesService, FondoEspecialesService>();
             builder.Services.AddScoped<IFondoEspecialesRepository, FondoEspecialesRepository>();
+
+            builder.Services.AddScoped<IImpedimentoRepository, ImpedimentoRepository>();
+            builder.Services.AddScoped<IImpedimentoService, ImpedimentoService>();
+
+            builder.Services.AddScoped<IProveedorInhabilitadoRepository, ProveedorInhabilitadoRepository>();
+            builder.Services.AddScoped<IProveedorInhabilitadoService, ProveedorInhabilitadoService>();
 
             builder.Services.AddScoped<ITipoTramiteService, TipoTramiteService>();
             builder.Services.AddScoped<ITipoTramiteRepository, TipoTramiteContratoRepository>();
@@ -87,6 +108,8 @@ namespace MantenimientoPresentation
             builder.Services.AddScoped<IResponsableActividadRepository, ResponsableActividadRepository>();
             builder.Services.AddScoped<IResponsableActividadService, ResponsableActividadService>();
 
+            builder.Services.AddScoped<IEmailService, EmailService>();
+
             #endregion
 
             builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -94,14 +117,47 @@ namespace MantenimientoPresentation
             {
                 options.LoginPath = "/Auth/Login";
                 options.ExpireTimeSpan = TimeSpan.FromMinutes(20);
+                options.Events.OnRedirectToLogin = context =>
+                {
+                    if (context.Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                    {
+                        context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                        return context.Response.WriteAsJsonAsync(new
+                        {
+                            success = false,
+                            message = "Debe iniciar sesión para continuar.",
+                            statusCode = StatusCodes.Status401Unauthorized
+                        });
+                    }
+
+                    context.Response.Redirect(context.RedirectUri);
+                    return Task.CompletedTask;
+                };
+                options.Events.OnRedirectToAccessDenied = context =>
+                {
+                    if (context.Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+                    {
+                        context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                        return context.Response.WriteAsJsonAsync(new
+                        {
+                            success = false,
+                            message = "No tiene permisos para realizar esta acción.",
+                            statusCode = StatusCodes.Status403Forbidden
+                        });
+                    }
+
+                    context.Response.Redirect(context.RedirectUri);
+                    return Task.CompletedTask;
+                };
             });
 
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
+            app.UseMiddleware<ExceptionMiddleware>();
+
             if (!app.Environment.IsDevelopment())
             {
-                app.UseExceptionHandler("/Home/Error");
                 app.UseHsts();
             }
 
@@ -113,11 +169,35 @@ namespace MantenimientoPresentation
             app.UseAuthentication();
             app.UseAuthorization();
 
+            app.MapHealthChecks("/health/live", new HealthCheckOptions
+            {
+                Predicate = _ => false,
+                ResponseWriter = WriteHealthResponse
+            });
+            app.MapHealthChecks("/health/ready", new HealthCheckOptions
+            {
+                Predicate = check => check.Tags.Contains("ready"),
+                ResponseWriter = WriteHealthResponse
+            });
+            app.MapHealthChecks("/health", new HealthCheckOptions
+            {
+                Predicate = check => check.Tags.Contains("ready"),
+                ResponseWriter = WriteHealthResponse
+            });
+
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Auth}/{action=Login}/{id?}");
 
             app.Run();
+        }
+
+        private static Task WriteHealthResponse(HttpContext context, HealthReport report)
+        {
+            context.Response.ContentType = "application/json";
+            return context.Response.WriteAsJsonAsync(
+                new { status = report.Status.ToString() },
+                cancellationToken: context.RequestAborted);
         }
     }
 }

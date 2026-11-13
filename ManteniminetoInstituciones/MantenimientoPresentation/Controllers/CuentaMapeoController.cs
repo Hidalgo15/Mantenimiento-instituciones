@@ -1,26 +1,34 @@
 ﻿using Mantenimiento.Core.Application.DTOs.Cuenta.DboCuentasDTO;
 using Mantenimiento.Core.Application.InterfaceServices;
+using MantenimientoPresentation.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MantenimientoPresentation.Controllers
 {
     [Authorize]
+    [AutoValidateAntiforgeryToken]
     [Route("CuentaMapeo/[action]/{id?}")]
     public class CuentaMapeoController : Controller
     {
         private readonly ICuentaMapeoService _cuentaMapeoService;
         private readonly ITipoTramitePagoService _tipoTramitePagoService; // Servicio que lista dbo.tipo_tramite_pago
         private readonly ICurrentUserService _currentUserService;
+        private readonly ILogger<CuentaMapeoController> _logger;
+        private readonly bool _gridPaginationEnabled;
 
         public CuentaMapeoController(
             ICuentaMapeoService cuentaMapeoService,
             ITipoTramitePagoService tipoTramitePagoService,
-            ICurrentUserService currentUserService)
+            ICurrentUserService currentUserService,
+            ILogger<CuentaMapeoController> logger,
+            IConfiguration configuration)
         {
             _cuentaMapeoService = cuentaMapeoService;
             _tipoTramitePagoService = tipoTramitePagoService;
             _currentUserService = currentUserService;
+            _logger = logger;
+            _gridPaginationEnabled = configuration.GetValue<bool>("GridPagination:Enabled");
         }
 
         [HttpGet("")]
@@ -39,8 +47,15 @@ namespace MantenimientoPresentation.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ObtenerGrid(int? tipoTramite = null, string? busqueda = null)
+        public async Task<IActionResult> ObtenerGrid(int? tipoTramite = null, string? busqueda = null, int page = 1, int pageSize = 10)
         {
+            if (_gridPaginationEnabled)
+            {
+                var resultado = await _cuentaMapeoService.ObtenerPaginadoAsync(tipoTramite, busqueda, page, pageSize);
+                GridPaginationViewData.Set(this, resultado);
+                return PartialView("_CuentasGridPartial", resultado.Items);
+            }
+
             var cuentas = await _cuentaMapeoService.ObtenerCuentasAsync(tipoTramite, busqueda);
             return PartialView("_CuentasGridPartial", cuentas);
         }
@@ -50,12 +65,19 @@ namespace MantenimientoPresentation.Controllers
         {
             try
             {
+                if (id <= 0)
+                    return BadRequest(new { success = false, message = "Identificador no válido." });
+
                 var cuenta = await _cuentaMapeoService.ObtenerPorIdAsync(id);
+                if (cuenta == null)
+                    return NotFound(new { success = false, message = "La cuenta no fue encontrada." });
+
                 return Json(new { success = true, data = cuenta });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
-                return Json(new { success = false, message = ex.Message });
+                _logger.LogError(ex, "Error al obtener la cuenta mapeada con Id {Id}.", id);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -68,18 +90,19 @@ namespace MantenimientoPresentation.Controllers
                     .SelectMany(v => v.Errors)
                     .Select(e => e.ErrorMessage));
 
-                return Json(new { success = false, message = string.IsNullOrEmpty(errores) ? "Datos del formulario inválidos." : errores });
+                return BadRequest(new { success = false, message = string.IsNullOrEmpty(errores) ? "Datos del formulario inválidos." : errores });
             }
 
             try
             {
                 dto.Usuario = _currentUserService.GetUsername();
                 await _cuentaMapeoService.CrearCuentaAsync(dto);
-                return Json(new { success = true, message = "Cuenta registrada exitosamente." });
+                return StatusCode(StatusCodes.Status201Created, new { success = true, message = "Cuenta registrada exitosamente." });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
-                return Json(new { success = false, message = ex.Message });
+                _logger.LogError(ex, "Error al crear una cuenta mapeada.");
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -92,7 +115,7 @@ namespace MantenimientoPresentation.Controllers
                     .SelectMany(v => v.Errors)
                     .Select(e => e.ErrorMessage));
 
-                return Json(new { success = false, message = string.IsNullOrEmpty(errores) ? "Datos del formulario inválidos." : errores });
+                return BadRequest(new { success = false, message = string.IsNullOrEmpty(errores) ? "Datos del formulario inválidos." : errores });
             }
 
             try
@@ -101,9 +124,10 @@ namespace MantenimientoPresentation.Controllers
                 await _cuentaMapeoService.ActualizarCuentaAsync(dto);
                 return Json(new { success = true, message = "Cuenta actualizada exitosamente." });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
-                return Json(new { success = false, message = ex.Message });
+                _logger.LogError(ex, "Error al actualizar la cuenta mapeada.");
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -116,9 +140,14 @@ namespace MantenimientoPresentation.Controllers
                 await _cuentaMapeoService.EliminarCuentaAsync(id);
                 return Json(new { success = true, message = "Cuenta eliminada exitosamente." });
             }
-            catch (Exception ex)
+            catch (ArgumentException)
             {
-                return Json(new { success = false, message = ex.Message });
+                return BadRequest(new { success = false, message = "El identificador de la cuenta no es válido." });
+            }
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
+            {
+                _logger.LogError(ex, "Error al eliminar la cuenta mapeada con Id {Id}.", id);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
     }

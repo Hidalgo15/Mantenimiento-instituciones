@@ -1,6 +1,8 @@
+using FluentValidation;
 using Mantenimiento.Core.Application.DTOs.Cuenta.CtCuentasDTO;
 using Mantenimiento.Core.Application.InterfaceServices;
 using Mantenimiento.Core.Application.Mappings;
+using Mantenimiento.Core.Domain.Pagination;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 
 namespace Mantenimiento.Core.Application.Services
@@ -8,10 +10,21 @@ namespace Mantenimiento.Core.Application.Services
     public class CuentaCtService : ICuentaCtService
     {
         private readonly ICuentaCtRepository _repo;
+        private readonly IApplicationCache _cache;
+        private readonly IValidator<CrearCuentaCtDto> _crearValidator;
+        private readonly IValidator<ActualizarCuentaCtDto> _actualizarValidator;
+        private const string CacheKeyCatalogoCuentas = "cat_cuentas_cache_key";
 
-        public CuentaCtService(ICuentaCtRepository repo)
+        public CuentaCtService(
+            ICuentaCtRepository repo,
+            IApplicationCache cache,
+            IValidator<CrearCuentaCtDto> crearValidator,
+            IValidator<ActualizarCuentaCtDto> actualizarValidator)
         {
             _repo = repo;
+            _cache = cache;
+            _crearValidator = crearValidator;
+            _actualizarValidator = actualizarValidator;
         }
 
         /// <summary>
@@ -25,6 +38,16 @@ namespace Mantenimiento.Core.Application.Services
         {
             var lista = await _repo.ObtenerCuentasAsync(busqueda);
             return lista.Select(CuentaCtMapper.ToDto).ToList();
+        }
+
+        public async Task<PagedResult<CuentaCtDto>> ObtenerPaginadoAsync(string? busqueda, int pagina = 1, int tamanoPagina = 10)
+        {
+            var resultado = await _repo.ObtenerPaginadoAsync(busqueda, pagina, tamanoPagina);
+            return new PagedResult<CuentaCtDto>(
+                resultado.Items.Select(CuentaCtMapper.ToDto).ToList(),
+                resultado.PageNumber,
+                resultado.PageSize,
+                resultado.TotalCount);
         }
 
         /// <summary>
@@ -46,17 +69,15 @@ namespace Mantenimiento.Core.Application.Services
         /// <returns>Una tarea que representa la operación asíncrona.</returns>
         public async Task CrearCuentaAsync(CrearCuentaCtDto dto)
         {
-            if (string.IsNullOrWhiteSpace(dto.CodigoCuenta))
-                throw new ArgumentException("El código de cuenta es obligatorio.");
-
-            if (string.IsNullOrWhiteSpace(dto.DescripcionCuenta))
-                throw new ArgumentException("La descripción de la cuenta es obligatoria.");
+            ArgumentNullException.ThrowIfNull(dto);
+            await _crearValidator.ValidateAndThrowAsync(dto);
 
             await _repo.CrearCuentaAsync(
                 dto.IdCuenta,
-                dto.CodigoCuenta.Trim(),
-                dto.DescripcionCuenta.Trim()
+                dto.CodigoCuenta!.Trim(),
+                dto.DescripcionCuenta!.Trim()
             );
+            _cache.Remove(CacheKeyCatalogoCuentas);
         }
 
         /// <summary>
@@ -71,21 +92,16 @@ namespace Mantenimiento.Core.Application.Services
         /// vacíos o contienen solo espacios en blanco.</exception>
         public async Task ActualizarCuentaAsync(ActualizarCuentaCtDto dto)
         {
-            if (dto.CuentaID <= 0)
-                throw new ArgumentException("El ID de la cuenta no es válido.");
-
-            if (string.IsNullOrWhiteSpace(dto.CodigoCuenta))
-                throw new ArgumentException("El código de cuenta no puede estar vacío.");
-
-            if (string.IsNullOrWhiteSpace(dto.DescripcionCuenta))
-                throw new ArgumentException("La descripción de la cuenta no puede estar vacía.");
+            ArgumentNullException.ThrowIfNull(dto);
+            await _actualizarValidator.ValidateAndThrowAsync(dto);
 
             await _repo.ActualizarCuentaAsync(
                 dto.CuentaID,
                 dto.IdCuenta,
-                dto.CodigoCuenta.Trim(),
-                dto.DescripcionCuenta.Trim()
+                dto.CodigoCuenta!.Trim(),
+                dto.DescripcionCuenta!.Trim()
             );
+            _cache.Remove(CacheKeyCatalogoCuentas);
         }
 
         /// <summary>
@@ -100,6 +116,7 @@ namespace Mantenimiento.Core.Application.Services
                 throw new ArgumentException("ID de cuenta inválido para eliminar.");
 
             await _repo.EliminarCuentaAsync(cuentaId);
+            _cache.Remove(CacheKeyCatalogoCuentas);
         }
     }
 }

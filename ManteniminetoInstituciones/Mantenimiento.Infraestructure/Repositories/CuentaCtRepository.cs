@@ -1,4 +1,5 @@
 ﻿using Mantenimiento.Core.Domain.Entities;
+using Mantenimiento.Core.Domain.Pagination;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -36,6 +37,29 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
                 .FromSqlRaw("EXEC ct.sp_CuentasCt_Obtener @CuentaID = @CuentaID, @busqueda = @busqueda", pCuentaId, pBusqueda)
                 .AsNoTracking()
                 .ToListAsync();
+        }
+
+        public async Task<PagedResult<CuentaCt>> ObtenerPaginadoAsync(string? busqueda, int pagina, int tamanoPagina)
+        {
+            pagina = Math.Max(pagina, 1);
+            tamanoPagina = Math.Clamp(tamanoPagina, 1, 100);
+            var pCuentaId = new SqlParameter("@CuentaID", SqlDbType.Int) { Value = DBNull.Value };
+            var pBusqueda = new SqlParameter("@busqueda", SqlDbType.NVarChar, 255) { Value = (object?)busqueda ?? DBNull.Value };
+            var pPagina = new SqlParameter("@PageNumber", SqlDbType.Int) { Value = pagina };
+            var pTamanoPagina = new SqlParameter("@PageSize", SqlDbType.Int) { Value = tamanoPagina };
+            var pTotal = new SqlParameter("@TotalCount", SqlDbType.Int) { Direction = ParameterDirection.Output };
+
+            var cuentas = await _context.TipoCuentaCt
+                .FromSqlRaw(
+                    "EXEC ct.sp_CuentasCt_ObtenerPaginado @CuentaID, @busqueda, @PageNumber, @PageSize, @TotalCount OUTPUT",
+                    pCuentaId, pBusqueda, pPagina, pTamanoPagina, pTotal)
+                .AsNoTracking()
+                .ToListAsync();
+
+            var total = Convert.ToInt32(pTotal.Value);
+            var paginas = total == 0 ? 1 : (int)Math.Ceiling(total / (double)tamanoPagina);
+            pagina = Math.Min(pagina, paginas);
+            return new PagedResult<CuentaCt>(cuentas, pagina, tamanoPagina, total);
         }
 
         /// <summary>

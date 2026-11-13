@@ -1,4 +1,5 @@
 ﻿using Mantenimiento.Core.Domain.Entities;
+using Mantenimiento.Core.Domain.Pagination;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -32,6 +33,32 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
                 .FromSqlRaw("EXEC dbo.sp_requisitos_contratos_Obtener @codigo_requisito = @codigo_requisito, @busqueda = @busqueda", pCodigo, pBusqueda)
                 .AsNoTracking()
                 .ToListAsync();
+        }
+
+        public async Task<PagedResult<RequisitoContrato>> ObtenerPaginadoAsync(string? busqueda, int pagina, int tamanoPagina)
+        {
+            pagina = Math.Max(pagina, 1);
+            tamanoPagina = Math.Clamp(tamanoPagina, 1, 100);
+            var pCodigo = new SqlParameter("@codigo_requisito", SqlDbType.Int) { Value = DBNull.Value };
+            var pBusqueda = new SqlParameter("@busqueda", SqlDbType.NVarChar, 255)
+            {
+                Value = string.IsNullOrWhiteSpace(busqueda) ? DBNull.Value : busqueda.Trim()
+            };
+            var pPagina = new SqlParameter("@PageNumber", SqlDbType.Int) { Value = pagina };
+            var pTamanoPagina = new SqlParameter("@PageSize", SqlDbType.Int) { Value = tamanoPagina };
+            var pTotal = new SqlParameter("@TotalCount", SqlDbType.Int) { Direction = ParameterDirection.Output };
+
+            var requisitos = await _context.Set<RequisitoContrato>()
+                .FromSqlRaw(
+                    "EXEC dbo.sp_requisitos_contratos_Obtener_Paginado @codigo_requisito, @busqueda, @PageNumber, @PageSize, @TotalCount OUTPUT",
+                    pCodigo, pBusqueda, pPagina, pTamanoPagina, pTotal)
+                .AsNoTracking()
+                .ToListAsync();
+
+            var total = Convert.ToInt32(pTotal.Value);
+            var paginas = total == 0 ? 1 : (int)Math.Ceiling(total / (double)tamanoPagina);
+            pagina = Math.Min(pagina, paginas);
+            return new PagedResult<RequisitoContrato>(requisitos, pagina, tamanoPagina, total);
         }
 
         /// <summary>

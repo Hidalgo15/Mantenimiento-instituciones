@@ -1,7 +1,9 @@
-﻿using Mantenimiento.Core.Application.DTOs.CuentaRequisito;
+﻿using FluentValidation;
+using Mantenimiento.Core.Application.DTOs.CuentaRequisito;
 using Mantenimiento.Core.Application.DTOs.Resultado;
 using Mantenimiento.Core.Application.InterfaceServices;
 using Mantenimiento.Core.Application.Mappings;
+using Mantenimiento.Core.Domain.Pagination;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 
 namespace Mantenimiento.Core.Application.Services
@@ -9,10 +11,24 @@ namespace Mantenimiento.Core.Application.Services
     public class CuentaRequisitoService : ICuentaRequisitoService
     {
         private readonly ICuentaRequisitoRepository _repository;
+        private readonly IApplicationCache _cache;
+        private readonly IValidator<CrearCuentaRequisitoDto> _crearValidator;
+        private readonly IValidator<ActualizarCuentaRequisitoDto> _actualizarValidator;
 
-        public CuentaRequisitoService(ICuentaRequisitoRepository repository)
+        private const string CacheKeyCatalogoCuentas = "cat_cuentas_cache_key";
+        private const string CacheKeyCatalogoRequisitos = "cat_requisitos_cache_key";
+        private static readonly TimeSpan CacheDuration = TimeSpan.FromMinutes(10);
+
+        public CuentaRequisitoService(
+            ICuentaRequisitoRepository repository,
+            IApplicationCache cache,
+            IValidator<CrearCuentaRequisitoDto> crearValidator,
+            IValidator<ActualizarCuentaRequisitoDto> actualizarValidator)
         {
             _repository = repository;
+            _cache = cache;
+            _crearValidator = crearValidator;
+            _actualizarValidator = actualizarValidator;
         }
 
         /// <summary>
@@ -30,6 +46,21 @@ namespace Mantenimiento.Core.Application.Services
             return entidades.Select(CuentaRequisitoMapper.ToDto).ToList();
         }
 
+        public async Task<PagedResult<CuentaRequisitoDto>> ObtenerPaginadoAsync(
+            double? idCuenta,
+            int? idRequisito,
+            bool? estado,
+            int pagina = 1,
+            int tamanoPagina = 10)
+        {
+            var resultado = await _repository.ObtenerPaginadoAsync(idCuenta, idRequisito, estado, pagina, tamanoPagina);
+            return new PagedResult<CuentaRequisitoDto>(
+                resultado.Items.Select(CuentaRequisitoMapper.ToDto).ToList(),
+                resultado.PageNumber,
+                resultado.PageSize,
+                resultado.TotalCount);
+        }
+
         /// <summary>
         /// Asigna un requisito a una cuenta según los datos proporcionados y devuelve el resultado de la operación.
         /// </summary>
@@ -39,7 +70,8 @@ namespace Mantenimiento.Core.Application.Services
         /// <returns>ResultadoOperacionDto con el resultado de la asignación.</returns>
         public async Task<ResultadoOperacionDto> AsignarAsync(CrearCuentaRequisitoDto dto)
         {
-            ValidarDatos(dto.IdCuenta, dto.IdRequisito);
+            ArgumentNullException.ThrowIfNull(dto);
+            await _crearValidator.ValidateAndThrowAsync(dto);
             var res = await _repository.AsignarAsync(dto.IdCuenta, dto.IdRequisito, dto.Estado);
             return ResultadoOperacionMapper.ToDto(res);
         }
@@ -49,13 +81,11 @@ namespace Mantenimiento.Core.Application.Services
         /// </summary>
         /// <param name="dto">Datos de actualización que incluyen CuentaRequisitosID, IdCuenta, IdRequisito y Estado.</param>
         /// <returns>Un ResultadoOperacionDto que representa el resultado de la operación de actualización.</returns>
-        /// <exception cref="ArgumentException">Se lanza cuando CuentaRequisitosID es menor o igual a cero.</exception>
+        /// <exception cref="FluentValidation.ValidationException">Se lanza cuando la relación o sus identificadores son inválidos.</exception>
         public async Task<ResultadoOperacionDto> ActualizarAsync(ActualizarCuentaRequisitoDto dto)
         {
-            if (dto.CuentaRequisitosID <= 0)
-                throw new ArgumentException("El ID de la relación es inválido.");
-
-            ValidarDatos(dto.IdCuenta, dto.IdRequisito);
+            ArgumentNullException.ThrowIfNull(dto);
+            await _actualizarValidator.ValidateAndThrowAsync(dto);
             var res = await _repository.ActualizarAsync(dto.CuentaRequisitosID, dto.IdCuenta, dto.IdRequisito, dto.Estado);
             return ResultadoOperacionMapper.ToDto(res);
         }
@@ -79,41 +109,37 @@ namespace Mantenimiento.Core.Application.Services
         }
 
         /// <summary>
-        /// Obtiene de forma asíncrona el catálogo de cuentas y lo transforma a instancias de CuentaCatalogoDto.
+        /// Obtiene el catálogo de cuentas utilizando Caché en Memoria para optimizar rendimiento.
         /// </summary>
-        /// <remarks>Los elementos se recuperan desde el repositorio y se mapean mediante
-        /// CuentaRequisitoMapper.ToDto.</remarks>
-        /// <returns>Una tarea cuyo resultado es una lista de CuentaCatalogoDto que contiene el catálogo de cuentas.</returns>
         public async Task<List<CuentaCatalogoDto>> ObtenerCatalogoCuentasAsync()
         {
-            var entidades = await _repository.ObtenerCatalogoCuentasAsync();
-            return entidades.Select(CuentaRequisitoMapper.ToDto).ToList();
+            var catalogo = await _cache.GetOrCreateAsync(
+                CacheKeyCatalogoCuentas,
+                async () =>
+                {
+                    var entidades = await _repository.ObtenerCatalogoCuentasAsync();
+                    return entidades.Select(CuentaRequisitoMapper.ToDto).ToArray();
+                },
+                CacheDuration);
+
+            return catalogo.ToList();
         }
 
         /// <summary>
-        /// Obtiene el catálogo de requisitos y lo devuelve como una lista de RequisitoCatalogoDto.
+        /// Obtiene el catálogo de requisitos utilizando Caché en Memoria.
         /// </summary>
-        /// <returns>Una tarea que representa la operación asincrónica. El resultado contiene una lista de RequisitoCatalogoDto
-        /// con el catálogo de requisitos.</returns>
         public async Task<List<RequisitoCatalogoDto>> ObtenerCatalogoRequisitosAsync()
         {
-            var entidades = await _repository.ObtenerCatalogoRequisitosAsync();
-            return entidades.Select(CuentaRequisitoMapper.ToDto).ToList();
-        }
+            var catalogo = await _cache.GetOrCreateAsync(
+                CacheKeyCatalogoRequisitos,
+                async () =>
+                {
+                    var entidades = await _repository.ObtenerCatalogoRequisitosAsync();
+                    return entidades.Select(CuentaRequisitoMapper.ToDto).ToArray();
+                },
+                CacheDuration);
 
-        /// <summary>
-        /// Valida que idCuenta e idRequisito sean mayores que cero.
-        /// </summary>
-        /// <param name="idCuenta">Identificador de la cuenta; debe ser mayor que cero.</param>
-        /// <param name="idRequisito">Identificador del requisito; debe ser mayor que cero.</param>
-        /// <exception cref="ArgumentException">Se lanza si idCuenta o idRequisito son menores o iguales a cero.</exception>
-        private static void ValidarDatos(double idCuenta, int idRequisito)
-        {
-            if (idCuenta <= 0)
-                throw new ArgumentException("Debe seleccionar una cuenta válida.");
-
-            if (idRequisito <= 0)
-                throw new ArgumentException("Debe seleccionar un requisito válido.");
+            return catalogo.ToList();
         }
     }
 }

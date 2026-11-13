@@ -197,6 +197,49 @@ document.addEventListener('hidden.bs.modal', evento => {
     evento.target.querySelectorAll('.message-banner--modal').forEach(aviso => aviso.remove());
 });
 
+document.addEventListener('click', async evento => {
+    const boton = evento.target.closest('[data-grid-page]');
+    if (!boton || boton.disabled) return;
+
+    const paginacion = boton.closest('[data-grid-pagination]');
+    const contenedor = boton.closest('#contenedorGrid');
+    if (!paginacion || !contenedor) return;
+
+    const url = new URL(paginacion.dataset.gridUrl, window.location.origin);
+    const paginaActual = Number(paginacion.dataset.pageNumber);
+    const pagina = boton.dataset.gridPage === 'next' ? paginaActual + 1 : paginaActual - 1;
+    url.searchParams.set('page', String(pagina));
+    url.searchParams.set('pageSize', paginacion.dataset.pageSize);
+
+    evento.preventDefault();
+    await cargarPaginaGrid(url, contenedor);
+});
+
+document.addEventListener('change', async evento => {
+    const selector = evento.target.closest('[data-grid-page-size]');
+    if (!selector) return;
+
+    const paginacion = selector.closest('[data-grid-pagination]');
+    const contenedor = selector.closest('#contenedorGrid');
+    if (!paginacion || !contenedor) return;
+
+    const url = new URL(paginacion.dataset.gridUrl, window.location.origin);
+    url.searchParams.set('page', '1');
+    url.searchParams.set('pageSize', selector.value);
+    await cargarPaginaGrid(url, contenedor);
+});
+
+async function cargarPaginaGrid(url, contenedor) {
+    try {
+        const respuesta = await fetch(url);
+        if (!respuesta.ok) throw new Error(`HTTP ${respuesta.status}`);
+        contenedor.innerHTML = await respuesta.text();
+    } catch (error) {
+        console.error('No se pudo cargar la página del grid.', error);
+        mostrarBanner('No se pudo cargar la página solicitada. Intente nuevamente.', 'danger');
+    }
+}
+
 function confirmarAccion(mensaje, opciones = {}) {
     const elemento = document.getElementById('confirmationModal');
     const aceptar = document.getElementById('confirmationModalAccept');
@@ -285,8 +328,25 @@ function confirmarAccion(mensaje, opciones = {}) {
             suppressAutoSuccess = false,
             ...opcionesFetch
         } = opciones;
-        const argumentosFetch = argumentos.length > 1 ? [argumentos[0], opcionesFetch] : argumentos;
         const metodo = (opciones.method || (argumentos[0] instanceof Request ? argumentos[0].method : 'GET')).toUpperCase();
+        const argumentosFetch = argumentos.length > 1 ? [argumentos[0], opcionesFetch] : argumentos;
+        const url = argumentos[0] instanceof Request ? argumentos[0].url : argumentos[0];
+        if (new URL(url, window.location.href).origin === window.location.origin) {
+            const headers = new Headers(argumentos[0] instanceof Request ? argumentos[0].headers : undefined);
+            new Headers(opcionesFetch.headers).forEach((valor, nombre) => headers.set(nombre, valor));
+            if (!headers.has('X-Requested-With')) {
+                headers.set('X-Requested-With', 'XMLHttpRequest');
+            }
+
+            if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(metodo)) {
+                const token = document.querySelector('meta[name="csrf-token"]')?.content;
+                if (token && !headers.has('RequestVerificationToken')) {
+                    headers.set('RequestVerificationToken', token);
+                }
+            }
+
+            argumentosFetch[1] = { ...opcionesFetch, headers };
+        }
         const boton = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(metodo)
             ? iniciarCargaBoton(document.activeElement instanceof HTMLButtonElement ? document.activeElement : null)
             : null;

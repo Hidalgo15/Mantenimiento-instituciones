@@ -1,7 +1,9 @@
-﻿using Mantenimiento.Core.Application.DTOs.RelacionContratoRequisito;
+﻿using FluentValidation;
+using Mantenimiento.Core.Application.DTOs.RelacionContratoRequisito;
 using Mantenimiento.Core.Application.DTOs.Resultado;
 using Mantenimiento.Core.Application.InterfaceServices;
 using Mantenimiento.Core.Application.Mappings;
+using Mantenimiento.Core.Domain.Pagination;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 
 namespace Mantenimiento.Core.Application.Services
@@ -9,10 +11,17 @@ namespace Mantenimiento.Core.Application.Services
     public class RelacionContratoRequisitoService : IRelacionContratoRequisitoService
     {
         private readonly IRelacionContratoRequisitoRepository _repository;
+        private readonly IValidator<CrearRelacionContratoRequisitoDto> _crearValidator;
+        private readonly IValidator<ActualizarRelacionContratoRequisitoDto> _actualizarValidator;
 
-        public RelacionContratoRequisitoService(IRelacionContratoRequisitoRepository repository)
+        public RelacionContratoRequisitoService(
+            IRelacionContratoRequisitoRepository repository,
+            IValidator<CrearRelacionContratoRequisitoDto> crearValidator,
+            IValidator<ActualizarRelacionContratoRequisitoDto> actualizarValidator)
         {
             _repository = repository;
+            _crearValidator = crearValidator;
+            _actualizarValidator = actualizarValidator;
         }
 
         /// <summary>
@@ -27,6 +36,20 @@ namespace Mantenimiento.Core.Application.Services
             return entidades.Select(RelacionContratoRequisitoMapper.ToDto).ToList();
         }
 
+        public async Task<PagedResult<RelacionContratoRequisitoDto>> ObtenerPaginadoAsync(
+            int? codigoClasificacion,
+            int? codigoRequisito,
+            int pagina = 1,
+            int tamanoPagina = 10)
+        {
+            var resultado = await _repository.ObtenerPaginadoAsync(codigoClasificacion, codigoRequisito, pagina, tamanoPagina);
+            return new PagedResult<RelacionContratoRequisitoDto>(
+                resultado.Items.Select(RelacionContratoRequisitoMapper.ToDto).ToList(),
+                resultado.PageNumber,
+                resultado.PageSize,
+                resultado.TotalCount);
+        }
+
         /// <summary>
         /// Asigna de forma asíncrona un requisito a una clasificación de contrato.
         /// </summary>
@@ -37,10 +60,8 @@ namespace Mantenimiento.Core.Application.Services
         /// <exception cref="ArgumentException">Se lanza si CodigoClasificacion o CodigoRequisito no son valores válidos (<= 0).</exception>
         public async Task<ResultadoOperacionDto> AsignarAsync(CrearRelacionContratoRequisitoDto dto)
         {
-            if (dto.CodigoClasificacion <= 0)
-                throw new ArgumentException("Debe seleccionar una clasificación de contrato válida.");
-            if (dto.CodigoRequisito <= 0)
-                throw new ArgumentException("Debe seleccionar un requisito válido.");
+            ArgumentNullException.ThrowIfNull(dto);
+            await _crearValidator.ValidateAndThrowAsync(dto);
 
             var res = await _repository.AsignarAsync(dto.CodigoClasificacion, dto.CodigoRequisito);
             return ResultadoOperacionMapper.ToDto(res);
@@ -57,12 +78,8 @@ namespace Mantenimiento.Core.Application.Services
         /// iguales a cero.</exception>
         public async Task<ResultadoOperacionDto> ActualizarAsync(ActualizarRelacionContratoRequisitoDto dto)
         {
-            if (dto.Id <= 0)
-                throw new ArgumentException("El ID de la relación es inválido.");
-            if (dto.CodigoClasificacion <= 0)
-                throw new ArgumentException("Debe seleccionar una clasificación de contrato válida.");
-            if (dto.CodigoRequisito <= 0)
-                throw new ArgumentException("Debe seleccionar un requisito válido.");
+            ArgumentNullException.ThrowIfNull(dto);
+            await _actualizarValidator.ValidateAndThrowAsync(dto);
 
             var res = await _repository.ActualizarAsync(dto.Id, dto.CodigoClasificacion, dto.CodigoRequisito);
             return ResultadoOperacionMapper.ToDto(res);

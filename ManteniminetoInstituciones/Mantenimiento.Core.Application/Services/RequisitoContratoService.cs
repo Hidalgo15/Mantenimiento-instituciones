@@ -1,6 +1,8 @@
-﻿using Mantenimiento.Core.Application.DTOs.RequisitoContrato;
+using FluentValidation;
+using Mantenimiento.Core.Application.DTOs.RequisitoContrato;
 using Mantenimiento.Core.Application.InterfaceServices;
 using Mantenimiento.Core.Application.Mappings;
+using Mantenimiento.Core.Domain.Pagination;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 
 namespace Mantenimiento.Core.Application.Services
@@ -8,10 +10,17 @@ namespace Mantenimiento.Core.Application.Services
     public class RequisitoContratoService : IRequisitoContratoService
     {
         private readonly IRequisitoContratoRepository _repo;
+        private readonly IValidator<CrearRequisitoContratoDto> _crearValidator;
+        private readonly IValidator<ActualizarRequisitoContratoDto> _actualizarValidator;
 
-        public RequisitoContratoService(IRequisitoContratoRepository repo)
+        public RequisitoContratoService(
+            IRequisitoContratoRepository repo,
+            IValidator<CrearRequisitoContratoDto> crearValidator,
+            IValidator<ActualizarRequisitoContratoDto> actualizarValidator)
         {
             _repo = repo;
+            _crearValidator = crearValidator;
+            _actualizarValidator = actualizarValidator;
         }
 
         /// <summary>
@@ -21,6 +30,19 @@ namespace Mantenimiento.Core.Application.Services
         {
             var lista = await _repo.ObtenerRequisitosAsync(busqueda);
             return lista.Select(RequisitoContratoMapper.ToDto).ToList();
+        }
+
+        public async Task<PagedResult<RequisitoContratoDto>> ObtenerPaginadoAsync(
+            string? busqueda = null,
+            int pagina = 1,
+            int tamanoPagina = 10)
+        {
+            var resultado = await _repo.ObtenerPaginadoAsync(busqueda, pagina, tamanoPagina);
+            return new PagedResult<RequisitoContratoDto>(
+                resultado.Items.Select(RequisitoContratoMapper.ToDto).ToList(),
+                resultado.PageNumber,
+                resultado.PageSize,
+                resultado.TotalCount);
         }
 
         /// <summary>
@@ -37,7 +59,8 @@ namespace Mantenimiento.Core.Application.Services
         /// </summary>
         public async Task<int> CrearRequisitoContratoAsync(CrearRequisitoContratoDto dto)
         {
-            ValidarRequisito(dto.DescripcionRequisito);
+            ArgumentNullException.ThrowIfNull(dto);
+            await _crearValidator.ValidateAndThrowAsync(dto);
 
             var entidad = RequisitoContratoMapper.ToEntity(dto);
             return await _repo.InsertarConSpAsync(entidad);
@@ -48,10 +71,8 @@ namespace Mantenimiento.Core.Application.Services
         /// </summary>
         public async Task ActualizarRequisitoContratoAsync(ActualizarRequisitoContratoDto dto)
         {
-            if (dto.CodigoRequisito <= 0)
-                throw new ArgumentException("El código del requisito no es válido para actualizar.");
-
-            ValidarRequisito(dto.DescripcionRequisito);
+            ArgumentNullException.ThrowIfNull(dto);
+            await _actualizarValidator.ValidateAndThrowAsync(dto);
 
             var entidad = RequisitoContratoMapper.ToEntity(dto);
             await _repo.ActualizarConSpAsync(entidad);
@@ -68,16 +89,5 @@ namespace Mantenimiento.Core.Application.Services
             await _repo.EliminarConSpAsync(codigoRequisito);
         }
 
-        /// <summary>
-        /// Valida las reglas de negocio básicas para el requisito de contrato.
-        /// </summary>
-        private static void ValidarRequisito(string? descripcion)
-        {
-            if (string.IsNullOrWhiteSpace(descripcion))
-                throw new ArgumentException("La descripción del requisito es requerida.");
-
-            if (descripcion.Trim().Length > 300)
-                throw new ArgumentException("La descripción del requisito no puede exceder los 300 caracteres.");
-        }
     }
 }

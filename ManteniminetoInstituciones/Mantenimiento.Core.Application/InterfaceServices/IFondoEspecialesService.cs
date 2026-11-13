@@ -1,6 +1,7 @@
 ﻿
 
 using Mantenimiento.Core.Application.DTOs.Fondos;
+using Mantenimiento.Core.Domain.Pagination;
 
 namespace Mantenimiento.Core.Application.InterfaceServices
 {
@@ -9,7 +10,14 @@ namespace Mantenimiento.Core.Application.InterfaceServices
         Task ActualizarFondoEspecialAsync(FondoDto dto);
         Task CrearFondoEspecialAsync(CrearFondoDto dto);
         Task EliminarFondoEspecialAsync(int id);
-        Task<List<FondoDto>> ObtenerFondosEspecialesAsync(string? estructura = null, string? tipoTramite = null);
+        Task<PagedResult<FondoDto>> ObtenerFondosEspecialesAsync(
+            string? estructura = null,
+            string? tipoTramite = null,
+            int pageNumber = 1,
+            int pageSize = 10);
+        Task<List<FondoDto>> ObtenerFondosEspecialesSinPaginacionAsync(
+            string? estructura = null,
+            string? tipoTramite = null);
         Task<FondoDto?> ObtenerPorIdAsync(int id);
     }
 }

@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace MantenimientoPresentation.Controllers
 {
     [Authorize]
+    [AutoValidateAntiforgeryToken]
     public class ResponsableActividadController : Controller
     {
         private readonly IResponsableActividadService _service;
@@ -28,7 +29,7 @@ namespace MantenimientoPresentation.Controllers
             {
                 ViewBag.Moldes = await _service.ObtenerCatalogosMoldesAsync();
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al cargar los moldes en la vista inicial.");
                 ViewBag.Moldes = new List<MoldeCatalogoDto>();
@@ -47,7 +48,7 @@ namespace MantenimientoPresentation.Controllers
 
                 return PartialView("_ResponsableActividadGridPartial", usuarios);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al obtener el grid inverso de usuarios por actividad.");
                 return StatusCode(500, "Ocurrió un error al cargar los usuarios.");
@@ -62,7 +63,7 @@ namespace MantenimientoPresentation.Controllers
                 var usuarios = await _service.ObtenerUsuariosPorFlujoAsync(codigoTre, nombreFlujo, busquedaGeneral);
                 return PartialView("_ResponsableActividadGridPartial", usuarios);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al obtener el grid de usuarios por flujo.");
                 return StatusCode(500, "Ocurrió un error al cargar los usuarios del flujo.");
@@ -77,10 +78,10 @@ namespace MantenimientoPresentation.Controllers
                 var subtipos = await _service.ObtenerSubtiposPorMoldeAsync(codigoTre);
                 return Json(new { success = true, data = subtipos });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al obtener subtipos por molde.");
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -90,15 +91,15 @@ namespace MantenimientoPresentation.Controllers
             try
             {
                 if (string.IsNullOrWhiteSpace(codigosSubtipos))
-                    return Json(new { success = false, message = "Debe seleccionar al menos un subtipo." });
+                    return BadRequest(new { success = false, message = "Debe seleccionar al menos un subtipo." });
 
                 var actividades = await _service.ObtenerActividadesPorSubtiposAsync(codigosSubtipos);
                 return Json(new { success = true, actividades });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al obtener actividades por subtipos.");
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -110,10 +111,10 @@ namespace MantenimientoPresentation.Controllers
                 var flujos = await _service.ObtenerFlujosPorMoldeAsync(codigoTre);
                 return Json(new { success = true, data = flujos });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al obtener flujos por molde.");
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -123,15 +124,15 @@ namespace MantenimientoPresentation.Controllers
             try
             {
                 if (string.IsNullOrWhiteSpace(nombreFlujo))
-                    return Json(new { success = false, message = "Debe seleccionar un flujo válido." });
+                    return BadRequest(new { success = false, message = "Debe seleccionar un flujo válido." });
 
                 var actividades = await _service.ObtenerActividadesPorFlujoAsync(codigoTre, nombreFlujo);
                 return Json(new { success = true, actividades });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al obtener actividades por flujo.");
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -144,10 +145,10 @@ namespace MantenimientoPresentation.Controllers
                 var codigos = actividades.Select(a => a.CodigoActividad).ToList();
                 return Json(new { success = true, codigosActividades = codigos });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al obtener los códigos de actividades del flujo.");
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -159,10 +160,10 @@ namespace MantenimientoPresentation.Controllers
                 var actividades = await _service.ObtenerActividadesUsuarioAsync(codigoDespa);
                 return Json(actividades);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al obtener actividades del usuario.");
-                return StatusCode(500, new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -171,19 +172,22 @@ namespace MantenimientoPresentation.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return Json(new { success = false, message = "Datos de asignación inválidos." });
+                return BadRequest(new { success = false, message = "Datos de asignación inválidos." });
             }
 
             try
             {
                 dto.Usuario = _currentUserService.GetUsername();
                 var resultado = await _service.GestionarActividadUsuariosAsync(dto);
-                return Json(new { success = resultado.CodigoResultado == 1, message = resultado.Mensaje });
+                if (resultado.CodigoResultado != 1)
+                    return Conflict(new { success = false, message = resultado.Mensaje });
+
+                return Json(new { success = true, message = resultado.Mensaje });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al sincronizar los usuarios de la actividad.");
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -192,19 +196,22 @@ namespace MantenimientoPresentation.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return Json(new { success = false, message = "Datos de asignación inválidos." });
+                return BadRequest(new { success = false, message = "Datos de asignación inválidos." });
             }
 
             try
             {
                 dto.Usuario = _currentUserService.GetUsername();
                 var resultado = await _service.GestionarActividadesAsync(dto);
-                return Json(new { success = resultado.CodigoResultado == 1, message = resultado.Mensaje });
+                if (resultado.CodigoResultado != 1)
+                    return Conflict(new { success = false, message = resultado.Mensaje });
+
+                return Json(new { success = true, message = resultado.Mensaje });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al gestionar las actividades del responsable.");
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
     }

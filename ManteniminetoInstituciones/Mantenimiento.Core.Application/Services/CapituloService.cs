@@ -1,4 +1,5 @@
-﻿using Mantenimiento.Core.Application.DTOs.Capitulo;
+﻿using FluentValidation;
+using Mantenimiento.Core.Application.DTOs.Capitulo;
 using Mantenimiento.Core.Application.InterfaceServices;
 using Mantenimiento.Core.Application.Mappings;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
@@ -9,11 +10,19 @@ namespace Mantenimiento.Core.Application.Services
     {
         private readonly ICapituloRepository _repo;
         private readonly ISubCapituloRepository _subCapituloRepo;
+        private readonly IValidator<CrearCapituloDto> _crearValidator;
+        private readonly IValidator<ActualizarCapituloDto> _actualizarValidator;
 
-        public CapituloService(ICapituloRepository repo, ISubCapituloRepository subCapituloRepo)
+        public CapituloService(
+            ICapituloRepository repo,
+            ISubCapituloRepository subCapituloRepo,
+            IValidator<CrearCapituloDto> crearValidator,
+            IValidator<ActualizarCapituloDto> actualizarValidator)
         {
             _repo = repo;
             _subCapituloRepo = subCapituloRepo;
+            _crearValidator = crearValidator;
+            _actualizarValidator = actualizarValidator;
         }
 
         /// <summary>
@@ -45,14 +54,14 @@ namespace Mantenimiento.Core.Application.Services
         /// Crea un capítulo a partir del DTO, valida sus datos e inserta la entidad mediante un procedimiento
         /// almacenado de forma asíncrona.
         /// </summary>
-        /// <remarks>Valida el código y el nombre mediante ValidarCapitulo; puede lanzar una excepción si
-        /// la validación falla. La entidad se obtiene con CapituloMapper y se persiste usando un procedimiento
+        /// <remarks>Valida el DTO con FluentValidation. La entidad se obtiene con CapituloMapper y se persiste usando un procedimiento
         /// almacenado del repositorio.</remarks>
         /// <param name="dto">DTO con los datos del capítulo a crear.</param>
         /// <returns>Tarea que representa la operación asíncrona.</returns>
         public async Task CrearCapituloAsync(CrearCapituloDto dto)
         {
-            ValidarCapitulo(dto.CodigoCapitulo, dto.NombreCapitulo);
+            ArgumentNullException.ThrowIfNull(dto);
+            await _crearValidator.ValidateAndThrowAsync(dto);
 
             await _repo.InsertarConSpAsync(CapituloMapper.ToEntity(dto));
         }
@@ -60,13 +69,14 @@ namespace Mantenimiento.Core.Application.Services
         /// <summary>
         /// Actualiza un capítulo en el repositorio de forma asíncrona mediante un procedimiento almacenado.
         /// </summary>
-        /// <remarks>Valida el código y el nombre del capítulo y mapea el DTO a una entidad antes de
+        /// <remarks>Valida el DTO con FluentValidation y mapea el DTO a una entidad antes de
         /// invocar el repositorio.</remarks>
         /// <param name="dto">Datos del capítulo a actualizar.</param>
         /// <returns>Tarea que se completa cuando la operación de actualización finaliza.</returns>
         public async Task ActualizarCapituloAsync(ActualizarCapituloDto dto)
         {
-            ValidarCapitulo(dto.CodigoCapitulo, dto.NombreCapitulo);
+            ArgumentNullException.ThrowIfNull(dto);
+            await _actualizarValidator.ValidateAndThrowAsync(dto);
 
             await _repo.ActualizarConSpAsync(CapituloMapper.ToEntity(dto));
         }
@@ -86,23 +96,5 @@ namespace Mantenimiento.Core.Application.Services
             await _repo.EliminarConSpAsync(id);
         }
 
-        /// <summary>
-        /// Valida el código y el nombre de un capítulo y lanza ArgumentException si son inválidos.
-        /// </summary>
-        /// <param name="codigo">Código del capítulo. Requerido; máximo 10 caracteres.</param>
-        /// <param name="nombre">Nombre del capítulo. Requerido.</param>
-        /// <exception cref="ArgumentException">Se lanza cuando codigo o nombre son nulos, vacíos o contienen solo espacios, o cuando codigo excede 10
-        /// caracteres.</exception>
-        private static void ValidarCapitulo(string codigo, string nombre)
-        {
-            if (string.IsNullOrWhiteSpace(codigo))
-                throw new ArgumentException("El código del capítulo es requerido.");
-
-            if (string.IsNullOrWhiteSpace(nombre))
-                throw new ArgumentException("El nombre del capítulo es requerido.");
-
-            if (codigo.Length > 10)
-                throw new ArgumentException("El código del capítulo no puede exceder 10 caracteres.");
-        }
     }
 }

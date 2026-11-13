@@ -1,7 +1,9 @@
-﻿using Mantenimiento.Core.Application.DTOs.Requisito;
+﻿using FluentValidation;
+using Mantenimiento.Core.Application.DTOs.Requisito;
 using Mantenimiento.Core.Application.DTOs.Resultado;
 using Mantenimiento.Core.Application.InterfaceServices;
 using Mantenimiento.Core.Application.Mappings;
+using Mantenimiento.Core.Domain.Pagination;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 
 namespace Mantenimiento.Core.Application.Services
@@ -9,10 +11,21 @@ namespace Mantenimiento.Core.Application.Services
     public class RequisitoService : IRequisitoService
     {
         private readonly IRequisitoRepository _repository;
+        private readonly IApplicationCache _cache;
+        private readonly IValidator<CrearRequisitoDto> _crearValidator;
+        private readonly IValidator<ActualizarRequisitoDto> _actualizarValidator;
+        private const string CacheKeyCatalogoRequisitos = "cat_requisitos_cache_key";
 
-        public RequisitoService(IRequisitoRepository repository)
+        public RequisitoService(
+            IRequisitoRepository repository,
+            IApplicationCache cache,
+            IValidator<CrearRequisitoDto> crearValidator,
+            IValidator<ActualizarRequisitoDto> actualizarValidator)
         {
             _repository = repository;
+            _cache = cache;
+            _crearValidator = crearValidator;
+            _actualizarValidator = actualizarValidator;
         }
 
         /// <summary>
@@ -29,6 +42,16 @@ namespace Mantenimiento.Core.Application.Services
             return entidades.Select(RequisitoMapper.ToDto).ToList();
         }
 
+        public async Task<PagedResult<RequisitoDto>> ObtenerPaginadoAsync(string? busqueda, int pagina = 1, int tamanoPagina = 10)
+        {
+            var resultado = await _repository.ObtenerPaginadoAsync(busqueda, pagina, tamanoPagina);
+            return new PagedResult<RequisitoDto>(
+                resultado.Items.Select(RequisitoMapper.ToDto).ToList(),
+                resultado.PageNumber,
+                resultado.PageSize,
+                resultado.TotalCount);
+        }
+
         /// <summary>
         /// Crea un requisito de forma asíncrona y devuelve el resultado de la operación.
         /// </summary>
@@ -38,10 +61,13 @@ namespace Mantenimiento.Core.Application.Services
         /// <exception cref="ArgumentException">Si RequisitoDescripcion es nula, vacía o contiene solo espacios en blanco.</exception>
         public async Task<ResultadoOperacionDto> CrearAsync(CrearRequisitoDto dto)
         {
-            if (string.IsNullOrWhiteSpace(dto.RequisitoDescripcion))
-                throw new ArgumentException("La descripción del requisito es obligatoria.");
+            ArgumentNullException.ThrowIfNull(dto);
+            await _crearValidator.ValidateAndThrowAsync(dto);
 
             var res = await _repository.CrearAsync(dto.RequisitoDescripcion.Trim());
+            if (res.CodigoResultado == 1)
+                _cache.Remove(CacheKeyCatalogoRequisitos);
+
             return ResultadoOperacionMapper.ToDto(res);
         }
 
@@ -57,13 +83,13 @@ namespace Mantenimiento.Core.Application.Services
         /// espacios.</exception>
         public async Task<ResultadoOperacionDto> ActualizarAsync(ActualizarRequisitoDto dto)
         {
-            if (dto.RequisitosID <= 0)
-                throw new ArgumentException("El ID del requisito es inválido.");
-
-            if (string.IsNullOrWhiteSpace(dto.RequisitoDescripcion))
-                throw new ArgumentException("La descripción del requisito no puede estar vacía.");
+            ArgumentNullException.ThrowIfNull(dto);
+            await _actualizarValidator.ValidateAndThrowAsync(dto);
 
             var res = await _repository.ActualizarAsync(dto.RequisitosID, dto.RequisitoDescripcion.Trim());
+            if (res.CodigoResultado == 1)
+                _cache.Remove(CacheKeyCatalogoRequisitos);
+
             return ResultadoOperacionMapper.ToDto(res);
         }
 
@@ -82,6 +108,9 @@ namespace Mantenimiento.Core.Application.Services
                 throw new ArgumentException("El ID del requisito es inválido.");
 
             var res = await _repository.EliminarAsync(requisitosID);
+            if (res.CodigoResultado == 1)
+                _cache.Remove(CacheKeyCatalogoRequisitos);
+
             return ResultadoOperacionMapper.ToDto(res);
         }
     }

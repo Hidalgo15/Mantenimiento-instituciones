@@ -1,4 +1,5 @@
 ﻿using Mantenimiento.Core.Application.DTOs.Cuenta.CtCuentasDTO;
+using Mantenimiento.Core.Domain.Pagination;
 using Mantenimiento.Core.Application.DTOs.Cuenta.DboCuentasDTO;
 using System;
 using System.Collections.Generic;
@@ -11,6 +12,7 @@ namespace Mantenimiento.Core.Application.InterfaceServices
     public interface ICuentaCtService
     {
         Task<List<CuentaCtDto>> ObtenerCuentasAsync(string? busqueda = null);
+        Task<PagedResult<CuentaCtDto>> ObtenerPaginadoAsync(string? busqueda, int pagina = 1, int tamanoPagina = 10);
         Task<CuentaCtDto?> ObtenerPorIdAsync(int cuentaId);
         Task CrearCuentaAsync(CrearCuentaCtDto dto);
         Task ActualizarCuentaAsync(ActualizarCuentaCtDto dto);

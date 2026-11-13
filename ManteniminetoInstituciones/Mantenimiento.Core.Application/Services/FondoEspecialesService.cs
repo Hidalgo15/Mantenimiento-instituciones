@@ -1,6 +1,8 @@
-﻿using Mantenimiento.Core.Application.DTOs.Fondos;
+﻿using FluentValidation;
+using Mantenimiento.Core.Application.DTOs.Fondos;
 using Mantenimiento.Core.Application.InterfaceServices;
 using Mantenimiento.Core.Application.Mappings;
+using Mantenimiento.Core.Domain.Pagination;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 
 
@@ -10,13 +12,19 @@ namespace Mantenimiento.Core.Application.Services
     {
         private readonly IFondoEspecialesRepository _fondoRepo;
         private readonly ITipoTramiteService _tipoTramiteService;
+        private readonly IValidator<CrearFondoDto> _crearValidator;
+        private readonly IValidator<FondoDto> _actualizarValidator;
 
         public FondoEspecialesService(
             IFondoEspecialesRepository fondoRepo,
-            ITipoTramiteService tipoTramiteService)
+            ITipoTramiteService tipoTramiteService,
+            IValidator<CrearFondoDto> crearValidator,
+            IValidator<FondoDto> actualizarValidator)
         {
             _fondoRepo = fondoRepo;
             _tipoTramiteService = tipoTramiteService;
+            _crearValidator = crearValidator;
+            _actualizarValidator = actualizarValidator;
         }
 
         /// <summary>
@@ -25,26 +33,32 @@ namespace Mantenimiento.Core.Application.Services
         /// <param name="estructura"></param>
         /// <param name="tipoTramite"></param>
         /// <returns></returns>
-        public async Task<List<FondoDto>> ObtenerFondosEspecialesAsync(string? estructura = null, string? tipoTramite = null)
+        public async Task<PagedResult<FondoDto>> ObtenerFondosEspecialesAsync(
+            string? estructura = null,
+            string? tipoTramite = null,
+            int pageNumber = 1,
+            int pageSize = 10)
         {
-            var lista = await _fondoRepo.GetAllFondosEspecialesAsync();
-            var query = lista.AsEnumerable();
+            var pagina = await _fondoRepo.GetFondosEspecialesPaginadosAsync(
+                null,
+                estructura,
+                tipoTramite,
+                pageNumber,
+                pageSize);
 
-            if (!string.IsNullOrWhiteSpace(estructura))
-            {
-                query = query.Where(f => string.Equals(
-                    f.Estructura,
-                    estructura,
-                    StringComparison.OrdinalIgnoreCase));
-            }
+            return new PagedResult<FondoDto>(
+                pagina.Items.Select(FondoEspecialesMapper.ToDto).ToList(),
+                pagina.PageNumber,
+                pagina.PageSize,
+                pagina.TotalCount);
+        }
 
-            if (!string.IsNullOrWhiteSpace(tipoTramite))
-            {
-                query = query.Where(f => f.TipoTramite != null &&
-                    f.TipoTramite.Equals(tipoTramite, StringComparison.OrdinalIgnoreCase));
-            }
-
-            return query.Select(FondoEspecialesMapper.ToDto).ToList();
+        public async Task<List<FondoDto>> ObtenerFondosEspecialesSinPaginacionAsync(
+            string? estructura = null,
+            string? tipoTramite = null)
+        {
+            var fondos = await _fondoRepo.GetFondosEspecialesAsync(null, estructura, tipoTramite);
+            return fondos.Select(FondoEspecialesMapper.ToDto).ToList();
         }
 
         /// <summary>
@@ -71,11 +85,9 @@ namespace Mantenimiento.Core.Application.Services
         /// <exception cref="ArgumentException">Se lanza si IdInstitucion no es un identificador válido (≤ 0).</exception>
         public async Task CrearFondoEspecialAsync(CrearFondoDto dto)
         {
+            ArgumentNullException.ThrowIfNull(dto);
+            await _crearValidator.ValidateAndThrowAsync(dto);
             int tipoTramiteId = dto.tipoTramiteContrato?.Id ?? 0;
-            ValidarFondo(dto.Fondo);
-
-            if (dto.IdInstitucion <= 0)
-                throw new ArgumentException("Debe seleccionar una institución válida.");
 
             string tipoTramiteNombre = "Pendiente";
 
@@ -104,11 +116,9 @@ namespace Mantenimiento.Core.Application.Services
         /// <exception cref="ArgumentException">Se lanza si IdInstitucion es menor o igual que cero.</exception>
         public async Task ActualizarFondoEspecialAsync(FondoDto dto)
         {
+            ArgumentNullException.ThrowIfNull(dto);
+            await _actualizarValidator.ValidateAndThrowAsync(dto);
             int tipoTramiteId = dto.TipoTramiteContrato?.Id ?? 0;
-            ValidarFondo(dto.Fondo);
-
-            if (dto.IdInstitucion <= 0)
-                throw new ArgumentException("Debe seleccionar una institución válida.");
 
             string tipoTramiteNombre = "Pendiente";
 
@@ -136,24 +146,6 @@ namespace Mantenimiento.Core.Application.Services
             await _fondoRepo.DeleteFondosEspecialesAsync(id);
         }
 
-        /// <summary>
-        /// Valida que 'fondo' no sea nulo, vacío o compuesto solo por espacios y que, si es numérico, sea un entero
-        /// positivo.
-        /// </summary>
-        /// <remarks>La comprobación numérica solo se realiza si la cadena puede convertirse a un entero
-        /// (int); las cadenas no numéricas válidas se aceptan.</remarks>
-        /// <param name="fondo">Cadena que representa el valor del fondo; no puede ser nula, vacía ni contener solo espacios; si representa
-        /// un número, debe ser un entero positivo.</param>
-        /// <exception cref="ArgumentException">Se lanza cuando 'fondo' es nulo, vacío o contiene solo espacios, o cuando representa un número entero menor
-        /// o igual a cero.</exception>
-        private static void ValidarFondo(string fondo)
-        {
-            if (string.IsNullOrWhiteSpace(fondo))
-                throw new ArgumentException("El campo fondo es requerido.");
-
-            if (int.TryParse(fondo, out var fondoValue) && fondoValue <= 0)
-                throw new ArgumentException("El campo fondo debe ser un número positivo.");
-        }
     }
 
 }

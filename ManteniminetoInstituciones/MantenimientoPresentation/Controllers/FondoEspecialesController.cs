@@ -1,13 +1,15 @@
-using Mantenimiento.Core.Application.DTOs.Fondos;
+﻿using Mantenimiento.Core.Application.DTOs.Fondos;
 using Mantenimiento.Core.Application.DTOs.Institucion;
 using Mantenimiento.Core.Application.DTOs.TipoTramite;
 using Mantenimiento.Core.Application.InterfaceServices;
+using MantenimientoPresentation.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MantenimientoPresentation.Controllers
 {
     [Authorize]
+    [AutoValidateAntiforgeryToken]
     [Route("FondoEspeciales/[action]/{id?}")]
     public class FondoEspecialesController : Controller
     {
@@ -16,19 +18,22 @@ namespace MantenimientoPresentation.Controllers
         private readonly IInstitucionService _institucionService;
         private readonly ICurrentUserService _currentUserService;
         private readonly ILogger<FondoEspecialesController> _logger;
+        private readonly bool _gridPaginationEnabled;
 
         public FondoEspecialesController(
             IFondoEspecialesService fondoService,
             ITipoTramiteService tipoTramiteService,
             IInstitucionService institucionService,
             ICurrentUserService currentUserService,
-            ILogger<FondoEspecialesController> logger)
+            ILogger<FondoEspecialesController> logger,
+            IConfiguration configuration)
         {
             _fondoService = fondoService;
             _tipoTramiteService = tipoTramiteService;
             _institucionService = institucionService;
             _currentUserService = currentUserService;
             _logger = logger;
+            _gridPaginationEnabled = configuration.GetValue<bool>("GridPagination:Enabled");
         }
 
         [HttpGet("")]
@@ -43,7 +48,7 @@ namespace MantenimientoPresentation.Controllers
                 var instituciones = await _institucionService.ObtenerInstitucionesSelectorAsync();
                 ViewBag.Instituciones = instituciones.OrderBy(i => i.UnidadEjecutora).ToList();
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al cargar los catálogos en Fondos Especiales.");
                 ViewBag.TiposTramite = new List<TipoTramiteDto>();
@@ -53,14 +58,27 @@ namespace MantenimientoPresentation.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ObtenerGrid(string? estructura = null, string? tipoTramite = null)
+        public async Task<IActionResult> ObtenerGrid(
+            string? estructura = null,
+            string? tipoTramite = null,
+            int page = 1,
+            int pageSize = 10)
         {
             try
             {
-                var fondos = await _fondoService.ObtenerFondosEspecialesAsync(estructura, tipoTramite);
+                page = Math.Max(page, 1);
+                pageSize = Math.Clamp(pageSize, 1, 100);
+                if (_gridPaginationEnabled)
+                {
+                    var resultado = await _fondoService.ObtenerFondosEspecialesAsync(estructura, tipoTramite, page, pageSize);
+                    GridPaginationViewData.Set(this, resultado);
+                    return PartialView("_FondosGridPartial", resultado.Items);
+                }
+
+                var fondos = await _fondoService.ObtenerFondosEspecialesSinPaginacionAsync(estructura, tipoTramite);
                 return PartialView("_FondosGridPartial", fondos);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al cargar el grid de fondos especiales.");
                 return StatusCode(500, "Error al cargar los datos.");
@@ -73,18 +91,18 @@ namespace MantenimientoPresentation.Controllers
             try
             {
                 if (id <= 0)
-                    return Json(new { success = false, message = "Identificador no válido." });
+                    return BadRequest(new { success = false, message = "Identificador no válido." });
 
                 var fondo = await _fondoService.ObtenerPorIdAsync(id);
                 if (fondo == null)
-                    return Json(new { success = false, message = "No se encontró el fondo especial solicitado." });
+                    return NotFound(new { success = false, message = "No se encontró el fondo especial solicitado." });
 
                 return Json(new { success = true, data = fondo });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al obtener el fondo especial con Id {Id}", id);
-                return Json(new { success = false, message = "No se pudo recuperar la información del fondo especial." });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "No se pudo recuperar la información del fondo especial." });
             }
         }
 
@@ -97,7 +115,7 @@ namespace MantenimientoPresentation.Controllers
                     .SelectMany(v => v.Errors)
                     .Select(e => e.ErrorMessage));
 
-                return Json(new { success = false, message = string.IsNullOrEmpty(errores) ? "Datos del formulario inválidos." : errores });
+                return BadRequest(new { success = false, message = string.IsNullOrEmpty(errores) ? "Datos del formulario inválidos." : errores });
             }
 
             try
@@ -106,12 +124,12 @@ namespace MantenimientoPresentation.Controllers
                 await _fondoService.CrearFondoEspecialAsync(dto);
 
                 _logger.LogInformation("Fondo especial creado exitosamente por {Usuario}.", dto.Usuario);
-                return Json(new { success = true, message = "Fondo especial registrado exitosamente." });
+                return StatusCode(StatusCodes.Status201Created, new { success = true, message = "Fondo especial registrado exitosamente." });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al registrar el fondo especial.");
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -124,7 +142,7 @@ namespace MantenimientoPresentation.Controllers
                     .SelectMany(v => v.Errors)
                     .Select(e => e.ErrorMessage));
 
-                return Json(new { success = false, message = string.IsNullOrEmpty(errores) ? "Datos del formulario inválidos." : errores });
+                return BadRequest(new { success = false, message = string.IsNullOrEmpty(errores) ? "Datos del formulario inválidos." : errores });
             }
 
             try
@@ -135,10 +153,10 @@ namespace MantenimientoPresentation.Controllers
                 _logger.LogInformation("Fondo especial con Id {Id} actualizado por {Usuario}.", dto.Id, dto.Usuario);
                 return Json(new { success = true, message = "Fondo especial actualizado exitosamente." });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al actualizar el fondo especial con Id {Id}.", dto.Id);
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -146,7 +164,7 @@ namespace MantenimientoPresentation.Controllers
         public async Task<IActionResult> Eliminar(int id)
         {
             if (id <= 0)
-                return Json(new { success = false, message = "Identificador no válido." });
+                return BadRequest(new { success = false, message = "Identificador no válido." });
 
             try
             {
@@ -156,10 +174,10 @@ namespace MantenimientoPresentation.Controllers
                 _logger.LogInformation("Fondo especial con Id {Id} eliminado por {Usuario}.", id, usuario);
                 return Json(new { success = true, message = "Fondo especial eliminado exitosamente." });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al eliminar el fondo especial con Id {Id}.", id);
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
     }

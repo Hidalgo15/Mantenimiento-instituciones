@@ -1,6 +1,7 @@
 ﻿using Mantenimiento.Core.Application.DTOs.Daf;
 using Mantenimiento.Core.Application.DTOs.UnidadEjecutora;
 using Mantenimiento.Core.Application.InterfaceServices;
+using MantenimientoPresentation.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
@@ -8,6 +9,7 @@ using Microsoft.Data.SqlClient;
 namespace MantenimientoPresentation.Controllers
 {
     [Authorize]
+    [AutoValidateAntiforgeryToken]
     public class UnidadEjecutoraController : Controller
     {
         private readonly IUnidadEjecutoraService _service;
@@ -15,19 +17,22 @@ namespace MantenimientoPresentation.Controllers
         private readonly ICategoriaTramiteService _categoriaService;
         private readonly ICurrentUserService _currentUserService;
         private readonly ILogger<UnidadEjecutoraController> _logger;
+        private readonly bool _gridPaginationEnabled;
 
         public UnidadEjecutoraController(
             IUnidadEjecutoraService service,
             IDafService dafService,
             ICategoriaTramiteService categoriaService,
             ICurrentUserService currentUserService,
-            ILogger<UnidadEjecutoraController> logger)
+            ILogger<UnidadEjecutoraController> logger,
+            IConfiguration configuration)
         {
             _service = service;
             _dafService = dafService;
             _categoriaService = categoriaService;
             _currentUserService = currentUserService;
             _logger = logger;
+            _gridPaginationEnabled = configuration.GetValue<bool>("GridPagination:Enabled");
         }
 
         [HttpGet]
@@ -38,7 +43,7 @@ namespace MantenimientoPresentation.Controllers
                 ViewBag.Dafs = await _dafService.ObtenerAsync();
                 ViewBag.Categorias = await _categoriaService.ObtenerTodasAsync();
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al cargar catálogos para Unidad Ejecutora.");
                 ViewBag.Dafs = new List<DafDto>();
@@ -48,7 +53,7 @@ namespace MantenimientoPresentation.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ObtenerGrid(int? id, int? idDaf)
+        public async Task<IActionResult> ObtenerGrid(int? id, int? idDaf, int page = 1, int pageSize = 10)
         {
             try
             {
@@ -59,10 +64,17 @@ namespace MantenimientoPresentation.Controllers
                     return PartialView("_UnidadesEjecutorasGridPartial", listaSingular);
                 }
 
+                if (_gridPaginationEnabled)
+                {
+                    var resultado = await _service.ObtenerPaginadoAsync(null, null, idDaf, page, pageSize);
+                    GridPaginationViewData.Set(this, resultado);
+                    return PartialView("_UnidadesEjecutorasGridPartial", resultado.Items);
+                }
+
                 var lista = await _service.ObtenerAsync(idDaf: idDaf);
                 return PartialView("_UnidadesEjecutorasGridPartial", lista);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al obtener el grid de Unidades Ejecutoras. Parámetros - Id: {Id}, IdDaf: {IdDaf}", id, idDaf);
 
@@ -77,18 +89,18 @@ namespace MantenimientoPresentation.Controllers
             try
             {
                 if (id <= 0)
-                    return Json(new { success = false, message = "Identificador no válido." });
+                    return BadRequest(new { success = false, message = "Identificador no válido." });
 
                 var item = await _service.ObtenerPorIdAsync(id);
                 if (item == null)
-                    return Json(new { success = false, message = "No se encontró el registro solicitado." });
+                    return NotFound(new { success = false, message = "No se encontró el registro solicitado." });
 
                 return Json(new { success = true, data = item });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al obtener la Unidad Ejecutora con Id {Id}", id);
-                return Json(new { success = false, message = "No se pudo recuperar la información del registro." });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "No se pudo recuperar la información del registro." });
             }
         }
 
@@ -100,7 +112,7 @@ namespace MantenimientoPresentation.Controllers
                 var error = ModelState.Values.SelectMany(v => v.Errors)
                                              .Select(e => e.ErrorMessage)
                                              .FirstOrDefault() ?? "Datos del formulario inválidos.";
-                return Json(new { success = false, message = error });
+                return BadRequest(new { success = false, message = error });
             }
 
             try
@@ -109,23 +121,23 @@ namespace MantenimientoPresentation.Controllers
                 await _service.CrearAsync(dto);
 
                 _logger.LogInformation("Unidad Ejecutora {Codigo} creada exitosamente por el usuario {Usuario}.", dto.CodigoUnidadEjecutora, dto.Usuario);
-                return Json(new { success = true, message = "Unidad Ejecutora registrada con éxito." });
+                return StatusCode(StatusCodes.Status201Created, new { success = true, message = "Unidad Ejecutora registrada con éxito." });
             }
             catch (ArgumentException ex)
             {
                 // Advertencia de validación de negocio (no requiere log de excepción técnica completa)
                 _logger.LogWarning(ex, "Validación fallida al crear Unidad Ejecutora. Código: {Codigo}", dto.CodigoUnidadEjecutora);
-                return Json(new { success = false, message = ex.Message });
+                return BadRequest(new { success = false, message = "Los datos proporcionados no son válidos." });
             }
             catch (SqlException ex)
             {
                 _logger.LogError(ex, "Error de base de datos al intentar crear Unidad Ejecutora {Codigo}", dto.CodigoUnidadEjecutora);
-                return Json(new { success = false, message = "Ocurrió un problema de base de datos al guardar los datos." });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "No se pudo guardar la información. Inténtelo nuevamente." });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error no controlado al crear Unidad Ejecutora {Codigo}", dto.CodigoUnidadEjecutora);
-                return Json(new { success = false, message = "Ocurrió un error inesperado en el servidor." });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado en el servidor." });
             }
         }
 
@@ -133,14 +145,14 @@ namespace MantenimientoPresentation.Controllers
         public async Task<IActionResult> Actualizar([FromBody] ActualizarUnidadEjecutoraDto dto)
         {
             if (dto == null || dto.Id <= 0)
-                return Json(new { success = false, message = "Registro no válido para actualización." });
+                return BadRequest(new { success = false, message = "Registro no válido para actualización." });
 
             if (!ModelState.IsValid)
             {
                 var error = ModelState.Values.SelectMany(v => v.Errors)
                                              .Select(e => e.ErrorMessage)
                                              .FirstOrDefault() ?? "Datos del formulario inválidos.";
-                return Json(new { success = false, message = error });
+                return BadRequest(new { success = false, message = error });
             }
 
             try
@@ -154,17 +166,17 @@ namespace MantenimientoPresentation.Controllers
             catch (ArgumentException ex)
             {
                 _logger.LogWarning(ex, "Validación fallida al actualizar Unidad Ejecutora con Id {Id}", dto.Id);
-                return Json(new { success = false, message = ex.Message });
+                return BadRequest(new { success = false, message = "Los datos proporcionados no son válidos." });
             }
             catch (SqlException ex)
             {
                 _logger.LogError(ex, "Error de base de datos al actualizar Unidad Ejecutora con Id {Id}", dto.Id);
-                return Json(new { success = false, message = "Ocurrió un problema de base de datos al actualizar los datos." });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "No se pudo guardar la información. Inténtelo nuevamente." });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error no controlado al actualizar Unidad Ejecutora con Id {Id}", dto.Id);
-                return Json(new { success = false, message = "Ocurrió un error inesperado en el servidor." });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado en el servidor." });
             }
         }
 
@@ -172,7 +184,7 @@ namespace MantenimientoPresentation.Controllers
         public async Task<IActionResult> Eliminar(int id)
         {
             if (id <= 0)
-                return Json(new { success = false, message = "Identificador no válido." });
+                return BadRequest(new { success = false, message = "Identificador no válido." });
 
             try
             {
@@ -186,17 +198,17 @@ namespace MantenimientoPresentation.Controllers
             catch (ArgumentException ex)
             {
                 _logger.LogWarning(ex, "Validación fallida al intentar eliminar la Unidad Ejecutora con Id {Id}", id);
-                return Json(new { success = false, message = ex.Message });
+                return BadRequest(new { success = false, message = "Los datos proporcionados no son válidos." });
             }
             catch (SqlException ex)
             {
                 _logger.LogError(ex, "Error de base de datos al eliminar Unidad Ejecutora con Id {Id}", id);
-                return Json(new { success = false, message = "No se pudo realizar la desactivación en la base de datos." });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "No se pudo completar la operación. Inténtelo nuevamente." });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error no controlado al eliminar Unidad Ejecutora con Id {Id}", id);
-                return Json(new { success = false, message = "Ocurrió un error inesperado en el servidor." });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado en el servidor." });
             }
         }
     }

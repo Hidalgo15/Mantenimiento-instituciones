@@ -1923,9 +1923,10 @@ GO
 SET QUOTED_IDENTIFIER ON
 GO
 
-CREATE PROCEDURE [dbo].[sp_FondoEspeciales_Obtener]
+CREATE OR ALTER PROCEDURE [dbo].[sp_FondoEspeciales_Obtener]
     @filtroFondo VARCHAR(50) = NULL,
-    @filtroEstructura VARCHAR(50) = NULL
+    @filtroEstructura VARCHAR(50) = NULL,
+    @filtroTipoTramite VARCHAR(100) = NULL
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -1939,6 +1940,7 @@ BEGIN
     FROM [dbo].[Fondo_especiales]
     WHERE (@filtroFondo IS NULL OR [Fondo] LIKE '%' + @filtroFondo + '%')
       AND (@filtroEstructura IS NULL OR [estructura_institucion] = @filtroEstructura)
+      AND (@filtroTipoTramite IS NULL OR [tipo_tramite] = @filtroTipoTramite)
 	ORDER BY [tipo_tramite] Desc;
 END
 GO
@@ -3331,5 +3333,415 @@ BEGIN
           OR da.codigo_despa LIKE '%' + @BusquedaGeneral + '%'
       )
     ORDER BY da.NOMBRE ASC;
+END;
+GO
+
+----------------------------
+----------------------------
+
+-- STORES t_Impedimentos
+
+USE SIGOB_CONTRALORIA
+GO
+
+-- Crear
+
+CREATE PROCEDURE [dbo].[sp_t_Impedimentos_Crear]
+    @NOMBRES NVARCHAR(255) = NULL,
+    @cedula_rnc NVARCHAR(15) = NULL,
+    @Motivo VARCHAR(500) = NULL,
+    @Estado BIT = 1,
+    @Usuario_Agrego NVARCHAR(50) = NULL,
+    @ID_Generado INT OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        INSERT INTO [dbo].[t_Impedimentos] (
+            [NOMBRES],
+            [cedula_rnc],
+            [Usuario_Agrego],
+            [Motivo],
+            [Fecha_Agrego],
+            [Estado]
+        )
+        VALUES (
+            NULLIF(TRIM(@NOMBRES), ''),
+            NULLIF(TRIM(@cedula_rnc), ''),
+            ISNULL(NULLIF(TRIM(@Usuario_Agrego), ''), SUSER_SNAME()),
+            NULLIF(TRIM(@Motivo), ''),
+            GETDATE(),
+            ISNULL(@Estado, 1)
+        );
+
+        SET @ID_Generado = SCOPE_IDENTITY();
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 AND XACT_STATE() <> 0
+            ROLLBACK TRANSACTION;
+
+        THROW;
+    END CATCH
+END;
+GO
+
+-- Obtener
+
+CREATE OR ALTER PROCEDURE [dbo].[sp_t_Impedimentos_Obtener]
+    @ID INT = NULL,
+    @cedula_rnc NVARCHAR(15) = NULL,
+    @FiltroTexto NVARCHAR(255) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- 1. Buscar por ID único
+    IF @ID IS NOT NULL
+    BEGIN
+        SELECT 
+            [ID],
+            [NOMBRES],
+            [cedula_rnc],
+            [Usuario_Agrego],
+            [Motivo],
+            [Fecha_Agrego],
+            [Estado]
+        FROM [dbo].[t_Impedimentos] WITH (NOLOCK)
+        WHERE [ID] = @ID;
+
+        RETURN;
+    END
+
+    -- 2. Buscar por cédula/RNC exacta si se requiere
+    IF @cedula_rnc IS NOT NULL
+    BEGIN
+        SELECT 
+            [ID],
+            [NOMBRES],
+            [cedula_rnc],
+            [Usuario_Agrego],
+            [Motivo],
+            [Fecha_Agrego],
+            [Estado]
+        FROM [dbo].[t_Impedimentos] WITH (NOLOCK)
+        WHERE [cedula_rnc] = @cedula_rnc;
+
+        RETURN;
+    END
+
+    -- 3. Consulta general con filtro de texto opcional (Sin Paginación)
+    SELECT 
+        [ID],
+        [NOMBRES],
+        [cedula_rnc],
+        [Usuario_Agrego],
+        [Motivo],
+        [Fecha_Agrego],
+        [Estado]
+    FROM [dbo].[t_Impedimentos] WITH (NOLOCK)
+    WHERE (@FiltroTexto IS NULL 
+           OR [NOMBRES] LIKE '%' + @FiltroTexto + '%' 
+           OR [Motivo] LIKE '%' + @FiltroTexto + '%'
+           OR [cedula_rnc] LIKE '%' + @FiltroTexto + '%')
+    ORDER BY [ID] DESC;
+END;
+GO
+
+-- Actualizar
+
+CREATE PROCEDURE [dbo].[sp_t_Impedimentos_Actualizar]
+    @ID INT,
+    @NOMBRES NVARCHAR(255) = NULL,
+    @cedula_rnc NVARCHAR(15) = NULL,
+    @Motivo VARCHAR(500) = NULL,
+    @Estado BIT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        IF NOT EXISTS (SELECT 1 FROM [dbo].[t_Impedimentos] WITH (NOLOCK) WHERE [ID] = @ID)
+        BEGIN
+            RAISERROR('El impedimento que intenta actualizar no existe.', 16, 1);
+            RETURN;
+        END
+
+        BEGIN TRANSACTION;
+
+        UPDATE [dbo].[t_Impedimentos]
+        SET 
+            [NOMBRES] = NULLIF(TRIM(@NOMBRES), ''),
+            [cedula_rnc] = NULLIF(TRIM(@cedula_rnc), ''),
+            [Motivo] = NULLIF(TRIM(@Motivo), ''),
+            [Estado] = @Estado
+        WHERE [ID] = @ID;
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 AND XACT_STATE() <> 0
+            ROLLBACK TRANSACTION;
+
+        THROW;
+    END CATCH
+END;
+GO
+
+-- Eliminar
+
+CREATE PROCEDURE [dbo].[sp_t_Impedimentos_Eliminar]
+    @ID INT,
+    @BorradoLogico BIT = 1 -- Por defecto realiza baja lógica cambiando Estado a 0
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        IF NOT EXISTS (SELECT 1 FROM [dbo].[t_Impedimentos] WITH (NOLOCK) WHERE [ID] = @ID)
+        BEGIN
+            RAISERROR('El impedimento que intenta eliminar no existe.', 16, 1);
+            RETURN;
+        END
+
+        BEGIN TRANSACTION;
+
+        IF @BorradoLogico = 1
+        BEGIN
+            UPDATE [dbo].[t_Impedimentos]
+            SET [Estado] = 0
+            WHERE [ID] = @ID;
+        END
+        ELSE
+        BEGIN
+            DELETE FROM [dbo].[t_Impedimentos]
+            WHERE [ID] = @ID;
+        END
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 AND XACT_STATE() <> 0
+            ROLLBACK TRANSACTION;
+
+        THROW;
+    END CATCH
+END;
+GO
+
+-- STORES PROVEEDORES INHABILITADOS
+
+-- Crear
+
+CREATE PROCEDURE [dbo].[sp_cc_proveedores_inhabilitados_Crear]
+    @RPE VARCHAR(MAX) = NULL,
+    @RAZON_SOCIAL VARCHAR(MAX) = NULL,
+    @GENERO VARCHAR(MAX) = NULL,
+    @NUMERO_DOCUMENTO VARCHAR(MAX) = NULL,
+    @TIPO_DOCUMENTO VARCHAR(MAX) = NULL,
+    @TIPO_PERSONA VARCHAR(MAX) = NULL,
+    @ESTADO_RPE VARCHAR(MAX) = NULL,
+    @MOTIVO_INHABILITACION VARCHAR(MAX) = NULL,
+    @Id_Generado INT OUTPUT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        BEGIN TRANSACTION;
+
+        INSERT INTO [dbo].[cc_proveedores_inhabilitados] (
+            [RPE],
+            [RAZON_SOCIAL],
+            [GENERO],
+            [NUMERO_DOCUMENTO],
+            [TIPO_DOCUMENTO],
+            [TIPO_PERSONA],
+            [FECHA_REGISTRO],
+            [FECHA_ULTIMA_ACTUALIZACION],
+            [ESTADO_RPE],
+            [MOTIVO_INHABILITACION]
+        )
+        VALUES (
+            @RPE,
+            @RAZON_SOCIAL,
+            @GENERO,
+            @NUMERO_DOCUMENTO,
+            @TIPO_DOCUMENTO,
+            @TIPO_PERSONA,
+            CONVERT(VARCHAR(10), GETDATE(), 120), -- Formato YYYY-MM-DD estándar
+            CONVERT(VARCHAR(10), GETDATE(), 120),
+            @ESTADO_RPE,
+            @MOTIVO_INHABILITACION
+        );
+
+        SET @Id_Generado = SCOPE_IDENTITY();
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 AND XACT_STATE() <> 0
+            ROLLBACK TRANSACTION;
+
+        THROW;
+    END CATCH
+END;
+GO
+
+-- Obtener
+
+CREATE OR ALTER PROCEDURE [dbo].[sp_cc_proveedores_inhabilitados_Obtener]
+    @Id INT = NULL,
+    @NUMERO_DOCUMENTO VARCHAR(50) = NULL,
+    @FiltroTexto VARCHAR(255) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- 1. Obtener por Id único
+    IF @Id IS NOT NULL
+    BEGIN
+        SELECT 
+            [Id],
+            [RPE],
+            [RAZON_SOCIAL],
+            [GENERO],
+            [NUMERO_DOCUMENTO],
+            [TIPO_DOCUMENTO],
+            [TIPO_PERSONA],
+            [FECHA_REGISTRO],
+            [FECHA_ULTIMA_ACTUALIZACION],
+            [ESTADO_RPE],
+            [MOTIVO_INHABILITACION]
+        FROM [dbo].[cc_proveedores_inhabilitados] WITH (NOLOCK)
+        WHERE [Id] = @Id;
+
+        RETURN;
+    END
+
+    -- 2. Buscar por número de documento exacto
+    IF @NUMERO_DOCUMENTO IS NOT NULL
+    BEGIN
+        SELECT 
+            [Id],
+            [RPE],
+            [RAZON_SOCIAL],
+            [GENERO],
+            [NUMERO_DOCUMENTO],
+            [TIPO_DOCUMENTO],
+            [TIPO_PERSONA],
+            [FECHA_REGISTRO],
+            [FECHA_ULTIMA_ACTUALIZACION],
+            [ESTADO_RPE],
+            [MOTIVO_INHABILITACION]
+        FROM [dbo].[cc_proveedores_inhabilitados] WITH (NOLOCK)
+        WHERE [NUMERO_DOCUMENTO] = @NUMERO_DOCUMENTO;
+
+        RETURN;
+    END
+
+    -- 3. Consulta general con filtro de texto opcional (Sin Paginación)
+    SELECT 
+        [Id],
+        [RPE],
+        [RAZON_SOCIAL],
+        [GENERO],
+        [NUMERO_DOCUMENTO],
+        [TIPO_DOCUMENTO],
+        [TIPO_PERSONA],
+        [FECHA_REGISTRO],
+        [FECHA_ULTIMA_ACTUALIZACION],
+        [ESTADO_RPE],
+        [MOTIVO_INHABILITACION]
+    FROM [dbo].[cc_proveedores_inhabilitados] WITH (NOLOCK)
+    WHERE (@FiltroTexto IS NULL 
+           OR [RAZON_SOCIAL] LIKE '%' + @FiltroTexto + '%' 
+           OR [RPE] LIKE '%' + @FiltroTexto + '%'
+           OR [NUMERO_DOCUMENTO] LIKE '%' + @FiltroTexto + '%')
+    ORDER BY [Id] DESC;
+END;
+GO
+
+-- Actualizar
+
+CREATE PROCEDURE [dbo].[sp_cc_proveedores_inhabilitados_Actualizar]
+    @Id INT,
+    @RPE VARCHAR(MAX) = NULL,
+    @RAZON_SOCIAL VARCHAR(MAX) = NULL,
+    @GENERO VARCHAR(MAX) = NULL,
+    @NUMERO_DOCUMENTO VARCHAR(MAX) = NULL,
+    @TIPO_DOCUMENTO VARCHAR(MAX) = NULL,
+    @TIPO_PERSONA VARCHAR(MAX) = NULL,
+    @ESTADO_RPE VARCHAR(MAX) = NULL,
+    @MOTIVO_INHABILITACION VARCHAR(MAX) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        IF NOT EXISTS (SELECT 1 FROM [dbo].[cc_proveedores_inhabilitados] WITH (NOLOCK) WHERE [Id] = @Id)
+        BEGIN
+            RAISERROR('El registro de proveedor inhabilitado que intenta actualizar no existe.', 16, 1);
+            RETURN;
+        END
+
+        BEGIN TRANSACTION;
+
+        UPDATE [dbo].[cc_proveedores_inhabilitados]
+        SET 
+            [RPE] = @RPE,
+            [RAZON_SOCIAL] = @RAZON_SOCIAL,
+            [GENERO] = @GENERO,
+            [NUMERO_DOCUMENTO] = @NUMERO_DOCUMENTO,
+            [TIPO_DOCUMENTO] = @TIPO_DOCUMENTO,
+            [TIPO_PERSONA] = @TIPO_PERSONA,
+            [FECHA_ULTIMA_ACTUALIZACION] = CONVERT(VARCHAR(10), GETDATE(), 120),
+            [ESTADO_RPE] = @ESTADO_RPE,
+            [MOTIVO_INHABILITACION] = @MOTIVO_INHABILITACION
+        WHERE [Id] = @Id;
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 AND XACT_STATE() <> 0
+            ROLLBACK TRANSACTION;
+
+        THROW;
+    END CATCH
+END;
+GO
+
+-- Eliminar
+
+CREATE PROCEDURE [dbo].[sp_cc_proveedores_inhabilitados_Eliminar]
+    @Id INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRY
+        IF NOT EXISTS (SELECT 1 FROM [dbo].[cc_proveedores_inhabilitados] WITH (NOLOCK) WHERE [Id] = @Id)
+        BEGIN
+            RAISERROR('El registro que intenta eliminar no existe.', 16, 1);
+            RETURN;
+        END
+
+        BEGIN TRANSACTION;
+
+        DELETE FROM [dbo].[cc_proveedores_inhabilitados]
+        WHERE [Id] = @Id;
+
+        COMMIT TRANSACTION;
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 AND XACT_STATE() <> 0
+            ROLLBACK TRANSACTION;
+
+        THROW;
+    END CATCH
 END;
 GO

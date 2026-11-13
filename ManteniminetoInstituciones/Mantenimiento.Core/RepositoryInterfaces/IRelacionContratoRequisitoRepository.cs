@@ -1,11 +1,13 @@
 ﻿using Mantenimiento.Core.Domain.Entities;
 using Mantenimiento.Core.Domain.Entities.RelacionContratoRequisito;
+using Mantenimiento.Core.Domain.Pagination;
 
 namespace Mantenimiento.Core.Domain.RepositoryInterfaces
 {
     public interface IRelacionContratoRequisitoRepository
     {
         Task<List<RelacionContratoRequisito>> ObtenerAsync(int? codigoClasificacion, int? codigoRequisito);
+        Task<PagedResult<RelacionContratoRequisito>> ObtenerPaginadoAsync(int? codigoClasificacion, int? codigoRequisito, int pagina, int tamanoPagina);
         Task<ResultadoOperacion> AsignarAsync(int codigoClasificacion, int codigoRequisito);
         Task<ResultadoOperacion> ActualizarAsync(int id, int codigoClasificacion, int codigoRequisito);
         Task<ResultadoOperacion> EliminarAsync(int id);

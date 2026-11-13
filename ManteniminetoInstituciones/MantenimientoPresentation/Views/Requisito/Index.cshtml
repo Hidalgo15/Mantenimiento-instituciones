@@ -80,6 +80,18 @@
         let modalBs;
         document.addEventListener('DOMContentLoaded', () => {
             modalBs = new bootstrap.Modal(document.getElementById('modalMantenimiento'));
+            document.getElementById('contenedorGrid').addEventListener('click', event => {
+                if (!(event.target instanceof Element)) return;
+                const boton = event.target.closest('button[data-action]');
+                if (!boton) return;
+
+                const id = Number(boton.dataset.requisitosId);
+                if (boton.dataset.action === 'editar-requisito') {
+                    abrirModalEditar(id, boton.dataset.requisitosDescripcion);
+                } else if (boton.dataset.action === 'eliminar-requisito') {
+                    eliminarRequisito(id);
+                }
+            });
             cargarGrid();
         });
 

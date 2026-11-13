@@ -1,6 +1,8 @@
-﻿using Mantenimiento.Core.Application.DTOs.UnidadEjecutora;
+﻿using FluentValidation;
+using Mantenimiento.Core.Application.DTOs.UnidadEjecutora;
 using Mantenimiento.Core.Application.InterfaceServices;
 using Mantenimiento.Core.Application.Mappings;
+using Mantenimiento.Core.Domain.Pagination;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 
 namespace Mantenimiento.Core.Application.Services
@@ -8,10 +10,17 @@ namespace Mantenimiento.Core.Application.Services
     public class UnidadEjecutoraService : IUnidadEjecutoraService
     {
         private readonly IUnidadEjecutoraRepository _repo;
+        private readonly IValidator<CrearUnidadEjecutoraDto> _crearValidator;
+        private readonly IValidator<ActualizarUnidadEjecutoraDto> _actualizarValidator;
 
-        public UnidadEjecutoraService(IUnidadEjecutoraRepository repo)
+        public UnidadEjecutoraService(
+            IUnidadEjecutoraRepository repo,
+            IValidator<CrearUnidadEjecutoraDto> crearValidator,
+            IValidator<ActualizarUnidadEjecutoraDto> actualizarValidator)
         {
             _repo = repo;
+            _crearValidator = crearValidator;
+            _actualizarValidator = actualizarValidator;
         }
 
         /// <summary>
@@ -25,6 +34,21 @@ namespace Mantenimiento.Core.Application.Services
         {
             var lista = await _repo.ObtenerAsync(id, codigoUnidadEjecutora, idDaf);
             return lista.Select(UnidadEjecutoraMapper.ToDto);
+        }
+
+        public async Task<PagedResult<UnidadEjecutoraDto>> ObtenerPaginadoAsync(
+            int? id,
+            string? codigoUnidadEjecutora,
+            int? idDaf,
+            int pagina,
+            int tamanoPagina)
+        {
+            var resultado = await _repo.ObtenerPaginadoAsync(id, codigoUnidadEjecutora, idDaf, pagina, tamanoPagina);
+            return new PagedResult<UnidadEjecutoraDto>(
+                resultado.Items.Select(UnidadEjecutoraMapper.ToDto).ToList(),
+                resultado.PageNumber,
+                resultado.PageSize,
+                resultado.TotalCount);
         }
 
         /// <summary>
@@ -46,12 +70,11 @@ namespace Mantenimiento.Core.Application.Services
         /// </summary>
         /// <param name="dto"></param>
         /// <returns></returns>
-        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="FluentValidation.ValidationException">Se lanza cuando los datos de creación no son válidos.</exception>
         public async Task CrearAsync(CrearUnidadEjecutoraDto dto)
         {
-            if (dto == null) throw new ArgumentException("Los datos enviados son nulos.");
-
-            Validar(dto.IdDaf, dto.IdCategoria, dto.CodigoUnidadEjecutora, dto.NombreUnidadEjecutora, dto.Rnc);
+            ArgumentNullException.ThrowIfNull(dto);
+            await _crearValidator.ValidateAndThrowAsync(dto);
 
             var entidad = UnidadEjecutoraMapper.ToEntity(dto);
 
@@ -63,16 +86,11 @@ namespace Mantenimiento.Core.Application.Services
         /// </summary>
         /// <param name="dto"></param>
         /// <returns></returns>
-        /// <exception cref="ArgumentException"></exception>
+        /// <exception cref="FluentValidation.ValidationException">Se lanza cuando los datos de actualización no son válidos.</exception>
         public async Task ActualizarAsync(ActualizarUnidadEjecutoraDto dto)
         {
-            if (dto == null) throw new ArgumentException("Los datos enviados son nulos.");
-            if (dto.Id <= 0) throw new ArgumentException("El identificador a actualizar no es válido.");
-
-            Validar(dto.IdDaf, dto.IdCategoria, dto.CodigoUnidadEjecutora, dto.NombreUnidadEjecutora, dto.Rnc);
-
-            if (dto.IdPadre.HasValue && dto.IdPadre.Value == dto.Id)
-                throw new ArgumentException("Una unidad ejecutora no puede ser su propia entidad padre.");
+            ArgumentNullException.ThrowIfNull(dto);
+            await _actualizarValidator.ValidateAndThrowAsync(dto);
 
             var entidad = UnidadEjecutoraMapper.ToEntity(dto);
 
@@ -87,39 +105,5 @@ namespace Mantenimiento.Core.Application.Services
             /// </summary>
             await _repo.EliminarConSpAsync(id, borradoLogico: true, usuario: usuario);
         }
-
-        /// <summary>
-        /// Valida los datos de la unidad ejecutora antes de crear o actualizar.
-        /// </summary>
-        /// <param name="idDaf"></param>
-        /// <param name="idCategoria"></param>
-        /// <param name="codigo"></param>
-        /// <param name="nombre"></param>
-        /// <param name="rnc"></param>
-        /// <exception cref="ArgumentException"></exception>
-        private static void Validar(int idDaf, int idCategoria, string codigo, string nombre, string? rnc)
-        {
-            if (idDaf <= 0)
-                throw new ArgumentException("Debe seleccionar una DAF válida.");
-
-            if (idCategoria <= 0)
-                throw new ArgumentException("Debe seleccionar una categoría válida.");
-
-            if (string.IsNullOrWhiteSpace(codigo))
-                throw new ArgumentException("El código de unidad ejecutora es obligatorio.");
-
-            if (codigo.Trim().Length > 10)
-                throw new ArgumentException("El código de unidad ejecutora no puede tener más de 10 caracteres.");
-
-            if (string.IsNullOrWhiteSpace(nombre))
-                throw new ArgumentException("El nombre de la unidad ejecutora es obligatorio.");
-
-            if (nombre.Trim().Length > 250)
-                throw new ArgumentException("El nombre de la unidad ejecutora no puede tener más de 250 caracteres.");
-
-            if (!string.IsNullOrWhiteSpace(rnc) && rnc.Trim().Length > 20)
-                throw new ArgumentException("El RNC no puede superar los 20 caracteres.");
-        }
-
     }
 }

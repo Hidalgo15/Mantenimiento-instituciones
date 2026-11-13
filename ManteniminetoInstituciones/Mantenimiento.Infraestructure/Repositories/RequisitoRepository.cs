@@ -1,7 +1,9 @@
 ﻿using Mantenimiento.Core.Domain.Entities;
+using Mantenimiento.Core.Domain.Pagination;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 
 namespace Mantenimiento.Infraestructure.Persistence.Repositories
 {
@@ -27,6 +29,28 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
                 .FromSqlRaw("EXEC [ct].[sp_Obtener_Requisitos] @Busqueda", pBusqueda)
                 .AsNoTracking()
                 .ToListAsync();
+        }
+
+        public async Task<PagedResult<Requisito>> ObtenerPaginadoAsync(string? busqueda, int pagina, int tamanoPagina)
+        {
+            pagina = Math.Max(pagina, 1);
+            tamanoPagina = Math.Clamp(tamanoPagina, 1, 100);
+            var pBusqueda = new SqlParameter("@Busqueda", SqlDbType.NVarChar, -1) { Value = (object?)busqueda ?? DBNull.Value };
+            var pPagina = new SqlParameter("@PageNumber", SqlDbType.Int) { Value = pagina };
+            var pTamanoPagina = new SqlParameter("@PageSize", SqlDbType.Int) { Value = tamanoPagina };
+            var pTotal = new SqlParameter("@TotalCount", SqlDbType.Int) { Direction = ParameterDirection.Output };
+
+            var requisitos = await _context.Set<Requisito>()
+                .FromSqlRaw(
+                    "EXEC [ct].[sp_Obtener_Requisitos_Paginado] @Busqueda, @PageNumber, @PageSize, @TotalCount OUTPUT",
+                    pBusqueda, pPagina, pTamanoPagina, pTotal)
+                .AsNoTracking()
+                .ToListAsync();
+
+            var total = Convert.ToInt32(pTotal.Value);
+            var paginas = total == 0 ? 1 : (int)Math.Ceiling(total / (double)tamanoPagina);
+            pagina = Math.Min(pagina, paginas);
+            return new PagedResult<Requisito>(requisitos, pagina, tamanoPagina, total);
         }
 
         /// <summary>

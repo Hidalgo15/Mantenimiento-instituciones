@@ -163,12 +163,15 @@
             cargarGridFondos();
         });
 
-        function cargarGridFondos(estructura = '', tipoTramite = '') {
+        function cargarGridFondos(page = Number(document.querySelector('#contenedorGrid [data-grid-pagination]')?.dataset.pageNumber || 1)) {
             const contenedor = document.getElementById('contenedorGrid');
+            const selectorTamanoPagina = document.getElementById('gridPageSize');
 
             const params = new URLSearchParams({
-                estructura: estructura,
-                tipoTramite: tipoTramite
+                estructura: document.getElementById('filtroInstitucion').value,
+                tipoTramite: document.getElementById('filtroTipoTramite').value,
+                page: String(page),
+                pageSize: selectorTamanoPagina ? selectorTamanoPagina.value : '10'
             });
 
             fetch(`/FondoEspeciales/ObtenerGrid?${params.toString()}`)
@@ -185,9 +188,7 @@
         }
 
         function filtrarTabla() {
-            const estructura = document.getElementById('filtroInstitucion').value;
-            const tipoTramite = document.getElementById('filtroTipoTramite').value;
-            cargarGridFondos(estructura, tipoTramite);
+            cargarGridFondos(1);
         }
 
         // Filtra las opciones del select y muestra coincidencias flotantes mientras se escribe
@@ -318,6 +319,7 @@
             };
 
             const endpoint = id > 0 ? '/FondoEspeciales/Actualizar' : '/FondoEspeciales/Crear';
+            const esEdicion = id > 0;
 
             fetch(endpoint, {
                 method: 'POST',
@@ -328,8 +330,7 @@
                 .then(data => {
                     if (data.success) {
                         modalFondoBs.hide();
-                        // RECARGAR MANTENIENDO LOS FILTROS SELECCIONADOS EN PANTALLA
-                        filtrarTabla();
+                        cargarGridFondos(esEdicion ? undefined : 1);
                     } else {
                         alert('Error: ' + data.message);
                     }
@@ -346,8 +347,7 @@
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        // RECARGAR MANTENIENDO LOS FILTROS SELECCIONADOS EN PANTALLA
-                        filtrarTabla();
+                        cargarGridFondos();
                     } else {
                         alert('Error al eliminar: ' + data.message);
                     }

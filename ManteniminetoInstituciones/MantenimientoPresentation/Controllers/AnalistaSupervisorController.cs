@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace MantenimientoPresentation.Controllers
 {
     [Authorize]
+    [AutoValidateAntiforgeryToken]
     public class AnalistaSupervisorController : Controller
     {
         private readonly IAnalistaSupervisorService _service;
@@ -40,7 +41,7 @@ namespace MantenimientoPresentation.Controllers
                 ViewData["DespachoSupervisor"] = despachoSupervisor;
                 return PartialView("_AnalistaSupervisorGridPartial", data);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al obtener las relaciones de analistas y supervisores.");
                 return StatusCode(500, "Ocurrió un error al cargar las relaciones. Intente nuevamente.");
@@ -56,7 +57,7 @@ namespace MantenimientoPresentation.Controllers
                     .SelectMany(v => v.Errors)
                     .Select(e => e.ErrorMessage));
 
-                return Json(new { success = false, message = string.IsNullOrEmpty(errores) ? "Datos de asignación inválidos." : errores });
+                return BadRequest(new { success = false, message = string.IsNullOrEmpty(errores) ? "Datos de asignación inválidos." : errores });
             }
 
             try
@@ -64,12 +65,12 @@ namespace MantenimientoPresentation.Controllers
                 dto.Usuario = _currentUserService.GetUsername();
 
                 await _service.AsignarAsync(dto);
-                return Json(new { success = true, message = "Supervisor asignado exitosamente." });
+                return StatusCode(StatusCodes.Status201Created, new { success = true, message = "Supervisor asignado exitosamente." });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al asignar supervisor al analista.");
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -82,7 +83,7 @@ namespace MantenimientoPresentation.Controllers
                     .SelectMany(v => v.Errors)
                     .Select(e => e.ErrorMessage));
 
-                return Json(new { success = false, message = string.IsNullOrEmpty(errores) ? "Datos de reasignación inválidos." : errores });
+                return BadRequest(new { success = false, message = string.IsNullOrEmpty(errores) ? "Datos de reasignación inválidos." : errores });
             }
 
             try
@@ -92,10 +93,10 @@ namespace MantenimientoPresentation.Controllers
                 await _service.ReasignarAsync(dto);
                 return Json(new { success = true, message = "Supervisor reasignado exitosamente." });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al reasignar supervisor.");
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
 
@@ -104,7 +105,7 @@ namespace MantenimientoPresentation.Controllers
         {
             if (!ModelState.IsValid)
             {
-                return Json(new { success = false, message = "Datos de desvinculación inválidos." });
+                return BadRequest(new { success = false, message = "Datos de desvinculación inválidos." });
             }
 
             try
@@ -114,10 +115,10 @@ namespace MantenimientoPresentation.Controllers
                 await _service.DesvincularAsync(dto);
                 return Json(new { success = true, message = "Relación eliminada exitosamente." });
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not FluentValidation.ValidationException && ex is not ArgumentException && ex is not KeyNotFoundException && ex is not InvalidOperationException)
             {
                 _logger.LogError(ex, "Error al desvincular analista.");
-                return Json(new { success = false, message = ex.Message });
+                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "Ocurrió un error inesperado al procesar la solicitud. Inténtelo nuevamente." });
             }
         }
     }
