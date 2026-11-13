@@ -141,24 +141,24 @@ namespace MantenimientoPresentation.Controllers
             }
         }
 
-        [HttpPost]
-        public async Task<IActionResult> Eliminar(int id)
-        {
-            if (id <= 0)
-                return BadRequest(new { success = false, message = "Identificador no válido." });
-
-            try
-            {
-                var usuario = _currentUserService.GetUsername();
-                await _service.EliminarAsync(id, usuario);
-                _logger.LogInformation("Proveedor inhabilitado {Id} eliminado por {Usuario}.", id, usuario);
-                return Json(new { success = true, message = "Proveedor inhabilitado eliminado exitosamente." });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al eliminar el proveedor inhabilitado con Id {Id}.", id);
-                return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "No se pudo eliminar el proveedor inhabilitado." });
-            }
-        }
+        // [HttpPost]
+        // public async Task<IActionResult> Eliminar(int id)
+        // {
+        //     if (id <= 0)
+        //         return BadRequest(new { success = false, message = "Identificador no válido." });
+        //
+        //     try
+        //     {
+        //         var usuario = _currentUserService.GetUsername();
+        //         await _service.EliminarAsync(id, usuario);
+        //         _logger.LogInformation("Proveedor inhabilitado {Id} eliminado por {Usuario}.", id, usuario);
+        //         return Json(new { success = true, message = "Proveedor inhabilitado eliminado exitosamente." });
+        //     }
+        //     catch (Exception ex)
+        //     {
+        //         _logger.LogError(ex, "Error al eliminar el proveedor inhabilitado con Id {Id}.", id);
+        //         return StatusCode(StatusCodes.Status500InternalServerError, new { success = false, message = "No se pudo eliminar el proveedor inhabilitado." });
+        //     }
+        // }
     }
 }
