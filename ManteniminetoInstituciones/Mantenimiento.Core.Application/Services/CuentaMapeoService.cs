@@ -3,6 +3,7 @@ using Mantenimiento.Core.Application.DTOs.Cuenta.DboCuentasDTO;
 using Mantenimiento.Core.Application.InterfaceServices;
 using Mantenimiento.Core.Application.Mappings;
 using Mantenimiento.Core.Domain.Entities;
+using Mantenimiento.Core.Domain.Pagination;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 
 namespace Mantenimiento.Core.Application.Services
@@ -35,6 +36,20 @@ namespace Mantenimiento.Core.Application.Services
         {
             var lista = await _repo.ObtenerCuentasAsync(tipoTramite: tipoTramite, busqueda: busqueda);
             return lista.Select(CuentaMapeoMapper.ToDto).ToList();
+        }
+
+        public async Task<PagedResult<CuentaDto>> ObtenerPaginadoAsync(
+            int? tipoTramite,
+            string? busqueda,
+            int pagina = 1,
+            int tamanoPagina = 10)
+        {
+            var resultado = await _repo.ObtenerPaginadoAsync(tipoTramite, busqueda, pagina, tamanoPagina);
+            return new PagedResult<CuentaDto>(
+                resultado.Items.Select(CuentaMapeoMapper.ToDto).ToList(),
+                resultado.PageNumber,
+                resultado.PageSize,
+                resultado.TotalCount);
         }
 
         /// <summary>

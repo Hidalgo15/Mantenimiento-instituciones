@@ -1,5 +1,6 @@
 ﻿using Mantenimiento.Core.Domain.Entities;
 using Mantenimiento.Core.Domain.Entities.RelacionContratoRequisito;
+using Mantenimiento.Core.Domain.Pagination;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -30,6 +31,33 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
                 .FromSqlRaw("EXEC [dbo].[sp_Obtener_Relacion_Contrato_Requisito] @CodigoClasificacion, @CodigoRequisito", pClasificacion, pRequisito)
                 .AsNoTracking()
                 .ToListAsync();
+        }
+
+        public async Task<PagedResult<RelacionContratoRequisito>> ObtenerPaginadoAsync(
+            int? codigoClasificacion,
+            int? codigoRequisito,
+            int pagina,
+            int tamanoPagina)
+        {
+            pagina = Math.Max(pagina, 1);
+            tamanoPagina = Math.Clamp(tamanoPagina, 1, 100);
+            var pClasificacion = new SqlParameter("@CodigoClasificacion", (object?)codigoClasificacion ?? DBNull.Value);
+            var pRequisito = new SqlParameter("@CodigoRequisito", (object?)codigoRequisito ?? DBNull.Value);
+            var pPagina = new SqlParameter("@PageNumber", pagina);
+            var pTamanoPagina = new SqlParameter("@PageSize", tamanoPagina);
+            var pTotal = new SqlParameter("@TotalCount", System.Data.SqlDbType.Int) { Direction = System.Data.ParameterDirection.Output };
+
+            var relaciones = await _context.Set<RelacionContratoRequisito>()
+                .FromSqlRaw(
+                    "EXEC dbo.sp_Obtener_Relacion_Contrato_Requisito_Paginado @CodigoClasificacion, @CodigoRequisito, @PageNumber, @PageSize, @TotalCount OUTPUT",
+                    pClasificacion, pRequisito, pPagina, pTamanoPagina, pTotal)
+                .AsNoTracking()
+                .ToListAsync();
+
+            var total = Convert.ToInt32(pTotal.Value);
+            var paginas = total == 0 ? 1 : (int)Math.Ceiling(total / (double)tamanoPagina);
+            pagina = Math.Min(pagina, paginas);
+            return new PagedResult<RelacionContratoRequisito>(relaciones, pagina, tamanoPagina, total);
         }
 
         /// <summary>

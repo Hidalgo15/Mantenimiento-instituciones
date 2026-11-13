@@ -23,6 +23,24 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
             _context = context;
         }
 
+        public async Task<List<Impedimento>> ObtenerAsync(string? filtroTexto)
+        {
+            filtroTexto = string.IsNullOrWhiteSpace(filtroTexto) ? null : filtroTexto.Trim();
+            var parametroId = new SqlParameter("@ID", SqlDbType.Int) { Value = DBNull.Value };
+            var parametroCedulaRnc = new SqlParameter("@cedula_rnc", SqlDbType.NVarChar, 15) { Value = DBNull.Value };
+            var parametroFiltro = new SqlParameter("@FiltroTexto", SqlDbType.NVarChar, 255)
+            {
+                Value = (object?)filtroTexto ?? DBNull.Value
+            };
+
+            return await _context.ImpedimentosTbl
+                .FromSqlRaw(
+                    "EXEC dbo.sp_t_Impedimentos_Obtener @ID, @cedula_rnc, @FiltroTexto",
+                    parametroId, parametroCedulaRnc, parametroFiltro)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
         /// <summary>
         /// Obtiene una página de impedimentos y el total de resultados del filtro.
         /// </summary>
@@ -36,25 +54,29 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
             tamanoPagina = Math.Clamp(tamanoPagina, 1, 100);
             filtroTexto = string.IsNullOrWhiteSpace(filtroTexto) ? null : filtroTexto.Trim();
 
-            var consulta = _context.ImpedimentosTbl.AsNoTracking().AsQueryable();
-            if (filtroTexto != null)
+            var parametroId = new SqlParameter("@ID", SqlDbType.Int) { Value = DBNull.Value };
+            var parametroCedulaRnc = new SqlParameter("@cedula_rnc", SqlDbType.NVarChar, 15) { Value = DBNull.Value };
+            var parametroFiltro = new SqlParameter("@FiltroTexto", SqlDbType.NVarChar, 255)
             {
-                consulta = consulta.Where(impedimento =>
-                    (impedimento.Nombres != null && impedimento.Nombres.Contains(filtroTexto)) ||
-                    (impedimento.CedulaRnc != null && impedimento.CedulaRnc.Contains(filtroTexto)) ||
-                    (impedimento.Motivo != null && impedimento.Motivo.Contains(filtroTexto)));
-            }
+                Value = (object?)filtroTexto ?? DBNull.Value
+            };
+            var parametroPagina = new SqlParameter("@PageNumber", SqlDbType.Int) { Value = pagina };
+            var parametroTamanoPagina = new SqlParameter("@PageSize", SqlDbType.Int) { Value = tamanoPagina };
+            var parametroTotal = new SqlParameter("@TotalCount", SqlDbType.Int)
+            {
+                Direction = ParameterDirection.Output
+            };
 
-            var total = await consulta.CountAsync();
-            var totalPaginas = total == 0 ? 0 : (int)Math.Ceiling(total / (double)tamanoPagina);
-            pagina = totalPaginas == 0 ? 1 : Math.Min(pagina, totalPaginas);
-
-            var registros = await consulta
-                .OrderByDescending(impedimento => impedimento.Id)
-                .Skip((pagina - 1) * tamanoPagina)
-                .Take(tamanoPagina)
+            var registros = await _context.ImpedimentosTbl
+                .FromSqlRaw(
+                    "EXEC dbo.sp_t_Impedimentos_ObtenerPaginado @ID, @cedula_rnc, @FiltroTexto, @PageNumber, @PageSize, @TotalCount OUTPUT",
+                    parametroId, parametroCedulaRnc, parametroFiltro, parametroPagina, parametroTamanoPagina, parametroTotal)
+                .AsNoTracking()
                 .ToListAsync();
 
+            var total = Convert.ToInt32(parametroTotal.Value);
+            var totalPaginas = total == 0 ? 1 : (int)Math.Ceiling(total / (double)tamanoPagina);
+            pagina = Math.Min(pagina, totalPaginas);
             return new PagedResult<Impedimento>(registros, pagina, tamanoPagina, total);
         }
 

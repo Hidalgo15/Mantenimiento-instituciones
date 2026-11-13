@@ -1,5 +1,6 @@
 ﻿using Mantenimiento.Core.Application.DTOs.CuentaRequisito;
 using Mantenimiento.Core.Application.InterfaceServices;
+using MantenimientoPresentation.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,12 +13,14 @@ namespace MantenimientoPresentation.Controllers
         private readonly ICuentaRequisitoService _service;
         private readonly ILogger<CuentaRequisitoController> _logger;
         private readonly ICurrentUserService _currentUserService;
+        private readonly bool _gridPaginationEnabled;
 
-        public CuentaRequisitoController(ICuentaRequisitoService service, ILogger<CuentaRequisitoController> logger, ICurrentUserService currentUserService)
+        public CuentaRequisitoController(ICuentaRequisitoService service, ILogger<CuentaRequisitoController> logger, ICurrentUserService currentUserService, IConfiguration configuration)
         {
             _service = service;
             _logger = logger;
             _currentUserService = currentUserService;
+            _gridPaginationEnabled = configuration.GetValue<bool>("GridPagination:Enabled");
         }
 
         public async Task<IActionResult> Index()
@@ -28,10 +31,20 @@ namespace MantenimientoPresentation.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ObtenerGrid(double? idCuenta, int? idRequisito, bool? estado)
+        public async Task<IActionResult> ObtenerGrid(double? idCuenta, int? idRequisito, bool? estado, int page = 1, int pageSize = 10)
         {
             try
             {
+                if (_gridPaginationEnabled)
+                {
+                    var resultado = await _service.ObtenerPaginadoAsync(idCuenta, idRequisito, estado, page, pageSize);
+                    GridPaginationViewData.Set(this, resultado);
+                    ViewData["IdCuenta"] = idCuenta;
+                    ViewData["IdRequisito"] = idRequisito;
+                    ViewData["Estado"] = estado;
+                    return PartialView("_CuentaRequisitoGridPartial", resultado.Items.ToList());
+                }
+
                 var data = await _service.ObtenerRelacionAsync(idCuenta, idRequisito, estado);
                 ViewData["IdCuenta"] = idCuenta;
                 ViewData["IdRequisito"] = idRequisito;

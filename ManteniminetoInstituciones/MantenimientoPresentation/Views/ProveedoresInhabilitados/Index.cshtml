@@ -38,7 +38,7 @@
     </div>
 
     <!-- CONTENEDOR GRID -->
-    <div id="contenedorGridProveedores">
+    <div id="contenedorGrid">
         <div class="text-center py-5 bg-white rounded-3 border shadow-sm">
             <div class="spinner-border text-primary mb-3" style="width: 2.5rem; height: 2.5rem;" role="status"></div>
             <p class="text-muted mb-0 fw-semibold">Cargando proveedores...</p>
@@ -127,7 +127,6 @@
 @section Scripts {
     <script>
         let modalProveedor;
-        let paginaProveedores = 1;
         let temporizadorBusquedaProveedores;
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -139,13 +138,12 @@
             cargarProveedores();
         });
 
-        async function cargarProveedores(pagina = paginaProveedores) {
-            paginaProveedores = pagina;
-            const contenedor = document.getElementById('contenedorGridProveedores');
+        async function cargarProveedores(page = Number(document.querySelector('#contenedorGrid [data-grid-pagination]')?.dataset.pageNumber || 1)) {
+            const contenedor = document.getElementById('contenedorGrid');
             const filtroTexto = document.getElementById('filtroProveedores').value.trim();
-            const selectorTamanoPagina = document.getElementById('tamanoPaginaProveedores');
-            const tamanoPagina = selectorTamanoPagina ? selectorTamanoPagina.value : '10';
-            const parametros = new URLSearchParams({ filtroTexto, pagina: String(pagina), tamanoPagina });
+            const selectorTamanoPagina = document.getElementById('gridPageSize');
+            const pageSize = selectorTamanoPagina ? selectorTamanoPagina.value : '10';
+            const parametros = new URLSearchParams({ filtroTexto, page: String(page), pageSize });
 
             contenedor.innerHTML = '<div class="text-center py-5 bg-white rounded-3 border shadow-sm"><div class="spinner-border text-primary mb-3" style="width: 2.5rem; height: 2.5rem;" role="status"></div><p class="text-muted mb-0 fw-semibold">Cargando proveedores...</p></div>';
 
@@ -157,10 +155,6 @@
                 console.error(error);
                 contenedor.innerHTML = '<div class="alert alert-danger text-center py-3 rounded-3 shadow-sm">No se pudo cargar el listado de proveedores. Intente nuevamente.</div>';
             }
-        }
-
-        function cambiarPaginaProveedores(pagina) {
-            cargarProveedores(pagina);
         }
 
         function limpiarFormularioProveedor() {
@@ -222,7 +216,7 @@
                 const resultado = await respuesta.json();
                 if (!respuesta.ok || !resultado.success) throw new Error(resultado.message || 'No se pudo guardar el proveedor.');
                 modalProveedor.hide();
-                await cargarProveedores(esEdicion ? paginaProveedores : 1);
+                await cargarProveedores(esEdicion ? undefined : 1);
             } catch (error) {
                 console.error(error);
                 alert(error.message || 'No se pudo guardar el proveedor.');
@@ -240,7 +234,7 @@
                 const respuesta = await fetch(`/ProveedoresInhabilitados/Eliminar?id=${id}`, { method: 'POST' });
                 const resultado = await respuesta.json();
                 if (!respuesta.ok || !resultado.success) throw new Error(resultado.message || 'No se pudo eliminar el proveedor.');
-                await cargarProveedores(paginaProveedores);
+                await cargarProveedores();
             } catch (error) {
                 console.error(error);
                 alert(error.message || 'No se pudo eliminar el proveedor.');

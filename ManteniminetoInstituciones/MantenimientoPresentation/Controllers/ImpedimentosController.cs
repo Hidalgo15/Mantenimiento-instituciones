@@ -1,5 +1,6 @@
 using Mantenimiento.Core.Application.DTOs.Impedimentos;
 using Mantenimiento.Core.Application.InterfaceServices;
+using MantenimientoPresentation.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,30 +13,40 @@ namespace MantenimientoPresentation.Controllers
         private readonly IImpedimentoService _service;
         private readonly ICurrentUserService _currentUserService;
         private readonly ILogger<ImpedimentosController> _logger;
+        private readonly bool _gridPaginationEnabled;
 
         public ImpedimentosController(
             IImpedimentoService service,
             ICurrentUserService currentUserService,
-            ILogger<ImpedimentosController> logger)
+            ILogger<ImpedimentosController> logger,
+            IConfiguration configuration)
         {
             _service = service;
             _currentUserService = currentUserService;
             _logger = logger;
+            _gridPaginationEnabled = configuration.GetValue<bool>("GridPagination:Enabled");
         }
 
         [HttpGet]
         public IActionResult Index() => View();
 
         [HttpGet]
-        public async Task<IActionResult> ObtenerGrid(string? filtroTexto, int pagina = 1, int tamanoPagina = 10)
+        public async Task<IActionResult> ObtenerGrid(string? filtroTexto, int page = 1, int pageSize = 10)
         {
             if (filtroTexto?.Length > 255)
                 return BadRequest("El texto de búsqueda no puede exceder 255 caracteres.");
 
             try
             {
-                var resultado = await _service.ObtenerPaginadoAsync(filtroTexto, pagina, tamanoPagina);
-                return PartialView("_ImpedimentosGridPartial", resultado);
+                if (_gridPaginationEnabled)
+                {
+                    var resultado = await _service.ObtenerPaginadoAsync(filtroTexto, page, pageSize);
+                    GridPaginationViewData.Set(this, resultado);
+                    return PartialView("_ImpedimentosGridPartial", resultado.Items);
+                }
+
+                var registros = await _service.ObtenerAsync(filtroTexto);
+                return PartialView("_ImpedimentosGridPartial", registros);
             }
             catch (Exception ex)
             {

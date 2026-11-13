@@ -5,6 +5,7 @@ namespace Mantenimiento.Core.Application.InterfaceServices
 {
     public interface IImpedimentoService
     {
+        Task<List<ImpedimentoDto>> ObtenerAsync(string? filtroTexto);
         Task<PagedResult<ImpedimentoDto>> ObtenerPaginadoAsync(string? filtroTexto, int pagina = 1, int tamanoPagina = 10);
         Task<ImpedimentoDto?> ObtenerPorIdAsync(int id);
         Task<int> CrearAsync(CrearImpedimentoDto dto);

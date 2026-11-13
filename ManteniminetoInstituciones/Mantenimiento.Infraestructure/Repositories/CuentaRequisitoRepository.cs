@@ -1,7 +1,9 @@
 ﻿using Mantenimiento.Core.Domain.Entities;
+using Mantenimiento.Core.Domain.Pagination;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
+using System.Data;
 
 namespace Mantenimiento.Infraestructure.Persistence.Repositories
 {
@@ -34,6 +36,35 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
                 .FromSqlRaw("EXEC [ct].[sp_Obtener_Relacion_Cuenta_Requisitos] @IdCuenta, @IdRequisito, @Estado", pIdCuenta, pIdRequisito, pEstado)
                 .AsNoTracking()
                 .ToListAsync();
+        }
+
+        public async Task<PagedResult<CuentaRequisitoConsulta>> ObtenerPaginadoAsync(
+            double? idCuenta,
+            int? idRequisito,
+            bool? estado,
+            int pagina,
+            int tamanoPagina)
+        {
+            pagina = Math.Max(pagina, 1);
+            tamanoPagina = Math.Clamp(tamanoPagina, 1, 100);
+            var pIdCuenta = new SqlParameter("@IdCuenta", SqlDbType.Float) { Value = (object?)idCuenta ?? DBNull.Value };
+            var pIdRequisito = new SqlParameter("@IdRequisito", SqlDbType.Int) { Value = (object?)idRequisito ?? DBNull.Value };
+            var pEstado = new SqlParameter("@Estado", SqlDbType.Bit) { Value = (object?)estado ?? DBNull.Value };
+            var pPagina = new SqlParameter("@PageNumber", SqlDbType.Int) { Value = pagina };
+            var pTamanoPagina = new SqlParameter("@PageSize", SqlDbType.Int) { Value = tamanoPagina };
+            var pTotal = new SqlParameter("@TotalCount", SqlDbType.Int) { Direction = ParameterDirection.Output };
+
+            var relaciones = await _context.Set<CuentaRequisitoConsulta>()
+                .FromSqlRaw(
+                    "EXEC [ct].[sp_Obtener_Relacion_Cuenta_Requisitos_Paginado] @IdCuenta, @IdRequisito, @Estado, @PageNumber, @PageSize, @TotalCount OUTPUT",
+                    pIdCuenta, pIdRequisito, pEstado, pPagina, pTamanoPagina, pTotal)
+                .AsNoTracking()
+                .ToListAsync();
+
+            var total = Convert.ToInt32(pTotal.Value);
+            var paginas = total == 0 ? 1 : (int)Math.Ceiling(total / (double)tamanoPagina);
+            pagina = Math.Min(pagina, paginas);
+            return new PagedResult<CuentaRequisitoConsulta>(relaciones, pagina, tamanoPagina, total);
         }
 
         /// <summary>

@@ -1,5 +1,6 @@
 using Mantenimiento.Core.Application.DTOs.ProveedoresInhabilitados;
 using Mantenimiento.Core.Application.InterfaceServices;
+using MantenimientoPresentation.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,15 +13,18 @@ namespace MantenimientoPresentation.Controllers
         private readonly IProveedorInhabilitadoService _service;
         private readonly ICurrentUserService _currentUserService;
         private readonly ILogger<ProveedoresInhabilitadosController> _logger;
+        private readonly bool _gridPaginationEnabled;
 
         public ProveedoresInhabilitadosController(
             IProveedorInhabilitadoService service,
             ICurrentUserService currentUserService,
-            ILogger<ProveedoresInhabilitadosController> logger)
+            ILogger<ProveedoresInhabilitadosController> logger,
+            IConfiguration configuration)
         {
             _service = service;
             _currentUserService = currentUserService;
             _logger = logger;
+            _gridPaginationEnabled = configuration.GetValue<bool>("GridPagination:Enabled");
         }
 
         [HttpGet]
@@ -41,15 +45,22 @@ namespace MantenimientoPresentation.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ObtenerGrid(string? filtroTexto, int pagina = 1, int tamanoPagina = 10)
+        public async Task<IActionResult> ObtenerGrid(string? filtroTexto, int page = 1, int pageSize = 10)
         {
             if (filtroTexto?.Length > 255)
                 return BadRequest("El texto de búsqueda no puede exceder 255 caracteres.");
 
             try
             {
-                var resultado = await _service.ObtenerPaginadoAsync(filtroTexto, pagina, tamanoPagina);
-                return PartialView("_ProveedoresInhabilitadosGridPartial", resultado);
+                if (_gridPaginationEnabled)
+                {
+                    var resultado = await _service.ObtenerPaginadoAsync(filtroTexto, page, pageSize);
+                    GridPaginationViewData.Set(this, resultado);
+                    return PartialView("_ProveedoresInhabilitadosGridPartial", resultado.Items);
+                }
+
+                var registros = await _service.ObtenerAsync(filtroTexto);
+                return PartialView("_ProveedoresInhabilitadosGridPartial", registros);
             }
             catch (Exception ex)
             {

@@ -2,6 +2,7 @@ using FluentValidation;
 using Mantenimiento.Core.Application.DTOs.ClasificacionContrato;
 using Mantenimiento.Core.Application.InterfaceServices;
 using Mantenimiento.Core.Application.Mappings;
+using Mantenimiento.Core.Domain.Pagination;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 
 namespace Mantenimiento.Core.Application.Services
@@ -35,6 +36,23 @@ namespace Mantenimiento.Core.Application.Services
         {
             var entidades = await _repository.ObtenerAsync(codigoClasificacion, contratoTipo, tipoOperacion, contratoProcesoSeleccion);
             return entidades.Select(ClasificacionContratoMapper.ToDto).ToList();
+        }
+
+        public async Task<PagedResult<ClasificacionContratoDto>> ObtenerPaginadoAsync(
+            int? codigoClasificacion,
+            string? contratoTipo,
+            string? tipoOperacion,
+            string? contratoProcesoSeleccion,
+            int pagina = 1,
+            int tamanoPagina = 10)
+        {
+            var resultado = await _repository.ObtenerPaginadoAsync(
+                codigoClasificacion, contratoTipo, tipoOperacion, contratoProcesoSeleccion, pagina, tamanoPagina);
+            return new PagedResult<ClasificacionContratoDto>(
+                resultado.Items.Select(ClasificacionContratoMapper.ToDto).ToList(),
+                resultado.PageNumber,
+                resultado.PageSize,
+                resultado.TotalCount);
         }
 
         /// <summary>

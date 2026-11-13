@@ -40,6 +40,7 @@ namespace Mantenimiento.Core.Application.Services
             int pageSize = 10)
         {
             var pagina = await _fondoRepo.GetFondosEspecialesPaginadosAsync(
+                null,
                 estructura,
                 tipoTramite,
                 pageNumber,
@@ -50,6 +51,14 @@ namespace Mantenimiento.Core.Application.Services
                 pagina.PageNumber,
                 pagina.PageSize,
                 pagina.TotalCount);
+        }
+
+        public async Task<List<FondoDto>> ObtenerFondosEspecialesSinPaginacionAsync(
+            string? estructura = null,
+            string? tipoTramite = null)
+        {
+            var fondos = await _fondoRepo.GetFondosEspecialesAsync(null, estructura, tipoTramite);
+            return fondos.Select(FondoEspecialesMapper.ToDto).ToList();
         }
 
         /// <summary>

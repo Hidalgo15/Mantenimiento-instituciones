@@ -16,6 +16,24 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
             _context = context;
         }
 
+        public async Task<List<ProveedorInhabilitado>> ObtenerAsync(string? filtroTexto)
+        {
+            filtroTexto = string.IsNullOrWhiteSpace(filtroTexto) ? null : filtroTexto.Trim();
+            var parametroId = new SqlParameter("@Id", SqlDbType.Int) { Value = DBNull.Value };
+            var parametroDocumento = new SqlParameter("@NUMERO_DOCUMENTO", SqlDbType.VarChar, 50) { Value = DBNull.Value };
+            var parametroFiltro = new SqlParameter("@FiltroTexto", SqlDbType.VarChar, 255)
+            {
+                Value = (object?)filtroTexto ?? DBNull.Value
+            };
+
+            return await _context.ProveedoresInhabilitadosTbl
+                .FromSqlRaw(
+                    "EXEC dbo.sp_cc_proveedores_inhabilitados_Obtener @Id, @NUMERO_DOCUMENTO, @FiltroTexto",
+                    parametroId, parametroDocumento, parametroFiltro)
+                .AsNoTracking()
+                .ToListAsync();
+        }
+
         /// <summary>
         /// Obtiene una página de proveedores filtrada por razón social, RPE o documento.
         /// </summary>
@@ -32,29 +50,29 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
             tamanoPagina = Math.Clamp(tamanoPagina, 1, 100);
             filtroTexto = string.IsNullOrWhiteSpace(filtroTexto) ? null : filtroTexto.Trim();
 
-            var consulta = _context.ProveedoresInhabilitadosTbl
-                .AsNoTracking()
-                .AsQueryable();
-
-            if (!string.IsNullOrWhiteSpace(filtroTexto))
+            var parametroId = new SqlParameter("@Id", SqlDbType.Int) { Value = DBNull.Value };
+            var parametroDocumento = new SqlParameter("@NUMERO_DOCUMENTO", SqlDbType.VarChar, 50) { Value = DBNull.Value };
+            var parametroFiltro = new SqlParameter("@FiltroTexto", SqlDbType.VarChar, 255)
             {
-                var filtro = filtroTexto.Trim();
-                consulta = consulta.Where(proveedor =>
-                    (proveedor.RazonSocial != null && proveedor.RazonSocial.Contains(filtro)) ||
-                    (proveedor.Rpe != null && proveedor.Rpe.Contains(filtro)) ||
-                    (proveedor.NumeroDocumento != null && proveedor.NumeroDocumento.Contains(filtro)));
-            }
+                Value = (object?)filtroTexto ?? DBNull.Value
+            };
+            var parametroPagina = new SqlParameter("@PageNumber", SqlDbType.Int) { Value = pagina };
+            var parametroTamanoPagina = new SqlParameter("@PageSize", SqlDbType.Int) { Value = tamanoPagina };
+            var parametroTotal = new SqlParameter("@TotalCount", SqlDbType.Int)
+            {
+                Direction = ParameterDirection.Output
+            };
 
-            var totalRegistros = await consulta.CountAsync();
-            var totalPaginas = totalRegistros == 0 ? 0 : (int)Math.Ceiling(totalRegistros / (double)tamanoPagina);
-            pagina = totalPaginas == 0 ? 1 : Math.Min(pagina, totalPaginas);
-
-            var resultado = await consulta
-                .OrderByDescending(proveedor => proveedor.Id)
-                .Skip((pagina - 1) * tamanoPagina)
-                .Take(tamanoPagina)
+            var resultado = await _context.ProveedoresInhabilitadosTbl
+                .FromSqlRaw(
+                    "EXEC dbo.sp_cc_proveedores_inhabilitados_ObtenerPaginado @Id, @NUMERO_DOCUMENTO, @FiltroTexto, @PageNumber, @PageSize, @TotalCount OUTPUT",
+                    parametroId, parametroDocumento, parametroFiltro, parametroPagina, parametroTamanoPagina, parametroTotal)
+                .AsNoTracking()
                 .ToListAsync();
 
+            var totalRegistros = Convert.ToInt32(parametroTotal.Value);
+            var totalPaginas = totalRegistros == 0 ? 1 : (int)Math.Ceiling(totalRegistros / (double)tamanoPagina);
+            pagina = Math.Min(pagina, totalPaginas);
             return new PagedResult<ProveedorInhabilitado>(resultado, pagina, tamanoPagina, totalRegistros);
         }
 
@@ -72,13 +90,7 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
                 .OrderBy(genero => genero)
                 .ToListAsync();
 
-            var estadosRpe = await _context.ProveedoresInhabilitadosTbl
-                .AsNoTracking()
-                .Where(proveedor => proveedor.EstadoRpe != null && proveedor.EstadoRpe.Trim() != string.Empty)
-                .Select(proveedor => proveedor.EstadoRpe!.Trim())
-                .Distinct()
-                .OrderBy(estado => estado)
-                .ToListAsync();
+            var estadosRpe = new List<string> { "Habilitado", "Inhabilitado" };
 
             return (generos, estadosRpe);
         }

@@ -5,6 +5,7 @@ namespace Mantenimiento.Core.Domain.RepositoryInterfaces
 {
     public interface IProveedorInhabilitadoRepository
     {
+        Task<List<ProveedorInhabilitado>> ObtenerAsync(string? filtroTexto);
         Task<PagedResult<ProveedorInhabilitado>> ObtenerPaginadoAsync(string? filtroTexto, int pagina, int tamanoPagina);
         Task<(List<string> Generos, List<string> EstadosRpe)> ObtenerOpcionesAsync();
         Task<ProveedorInhabilitado?> ObtenerPorIdAsync(int id);

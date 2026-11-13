@@ -2,9 +2,9 @@
     ViewData["Title"] = "Panel Principal";
 }
 
-<div class="container-fluid py-4 px-md-5 dashboard-container">
+<div class="container-fluid dashboard-wrapper">
     <!-- CABECERA PRINCIPAL -->
-    <div class="hero-header mb-4 p-4 rounded-4 shadow-sm position-relative overflow-hidden">
+    <div class="hero-header mb-4 p-4 p-md-5 rounded-4 shadow-sm position-relative overflow-hidden">
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3 position-relative z-1">
             <div>
                 <div class="d-flex align-items-center gap-2 mb-2">
@@ -12,29 +12,33 @@
                         <i class="bi bi-shield-check me-1"></i> Institucional
                     </span>
                 </div>
-                <h2 class="fw-bold text-dark mb-1 tracking-tight">Módulo de Mantenimiento</h2>
-                <p class="text-secondary mb-0">Acceda y gestione la estructura organizacional y los catálogos del sistema.</p>
+                <h2 class="fw-bold text-dark mb-1 tracking-tight display-title">Módulo de Mantenimiento</h2>
+                <p class="text-secondary mb-0 text-subtitle">Acceda y gestione la estructura organizacional y los catálogos del sistema.</p>
             </div>
         </div>
         <div class="hero-bg-pattern"></div>
     </div>
 
-    <div class="row g-4">
-        <!-- COLUMNA IZQUIERDA: ESTRUCTURA INSTITUCIONAL -->
-        <div class="col-12 col-lg-6">
-            <div class="d-flex align-items-center justify-content-between mb-3">
-                <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
-                    <span class="section-icon-wrapper bg-primary-subtle text-primary">
-                        <i class="bi bi-diagram-3-fill"></i>
-                    </span>
-                    Estructura Institucional
-                </h5>
-            </div>
+    <div class="modules-grid">
 
-            <!-- CONTENEDOR CON GAP PARA SEPARAR LOS ACORDEONES -->
-            <div class="d-flex flex-column gap-3">
-                <!-- ACORDEÓN ESTRUCTURA ORGANIZACIONAL -->
-                <div class="accordion custom-nav-accordion shadow-sm rounded-4 overflow-hidden" id="accordionEstructura">
+        <!-- ========================================== -->
+        <!-- COLUMNA IZQUIERDA: Estructura e Institución -->
+        <!-- ========================================== -->
+        <div class="d-flex flex-column gap-4">
+
+            <!-- SECCIÓN 1: Estructura Institucional -->
+            <div>
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                        <span class="section-icon-wrapper bg-primary-subtle text-primary">
+                            <i class="bi bi-diagram-3-fill"></i>
+                        </span>
+                        Estructura Institucional
+                    </h5>
+                </div>
+
+                <!-- Acordeón: Estructura Organizacional -->
+                <div class="accordion custom-nav-accordion shadow-sm rounded-4 overflow-hidden">
                     <div class="accordion-item border-0">
                         <div class="accordion-header p-3 bg-white d-flex align-items-center justify-content-between">
                             <div class="d-flex align-items-center gap-3 cursor-pointer flex-grow-1 me-2"
@@ -63,7 +67,7 @@
                             </div>
                         </div>
 
-                        <div id="collapseEstructura" class="accordion-collapse collapse show" data-bs-parent="#accordionEstructura">
+                        <div id="collapseEstructura" class="accordion-collapse collapse show">
                             <div class="accordion-body bg-light-subtle p-3 border-top">
                                 <div class="nav-tree-wrapper d-flex flex-column gap-2 ms-md-2">
                                     <!-- Capítulos -->
@@ -134,9 +138,11 @@
                         </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- ACORDEÓN: CONTROL DE REQUISITOS Y SUS CUENTAS -->
-                <div class="accordion custom-nav-accordion shadow-sm rounded-4 overflow-hidden" id="accordionCuentas">
+            <!-- SECCIÓN 2: Control de Requisitos y sus Cuentas -->
+            <div>
+                <div class="accordion custom-nav-accordion shadow-sm rounded-4 overflow-hidden">
                     <div class="accordion-item border-0">
                         <div class="accordion-header p-3 bg-white d-flex align-items-center justify-content-between">
                             <div class="d-flex align-items-center gap-3 cursor-pointer flex-grow-1 me-2"
@@ -165,7 +171,7 @@
                             </div>
                         </div>
 
-                        <div id="collapseCuentas" class="accordion-collapse collapse show" data-bs-parent="#accordionCuentas">
+                        <div id="collapseCuentas" class="accordion-collapse collapse show">
                             <div class="accordion-body bg-light-subtle p-3 border-top">
                                 <div class="nav-tree-wrapper d-flex flex-column gap-2 ms-md-2">
                                     <!-- Cuentas Requisitos Ordenes de Pago -->
@@ -221,154 +227,163 @@
                     </div>
                 </div>
             </div>
+
         </div>
 
-        <!-- COLUMNA DERECHA: OTROS CATÁLOGOS Y GESTIÓN DE CONTRATOS -->
-        <div class="col-12 col-lg-6">
-            <div class="d-flex align-items-center justify-content-between mb-3">
-                <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
-                    <span class="section-icon-wrapper bg-secondary-subtle text-secondary">
-                        <i class="bi bi-grid-3x3-gap-fill"></i>
-                    </span>
-                    Otros Catálogos
-                </h5>
+        <!-- ========================================== -->
+        <!-- COLUMNA DERECHA: Otros Catálogos y Contratos -->
+        <!-- ========================================== -->
+        <div class="d-flex flex-column gap-4">
+
+            <!-- SECCIÓN 3: Otros Catálogos (Con todas sus tarjetas) -->
+            <div>
+                <div class="d-flex align-items-center justify-content-between mb-3">
+                    <h5 class="fw-bold text-dark mb-0 d-flex align-items-center gap-2">
+                        <span class="section-icon-wrapper bg-secondary-subtle text-secondary">
+                            <i class="bi bi-grid-3x3-gap-fill"></i>
+                        </span>
+                        Otros Catálogos
+                    </h5>
+                </div>
+
+                <div class="d-flex flex-column gap-3">
+                    <!-- Cuentas Institucionales -->
+                    <a asp-controller="CuentaInstitucion" asp-action="Index" class="text-decoration-none">
+                        <div class="card module-card border-0 shadow-sm rounded-4 p-3 transition-all">
+                            <div class="card-body p-0 d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="icon-shape bg-navy text-white rounded-3 shadow-sm">
+                                        <i class="bi bi-bank fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold text-dark mb-0">Cuentas Institucionales</h6>
+                                        <small class="text-muted">Cuentas bancarias registradas</small>
+                                    </div>
+                                </div>
+                                <span class="btn btn-light rounded-circle p-2 arrow-btn">
+                                    <i class="bi bi-arrow-right fs-6"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- Analista Supervisor -->
+                    <a asp-controller="AnalistaSupervisor" asp-action="Index" class="text-decoration-none">
+                        <div class="card module-card border-0 shadow-sm rounded-4 p-3 transition-all">
+                            <div class="card-body p-0 d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="icon-shape bg-dark text-white rounded-3 shadow-sm">
+                                        <i class="bi bi-person-badge-fill fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold text-dark mb-0">Analista Supervisor</h6>
+                                        <small class="text-muted">Asignaciones de personal supervisor</small>
+                                    </div>
+                                </div>
+                                <span class="btn btn-light rounded-circle p-2 arrow-btn"><i class="bi bi-arrow-right fs-6"></i></span>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- Fondos Especiales -->
+                    <a asp-controller="FondoEspeciales" asp-action="Index" class="text-decoration-none">
+                        <div class="card module-card border-0 shadow-sm rounded-4 p-3 transition-all">
+                            <div class="card-body p-0 d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="icon-shape bg-deep-teal text-white rounded-3 shadow-sm">
+                                        <i class="bi bi-wallet2 fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold text-dark mb-0">Fondos Especiales</h6>
+                                        <small class="text-muted">Gestión de asignaciones presupuestarias especiales</small>
+                                    </div>
+                                </div>
+                                <span class="btn btn-light rounded-circle p-2 arrow-btn"><i class="bi bi-arrow-right fs-6"></i></span>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- Impedimentos -->
+                    <a asp-controller="Impedimentos" asp-action="Index" class="text-decoration-none">
+                        <div class="card module-card border-0 shadow-sm rounded-4 p-3 transition-all">
+                            <div class="card-body p-0 d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="icon-shape bg-dark text-white rounded-3 shadow-sm">
+                                        <i class="bi bi-shield-exclamation fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold text-dark mb-0">Impedimentos</h6>
+                                        <small class="text-muted">Gestión de personas y entidades impedidas</small>
+                                    </div>
+                                </div>
+                                <span class="btn btn-light rounded-circle p-2 arrow-btn"><i class="bi bi-arrow-right fs-6"></i></span>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- Proveedores inhabilitados -->
+                    <a asp-controller="ProveedoresInhabilitados" asp-action="Index" class="text-decoration-none">
+                        <div class="card module-card border-0 shadow-sm rounded-4 p-3 transition-all">
+                            <div class="card-body p-0 d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="icon-shape bg-deep-teal text-white rounded-3 shadow-sm">
+                                        <i class="bi bi-person-lock fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold text-dark mb-0">Proveedores Inhabilitados</h6>
+                                        <small class="text-muted">Consulta y mantenimiento de proveedores inhabilitados</small>
+                                    </div>
+                                </div>
+                                <span class="btn btn-light rounded-circle p-2 arrow-btn"><i class="bi bi-arrow-right fs-6"></i></span>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- Cuentas por tipo de trámite -->
+                    <a asp-controller="CuentaMapeo" asp-action="Index" class="text-decoration-none">
+                        <div class="card module-card border-0 shadow-sm rounded-4 p-3 transition-all">
+                            <div class="card-body p-0 d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="icon-shape bg-navy text-white rounded-3 shadow-sm">
+                                        <i class="bi bi-journal-bookmark-fill fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold text-dark mb-0">Cuentas por tipo de trámite</h6>
+                                        <small class="text-muted">Mapeo y configuración de cuentas</small>
+                                    </div>
+                                </div>
+                                <span class="btn btn-light rounded-circle p-2 arrow-btn">
+                                    <i class="bi bi-arrow-right fs-6"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </a>
+
+                    <!-- Responsables y Actividades -->
+                    <a asp-controller="ResponsableActividad" asp-action="Index" class="text-decoration-none">
+                        <div class="card module-card border-0 shadow-sm rounded-4 p-3 transition-all">
+                            <div class="card-body p-0 d-flex align-items-center justify-content-between">
+                                <div class="d-flex align-items-center gap-3">
+                                    <div class="icon-shape bg-navy text-white rounded-3 shadow-sm">
+                                        <i class="bi bi-person-check-fill fs-5"></i>
+                                    </div>
+                                    <div>
+                                        <h6 class="fw-bold text-dark mb-0">Responsables y Actividades</h6>
+                                        <small class="text-muted">Asignación de actividades por usuario y flujo de trabajo</small>
+                                    </div>
+                                </div>
+                                <span class="btn btn-light rounded-circle p-2 arrow-btn">
+                                    <i class="bi bi-arrow-right fs-6"></i>
+                                </span>
+                            </div>
+                        </div>
+                    </a>
+                </div>
             </div>
 
-            <div class="d-flex flex-column gap-3">
-                <!-- Cuentas Institucionales -->
-                <a asp-controller="CuentaInstitucion" asp-action="Index" class="text-decoration-none">
-                    <div class="card module-card border-0 shadow-sm rounded-4 p-3 transition-all">
-                        <div class="card-body p-0 d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="icon-shape bg-navy text-white rounded-3 shadow-sm">
-                                    <i class="bi bi-bank fs-5"></i>
-                                </div>
-                                <div>
-                                    <h6 class="fw-bold text-dark mb-0">Cuentas Institucionales</h6>
-                                    <small class="text-muted">Cuentas bancarias registradas</small>
-                                </div>
-                            </div>
-                            <span class="btn btn-light rounded-circle p-2 arrow-btn">
-                                <i class="bi bi-arrow-right fs-6"></i>
-                            </span>
-                        </div>
-                    </div>
-                </a>
-
-                <!-- Analista Supervisor -->
-                <a asp-controller="AnalistaSupervisor" asp-action="Index" class="text-decoration-none">
-                    <div class="card module-card border-0 shadow-sm rounded-4 p-3 transition-all">
-                        <div class="card-body p-0 d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="icon-shape bg-dark text-white rounded-3 shadow-sm">
-                                    <i class="bi bi-person-badge-fill fs-5"></i>
-                                </div>
-                                <div>
-                                    <h6 class="fw-bold text-dark mb-0">Analista Supervisor</h6>
-                                    <small class="text-muted">Asignaciones de personal supervisor</small>
-                                </div>
-                            </div>
-                            <span class="btn btn-light rounded-circle p-2 arrow-btn"><i class="bi bi-arrow-right fs-6"></i></span>
-                        </div>
-                    </div>
-                </a>
-
-                <!-- Fondos Especiales -->
-                <a asp-controller="FondoEspeciales" asp-action="Index" class="text-decoration-none">
-                    <div class="card module-card border-0 shadow-sm rounded-4 p-3 transition-all">
-                        <div class="card-body p-0 d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="icon-shape bg-deep-teal text-white rounded-3 shadow-sm">
-                                    <i class="bi bi-wallet2 fs-5"></i>
-                                </div>
-                                <div>
-                                    <h6 class="fw-bold text-dark mb-0">Fondos Especiales</h6>
-                                    <small class="text-muted">Gestión de asignaciones presupuestarias especiales</small>
-                                </div>
-                            </div>
-                            <span class="btn btn-light rounded-circle p-2 arrow-btn"><i class="bi bi-arrow-right fs-6"></i></span>
-                        </div>
-                    </div>
-                </a>
-
-                <!-- Impedimentos -->
-                <a asp-controller="Impedimentos" asp-action="Index" class="text-decoration-none">
-                    <div class="card module-card border-0 shadow-sm rounded-4 p-3 transition-all">
-                        <div class="card-body p-0 d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="icon-shape bg-dark text-white rounded-3 shadow-sm">
-                                    <i class="bi bi-shield-exclamation fs-5"></i>
-                                </div>
-                                <div>
-                                    <h6 class="fw-bold text-dark mb-0">Impedimentos</h6>
-                                    <small class="text-muted">Gestión de personas y entidades impedidas</small>
-                                </div>
-                            </div>
-                            <span class="btn btn-light rounded-circle p-2 arrow-btn"><i class="bi bi-arrow-right fs-6"></i></span>
-                        </div>
-                    </div>
-                </a>
-
-                <!-- Proveedores inhabilitados -->
-                <a asp-controller="ProveedoresInhabilitados" asp-action="Index" class="text-decoration-none">
-                    <div class="card module-card border-0 shadow-sm rounded-4 p-3 transition-all">
-                        <div class="card-body p-0 d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="icon-shape bg-deep-teal text-white rounded-3 shadow-sm">
-                                    <i class="bi bi-person-lock fs-5"></i>
-                                </div>
-                                <div>
-                                    <h6 class="fw-bold text-dark mb-0">Proveedores Inhabilitados</h6>
-                                    <small class="text-muted">Consulta y mantenimiento de proveedores inhabilitados</small>
-                                </div>
-                            </div>
-                            <span class="btn btn-light rounded-circle p-2 arrow-btn"><i class="bi bi-arrow-right fs-6"></i></span>
-                        </div>
-                    </div>
-                </a>
-
-                <!-- Cuentas por tipo de trámite -->
-                <a asp-controller="CuentaMapeo" asp-action="Index" class="text-decoration-none">
-                    <div class="card module-card border-0 shadow-sm rounded-4 p-3 transition-all">
-                        <div class="card-body p-0 d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="icon-shape bg-navy text-white rounded-3 shadow-sm">
-                                    <i class="bi bi-journal-bookmark-fill fs-5"></i>
-                                </div>
-                                <div>
-                                    <h6 class="fw-bold text-dark mb-0">Cuentas por tipo de trámite</h6>
-                                    <small class="text-muted">Mapeo y configuración de cuentas</small>
-                                </div>
-                            </div>
-                            <span class="btn btn-light rounded-circle p-2 arrow-btn">
-                                <i class="bi bi-arrow-right fs-6"></i>
-                            </span>
-                        </div>
-                    </div>
-                </a>
-
-                <!-- Responsables y Actividades -->
-                <a asp-controller="ResponsableActividad" asp-action="Index" class="text-decoration-none">
-                    <div class="card module-card border-0 shadow-sm rounded-4 p-3 transition-all">
-                        <div class="card-body p-0 d-flex align-items-center justify-content-between">
-                            <div class="d-flex align-items-center gap-3">
-                                <div class="icon-shape bg-navy text-white rounded-3 shadow-sm">
-                                    <i class="bi bi-person-check-fill fs-5"></i>
-                                </div>
-                                <div>
-                                    <h6 class="fw-bold text-dark mb-0">Responsables y Actividades</h6>
-                                    <small class="text-muted">Asignación de actividades por usuario y flujo de trabajo</small>
-                                </div>
-                            </div>
-                            <span class="btn btn-light rounded-circle p-2 arrow-btn">
-                                <i class="bi bi-arrow-right fs-6"></i>
-                            </span>
-                        </div>
-                    </div>
-                </a>
-
-                <!-- NUEVO ACORDEÓN: GESTIÓN DE CONTRATOS Y REQUISITOS -->
-                <div class="accordion custom-nav-accordion shadow-sm rounded-4 overflow-hidden" id="accordionContratos">
+            <!-- SECCIÓN 4: Gestión de Contratos y Requisitos -->
+            <div>
+                <div class="accordion custom-nav-accordion shadow-sm rounded-4 overflow-hidden">
                     <div class="accordion-item border-0">
                         <div class="accordion-header p-3 bg-white d-flex align-items-center justify-content-between">
                             <div class="d-flex align-items-center gap-3 cursor-pointer flex-grow-1 me-2"
@@ -397,7 +412,7 @@
                             </div>
                         </div>
 
-                        <div id="collapseContratos" class="accordion-collapse collapse show" data-bs-parent="#accordionContratos">
+                        <div id="collapseContratos" class="accordion-collapse collapse show">
                             <div class="accordion-body bg-light-subtle p-3 border-top">
                                 <div class="nav-tree-wrapper d-flex flex-column gap-2 ms-md-2">
                                     <!-- Requisitos de Contratos -->
@@ -452,26 +467,46 @@
                         </div>
                     </div>
                 </div>
-
             </div>
+
         </div>
+
     </div>
 </div>
 
 <style>
     :root {
         --brand-navy: #0d5493;
+        --brand-navy-hover: #0a4374;
     }
 
-    .dashboard-container {
-        max-width: 1400px;
+    /* Contenedor */
+    .dashboard-wrapper {
+        max-width: 1560px;
         margin: 0 auto;
+        padding-inline: clamp(1rem, 2.5vw, 2.5rem);
+        padding-block: 2rem;
+    }
+
+    /* Rejilla CSS Grid estricta de 2 columnas */
+    .modules-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+        align-items: start;
+    }
+
+    @@media (max-width: 991.98px) {
+        .modules-grid {
+            grid-template-columns: 1fr;
+        }
     }
 
     /* Hero header */
     .hero-header {
         background: linear-gradient(135deg, #f0f4f8 0%, #e2eaf4 100%);
-        border: 1px solid rgba(13, 84, 147, 0.1);
+        border: 1px solid rgba(13, 84, 147, 0.08);
+        box-shadow: 0 10px 30px -5px rgba(13, 84, 147, 0.05);
     }
 
     .badge-institutional {
@@ -481,16 +516,16 @@
 
     .hero-bg-pattern {
         position: absolute;
-        top: -50%;
-        right: -10%;
-        width: 350px;
-        height: 350px;
-        background: radial-gradient(circle, rgba(13, 84, 147, 0.08) 0%, rgba(255, 255, 255, 0) 70%);
+        top: -60%;
+        right: -5%;
+        width: 400px;
+        height: 400px;
+        background: radial-gradient(circle, rgba(13, 84, 147, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
         border-radius: 50%;
         pointer-events: none;
     }
 
-    /* Colores Sólidos */
+    /* Colores Sólidos institucionales */
     .bg-navy {
         background-color: var(--brand-navy);
     }
@@ -504,16 +539,14 @@
     }
 
     .bg-purple {
-        background-color: #6b21a8 !important; /* Morado sobrio institucional */
+        background-color: #6b21a8 !important;
     }
 
-    /* Estilo Suave Uniforme para los Árboles */
     .icon-subtle-blue {
         background-color: #eff6ff;
         color: #2563eb;
     }
 
-    /* Icon wrappers */
     .section-icon-wrapper {
         display: inline-flex;
         align-items: center;
@@ -531,6 +564,7 @@
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
+        border-radius: 12px;
     }
 
     .sub-icon-shape {
@@ -540,11 +574,13 @@
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
+        border-radius: 10px;
     }
 
-    /* Acordeón Personalizado */
+    /* Acordeones y tarjetas */
     .custom-nav-accordion {
-        border: 1px solid rgba(0, 0, 0, 0.06);
+        border: 1px solid rgba(0, 0, 0, 0.05);
+        box-shadow: 0 4px 20px -2px rgba(13, 84, 147, 0.04) !important;
     }
 
     .cursor-pointer {
@@ -552,7 +588,7 @@
     }
 
     .toggle-icon {
-        transition: transform 0.3s ease;
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
 
     .accordion-header[aria-expanded="true"] .toggle-icon,
@@ -560,39 +596,37 @@
         transform: rotate(180deg);
     }
 
-    /* Conector Visual Árbol/Menú */
     .nav-tree-wrapper {
         border-left: 2px dashed rgba(13, 84, 147, 0.2);
-        padding-left: 12px;
+        padding-left: 14px;
     }
 
-    /* Items Submenú */
     .menu-subitem {
-        border-color: rgba(0, 0, 0, 0.05) !important;
+        border-color: rgba(0, 0, 0, 0.04) !important;
     }
 
     .menu-subitem-link:hover .menu-subitem {
         background-color: #ffffff !important;
-        border-color: rgba(13, 84, 147, 0.3) !important;
+        border-color: rgba(13, 84, 147, 0.25) !important;
         transform: translateX(4px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 4px 12px rgba(13, 84, 147, 0.06);
     }
 
     .menu-subitem-link:hover .subitem-arrow {
         color: var(--brand-navy) !important;
-        transform: translateX(2px);
+        transform: translateX(3px);
     }
 
-    /* Módulos Tarjeta Derecha */
     .module-card {
         background-color: #ffffff;
-        border: 1px solid rgba(0, 0, 0, 0.05) !important;
+        border: 1px solid rgba(0, 0, 0, 0.04) !important;
+        box-shadow: 0 4px 20px -2px rgba(13, 84, 147, 0.04);
         transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
     }
 
     a:hover .module-card {
         transform: translateY(-2px);
-        box-shadow: 0 8px 16px rgba(13, 84, 147, 0.08) !important;
+        box-shadow: 0 8px 24px rgba(13, 84, 147, 0.08) !important;
         border-color: rgba(13, 84, 147, 0.2) !important;
     }
 
@@ -601,11 +635,12 @@
     }
 
     a:hover .arrow-btn {
-        transform: translateX(3px);
+        transform: translateX(4px);
         color: var(--brand-navy) !important;
+        background-color: #f0f4f8 !important;
     }
 
     .transition-all {
-        transition: all 0.2s ease-in-out;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     }
 </style>

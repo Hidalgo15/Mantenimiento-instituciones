@@ -3,6 +3,7 @@ using Mantenimiento.Core.Application.DTOs.CuentaRequisito;
 using Mantenimiento.Core.Application.DTOs.Resultado;
 using Mantenimiento.Core.Application.InterfaceServices;
 using Mantenimiento.Core.Application.Mappings;
+using Mantenimiento.Core.Domain.Pagination;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 
 namespace Mantenimiento.Core.Application.Services
@@ -43,6 +44,21 @@ namespace Mantenimiento.Core.Application.Services
         {
             var entidades = await _repository.ObtenerRelacionAsync(idCuenta, idRequisito, estado);
             return entidades.Select(CuentaRequisitoMapper.ToDto).ToList();
+        }
+
+        public async Task<PagedResult<CuentaRequisitoDto>> ObtenerPaginadoAsync(
+            double? idCuenta,
+            int? idRequisito,
+            bool? estado,
+            int pagina = 1,
+            int tamanoPagina = 10)
+        {
+            var resultado = await _repository.ObtenerPaginadoAsync(idCuenta, idRequisito, estado, pagina, tamanoPagina);
+            return new PagedResult<CuentaRequisitoDto>(
+                resultado.Items.Select(CuentaRequisitoMapper.ToDto).ToList(),
+                resultado.PageNumber,
+                resultado.PageSize,
+                resultado.TotalCount);
         }
 
         /// <summary>

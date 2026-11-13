@@ -15,6 +15,9 @@ namespace Mantenimiento.Core.Application.InterfaceServices
             string? tipoTramite = null,
             int pageNumber = 1,
             int pageSize = 10);
+        Task<List<FondoDto>> ObtenerFondosEspecialesSinPaginacionAsync(
+            string? estructura = null,
+            string? tipoTramite = null);
         Task<FondoDto?> ObtenerPorIdAsync(int id);
     }
 }

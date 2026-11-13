@@ -1,4 +1,5 @@
 ﻿using Mantenimiento.Core.Domain.Entities.ClasificacionContrato;
+using Mantenimiento.Core.Domain.Pagination;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
@@ -34,6 +35,37 @@ namespace Mantenimiento.Infraestructure.Persistence.Repositories
                 .FromSqlRaw("EXEC [dbo].[sp_clasificacion_contratos_Obtener] @codigo_clasificacion, @contrato_tipo, @tipo_operacion, @contrato_proceso_seleccion", pId, pTipo, pOperacion, pProceso)
                 .AsNoTracking()
                 .ToListAsync();
+        }
+
+        public async Task<PagedResult<ClasificacionContrato>> ObtenerPaginadoAsync(
+            int? codigoClasificacion,
+            string? contratoTipo,
+            string? tipoOperacion,
+            string? contratoProcesoSeleccion,
+            int pagina,
+            int tamanoPagina)
+        {
+            pagina = Math.Max(pagina, 1);
+            tamanoPagina = Math.Clamp(tamanoPagina, 1, 100);
+            var pId = new SqlParameter("@codigo_clasificacion", SqlDbType.Int) { Value = (object?)codigoClasificacion ?? DBNull.Value };
+            var pTipo = new SqlParameter("@contrato_tipo", SqlDbType.VarChar, 50) { Value = (object?)contratoTipo ?? DBNull.Value };
+            var pOperacion = new SqlParameter("@tipo_operacion", SqlDbType.VarChar, 50) { Value = (object?)tipoOperacion ?? DBNull.Value };
+            var pProceso = new SqlParameter("@contrato_proceso_seleccion", SqlDbType.VarChar, 50) { Value = (object?)contratoProcesoSeleccion ?? DBNull.Value };
+            var pPagina = new SqlParameter("@PageNumber", SqlDbType.Int) { Value = pagina };
+            var pTamanoPagina = new SqlParameter("@PageSize", SqlDbType.Int) { Value = tamanoPagina };
+            var pTotal = new SqlParameter("@TotalCount", SqlDbType.Int) { Direction = ParameterDirection.Output };
+
+            var clasificaciones = await _context.Set<ClasificacionContrato>()
+                .FromSqlRaw(
+                    "EXEC dbo.sp_clasificacion_contratos_Obtener_Paginado @codigo_clasificacion, @contrato_tipo, @tipo_operacion, @contrato_proceso_seleccion, @PageNumber, @PageSize, @TotalCount OUTPUT",
+                    pId, pTipo, pOperacion, pProceso, pPagina, pTamanoPagina, pTotal)
+                .AsNoTracking()
+                .ToListAsync();
+
+            var total = Convert.ToInt32(pTotal.Value);
+            var paginas = total == 0 ? 1 : (int)Math.Ceiling(total / (double)tamanoPagina);
+            pagina = Math.Min(pagina, paginas);
+            return new PagedResult<ClasificacionContrato>(clasificaciones, pagina, tamanoPagina, total);
         }
 
         /// <summary>

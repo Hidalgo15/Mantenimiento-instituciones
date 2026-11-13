@@ -157,35 +157,21 @@
 @section Scripts {
     <script>
         let modalFondoBs;
-        let tamanoPaginaFondos = 10;
 
         document.addEventListener('DOMContentLoaded', () => {
             modalFondoBs = new bootstrap.Modal(document.getElementById('modalFondo'));
-            document.getElementById('contenedorGrid').addEventListener('click', event => {
-                if (!(event.target instanceof Element)) return;
-                const boton = event.target.closest('button[data-action][data-page]');
-                if (!boton) return;
-
-                cargarGridFondos(Number(boton.dataset.page));
-            });
-            document.getElementById('contenedorGrid').addEventListener('change', event => {
-                if (!(event.target instanceof HTMLSelectElement) ||
-                    event.target.dataset.action !== 'cambiar-tamano-pagina') return;
-
-                tamanoPaginaFondos = Number(event.target.value);
-                cargarGridFondos(1);
-            });
             cargarGridFondos();
         });
 
-        function cargarGridFondos(page = 1) {
+        function cargarGridFondos(page = Number(document.querySelector('#contenedorGrid [data-grid-pagination]')?.dataset.pageNumber || 1)) {
             const contenedor = document.getElementById('contenedorGrid');
+            const selectorTamanoPagina = document.getElementById('gridPageSize');
 
             const params = new URLSearchParams({
                 estructura: document.getElementById('filtroInstitucion').value,
                 tipoTramite: document.getElementById('filtroTipoTramite').value,
                 page: String(page),
-                pageSize: String(tamanoPaginaFondos)
+                pageSize: selectorTamanoPagina ? selectorTamanoPagina.value : '10'
             });
 
             fetch(`/FondoEspeciales/ObtenerGrid?${params.toString()}`)
@@ -333,6 +319,7 @@
             };
 
             const endpoint = id > 0 ? '/FondoEspeciales/Actualizar' : '/FondoEspeciales/Crear';
+            const esEdicion = id > 0;
 
             fetch(endpoint, {
                 method: 'POST',
@@ -343,8 +330,7 @@
                 .then(data => {
                     if (data.success) {
                         modalFondoBs.hide();
-                        // RECARGAR MANTENIENDO LOS FILTROS SELECCIONADOS EN PANTALLA
-                        filtrarTabla();
+                        cargarGridFondos(esEdicion ? undefined : 1);
                     } else {
                         alert('Error: ' + data.message);
                     }
@@ -361,8 +347,7 @@
                 .then(res => res.json())
                 .then(data => {
                     if (data.success) {
-                        // RECARGAR MANTENIENDO LOS FILTROS SELECCIONADOS EN PANTALLA
-                        filtrarTabla();
+                        cargarGridFondos();
                     } else {
                         alert('Error al eliminar: ' + data.message);
                     }

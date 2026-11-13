@@ -2,6 +2,7 @@ using FluentValidation;
 using Mantenimiento.Core.Application.DTOs.Cuenta.CtCuentasDTO;
 using Mantenimiento.Core.Application.InterfaceServices;
 using Mantenimiento.Core.Application.Mappings;
+using Mantenimiento.Core.Domain.Pagination;
 using Mantenimiento.Core.Domain.RepositoryInterfaces;
 
 namespace Mantenimiento.Core.Application.Services
@@ -37,6 +38,16 @@ namespace Mantenimiento.Core.Application.Services
         {
             var lista = await _repo.ObtenerCuentasAsync(busqueda);
             return lista.Select(CuentaCtMapper.ToDto).ToList();
+        }
+
+        public async Task<PagedResult<CuentaCtDto>> ObtenerPaginadoAsync(string? busqueda, int pagina = 1, int tamanoPagina = 10)
+        {
+            var resultado = await _repo.ObtenerPaginadoAsync(busqueda, pagina, tamanoPagina);
+            return new PagedResult<CuentaCtDto>(
+                resultado.Items.Select(CuentaCtMapper.ToDto).ToList(),
+                resultado.PageNumber,
+                resultado.PageSize,
+                resultado.TotalCount);
         }
 
         /// <summary>

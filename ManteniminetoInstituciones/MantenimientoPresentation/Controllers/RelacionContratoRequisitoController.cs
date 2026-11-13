@@ -1,5 +1,6 @@
 ﻿using Mantenimiento.Core.Application.DTOs.RelacionContratoRequisito;
 using Mantenimiento.Core.Application.InterfaceServices;
+using MantenimientoPresentation.Utilities;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,12 +13,14 @@ namespace MantenimientoPresentation.Controllers
         private readonly IRelacionContratoRequisitoService _service;
         private readonly ILogger<RelacionContratoRequisitoController> _logger;
         private readonly ICurrentUserService _currentUserService;
+        private readonly bool _gridPaginationEnabled;
 
-        public RelacionContratoRequisitoController(IRelacionContratoRequisitoService service, ILogger<RelacionContratoRequisitoController> logger, ICurrentUserService currentUserService)
+        public RelacionContratoRequisitoController(IRelacionContratoRequisitoService service, ILogger<RelacionContratoRequisitoController> logger, ICurrentUserService currentUserService, IConfiguration configuration)
         {
             _service = service;
             _logger = logger;
             _currentUserService = currentUserService;
+            _gridPaginationEnabled = configuration.GetValue<bool>("GridPagination:Enabled");
         }
 
         public async Task<IActionResult> Index()
@@ -38,10 +41,17 @@ namespace MantenimientoPresentation.Controllers
         }
 
         [HttpGet]
-        public async Task<IActionResult> ObtenerGrid(int? codigoClasificacion, int? codigoRequisito)
+        public async Task<IActionResult> ObtenerGrid(int? codigoClasificacion, int? codigoRequisito, int page = 1, int pageSize = 10)
         {
             try
             {
+                if (_gridPaginationEnabled)
+                {
+                    var resultado = await _service.ObtenerPaginadoAsync(codigoClasificacion, codigoRequisito, page, pageSize);
+                    GridPaginationViewData.Set(this, resultado);
+                    return PartialView("_RelacionContratoRequisitoGridPartial", resultado.Items.ToList());
+                }
+
                 var data = await _service.ObtenerAsync(codigoClasificacion, codigoRequisito);
                 return PartialView("_RelacionContratoRequisitoGridPartial", data);
             }

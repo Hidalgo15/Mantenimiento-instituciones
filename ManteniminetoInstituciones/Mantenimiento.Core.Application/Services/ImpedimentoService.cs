@@ -32,6 +32,12 @@ namespace Mantenimiento.Core.Application.Services
             _actualizarValidator = actualizarValidator;
         }
 
+        public async Task<List<ImpedimentoDto>> ObtenerAsync(string? filtroTexto)
+        {
+            var registros = await _repository.ObtenerAsync(filtroTexto);
+            return registros.Select(ImpedimentoMapper.ToDto).ToList();
+        }
+
         /// <summary>
         /// Obtiene una página de impedimentos y convierte las entidades en DTO.
         /// </summary>
